@@ -8,85 +8,93 @@ import {
 } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { ICompany, ICreateCompanyInput } from "../../types";
+import { IUserCompanyRoles } from "../../types";
 
-export type CompanyContextType = {
-  company: ICompany | null;
+export type UserCompanyRolesContextType = {
+  data: IUserCompanyRoles | null;
   loading: boolean;
   error: string | null;
-  createCompany: (data: ICreateCompanyInput) => Promise<void>;
-  getCompanyIndustries: () => Promise<void>;
+  getAuthAll: () => Promise<void>;
+  getAuthUsers: () => Promise<void>;
 };
 
 interface IProps {
   children: ReactNode;
 }
 
-const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
+const UserCompanyRolesContext = createContext<
+  UserCompanyRolesContextType | undefined
+>(undefined);
 
-export const useCompanyState = () => {
-  const state = useContext(CompanyContext);
+export const useUserCompanyRolesState = () => {
+  const state = useContext(UserCompanyRolesContext);
   if (!state) {
-    throw new Error("CompanyContext not found");
+    throw new Error("UserCompanyRolesContext not found");
   }
   return state;
 };
 
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
-const CompanyContextProvider = ({ children }: IProps) => {
-  const [company, setCompany] = useState<ICompany | null>(null);
+const UserCompanyRolesContextProvider = ({ children }: IProps) => {
+  const [data, setData] = useState<IUserCompanyRoles | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createCompany = async (data: ICreateCompanyInput) => {
+  const getAuthAll = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.post("/api/v1/companies", data, {
+      const res = await axios.get("/api/v1/userCompanyRoles", {
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
           Accept: "application/json",
+          //   "secret-key": `${process.env.NEXT_PUBLIC_SECRET_KEY}`,
+          //   "public-key": `${process.env.NEXT_PUBLIC_PUBLIC_KEY}`,
         },
       });
 
-      setCompany(res.data.data.company);
-      toast.success(res.data.message);
-      setLoading(false);
-      window.location.href = "/";
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Create Company failed");
-      toast.error(err.response?.data?.message || "Create Company failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getCompanyIndustries = async () => {
-    try {
-      const res = await axios.get("/api/v1/companyIndustries", {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
-        },
-      });
-
-      setCompany(res.data.data.company);
+      setData(res.data.data.usercompanyroles);
       toast.success(res.data.message);
       setLoading(false);
       window.location.href = "/";
     } catch (err: any) {
       setError(
-        err.response?.data?.message || "Fetch Company Industries failed"
+        err.response?.data?.message || "Fetch User, Comapny, Roles failed"
       );
       toast.error(
-        err.response?.data?.message || "Fetch Company Industries failed"
+        err.response?.data?.message || "Fetch User, Comapny, Roles failed"
       );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAuthUsers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.get("/api/v1/userCompanyRoles/company-users", {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
+          Accept: "application/json",
+          "secret-key": `${process.env.NEXT_PUBLIC_SECRET_KEY}`,
+          "public-key": `${process.env.NEXT_PUBLIC_PUBLIC_KEY}`,
+        },
+      });
+
+      setData(res.data.data.usercompanyroles);
+      toast.success(res.data.message);
+      setLoading(false);
+      window.location.href = "/";
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Fetch Company Users failed");
+      toast.error(err.response?.data?.message || "Fetch Company Users failed");
     } finally {
       setLoading(false);
     }
@@ -104,18 +112,18 @@ const CompanyContextProvider = ({ children }: IProps) => {
   }, []);
 
   return (
-    <CompanyContext.Provider
+    <UserCompanyRolesContext.Provider
       value={{
-        company,
+        data,
         loading,
         error,
-        createCompany,
-        getCompanyIndustries,
+        getAuthAll,
+        getAuthUsers,
       }}
     >
       {children}
-    </CompanyContext.Provider>
+    </UserCompanyRolesContext.Provider>
   );
 };
 
-export default CompanyContextProvider;
+export default UserCompanyRolesContextProvider;

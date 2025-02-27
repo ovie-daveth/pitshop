@@ -5,6 +5,8 @@ import AuthContextProvider from "../api/context/AuthContext/AuthContext";
 import UserContextProvider from "../api/context/UserContext/UserContext";
 import CompanyContextProvider from "../api/context/CompanyContext/CompanyContext";
 import RolesContextProvider from "../api/context/RolesContext/RolesContext";
+import UserCompanyRolesContextProvider from "@/api/context/UserCompanyRolesContext/UserCompanyRolesContext";
+import AdPlatformContextProvider from "@/api/context/AdPlatformContext/AdPlatformContext";
 
 export const metadata: Metadata = {
   title: "Pitstop App",
@@ -23,7 +25,13 @@ export default function RootLayout({
         <AuthContextProvider>
           <UserContextProvider>
             <CompanyContextProvider>
-              <RolesContextProvider>{children}</RolesContextProvider>
+              <RolesContextProvider>
+                <UserCompanyRolesContextProvider>
+                  <AdPlatformContextProvider>
+                    {children}
+                  </AdPlatformContextProvider>
+                </UserCompanyRolesContextProvider>
+              </RolesContextProvider>
             </CompanyContextProvider>
           </UserContextProvider>
         </AuthContextProvider>

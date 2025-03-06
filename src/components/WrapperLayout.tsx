@@ -21,8 +21,8 @@ import Favicon from "../app/favicon.ico";
 import SwitchChannel from "./SwitchChannel";
 
 const userNavigation = [
-  { name: "Your Profile", href: "#" },
-  { name: "Settings", href: "#" },
+  { name: "Your Profile", href: "/dashboard/settings" },
+  { name: "Settings", href: "/dashboard/settings" },
   { name: "Sign out", href: "/" },
 ];
 

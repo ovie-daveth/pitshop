@@ -1,3 +1,4 @@
+"use client";
 import ProtectedRoute from "@/api/protected/ProtectedRoute";
 import WrapperLayout from "@/components/WrapperLayout";
 export default function Page() {

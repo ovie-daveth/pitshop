@@ -7,8 +7,8 @@ export default function Page() {
       <ProtectedRoute>
         <WrapperLayout>
           <div>
-            <h1>Roles</h1>
-            <p>This is a Roles page</p>
+            <h1>Create Users</h1>
+            <p>Create Users Page</p>
           </div>
         </WrapperLayout>
       </ProtectedRoute>

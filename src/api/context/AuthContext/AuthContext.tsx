@@ -23,7 +23,7 @@ export type AuthContextType = {
   forgotPassword: (data: { email: string }) => Promise<void>;
   resetPassword: (data: {
     email: string;
-    otp: string;
+    token: string;
     password: string;
   }) => Promise<void>;
   checkAuth: (authToken: string | null) => Promise<void>;
@@ -96,7 +96,7 @@ const AuthContextProvider = ({ children }: IProps) => {
       toast.success(res.data.message);
       // localStorage.removeItem("user_details");
       setLoading(false);
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");
       toast.error(err.response?.data?.message || "Signup failed");
@@ -125,7 +125,7 @@ const AuthContextProvider = ({ children }: IProps) => {
       localStorage.setItem("token", res.data.data.tokenInfo.accessToken);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
       toast.error(err.response?.data?.message || "Login failed");
@@ -149,7 +149,6 @@ const AuthContextProvider = ({ children }: IProps) => {
       setIsAuthenticated(true);
       localStorage.setItem("token", res.data.data.tokenInfo.accessToken);
       setLoading(false);
-      // navigate("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch User Failed");
       toast.error(err.response?.data?.message || "Fetch User Failed");
@@ -211,7 +210,7 @@ const AuthContextProvider = ({ children }: IProps) => {
 
       toast.success(res.data.message);
       // navigate("/dashboard");
-      window.location.href = "/otp";
+      window.location.href = "/verify";
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to request OTP");
       toast.error(err.response?.data?.message || "Failed to request OTP");
@@ -275,7 +274,7 @@ const AuthContextProvider = ({ children }: IProps) => {
 
   const resetPassword = async (data: {
     email: string;
-    otp: string;
+    token: string;
     password: string;
   }) => {
     setLoading(true);

@@ -39,6 +39,10 @@ export interface ICompany {
   // bookings: IBooking[];
 }
 
+export interface ICompanyIndustry {
+  company: ICompany[];
+}
+
 export interface ICreateCompanyInput {
   name: string;
   description: string;

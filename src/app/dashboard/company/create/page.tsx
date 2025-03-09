@@ -5,7 +5,7 @@ import { useState, useLayoutEffect } from "react";
 import { useCompanyState } from "../../../../api/context/CompanyContext/CompanyContext";
 
 export default function Page() {
-  const { createCompany, getCompanyIndustries, company } = useCompanyState();
+  const { createCompany, getCompanyIndustries, company, } = useCompanyState();
 
   useLayoutEffect(() => {
     getCompanyIndustries();

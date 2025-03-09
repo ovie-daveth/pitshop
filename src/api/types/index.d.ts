@@ -24,6 +24,9 @@ export interface IUser {
 }
 
 export interface ICompany {
+  roles: any;
+  user: any;
+  company: any;
   id: string;
   created_by: IUser;
   name: string;

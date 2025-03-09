@@ -10,10 +10,10 @@ function classNames(...classes: any) {
 }
 
 export default function Page() {
-  const { getCompanyIndustries, company } = useCompanyState();
+  const { company, getUserCompanies } = useCompanyState();
 
   useLayoutEffect(() => {
-    getCompanyIndustries();
+    getUserCompanies();
     console.log(company);
   }, []);
 
@@ -64,16 +64,19 @@ export default function Page() {
                             <thead className="bg-gray-50">
                               <tr>
                                 <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                                  Industry ID
+                                  ID
                                 </th>
                                 <th className="hidden px-3 py-3 text-left text-sm font-semibold text-gray-900 sm:table-cell">
-                                  Name
+                                  Company Name
                                 </th>
                                 <th className="hidden px-3 py-3 text-left text-sm font-semibold text-gray-900 lg:table-cell">
-                                  Date Updated
+                                  Company Description
                                 </th>
                                 <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900">
-                                  Date Created
+                                  Company Industry
+                                </th>
+                                <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900">
+                                  User
                                 </th>
                                 <th className="px-3 py-3">Actions</th>
                               </tr>
@@ -85,13 +88,17 @@ export default function Page() {
                                     {person.id}
                                   </td>
                                   <td className="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                                    {person.name}
+                                    {person.company.name}
                                   </td>
                                   <td className="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
-                                    {person.updatedAt}
+                                    {person.company.description}
                                   </td>
                                   <td className="px-3 py-4 text-sm text-gray-500">
-                                    {person.createdAt}
+                                    {person.company.companyIndustry.name}
+                                  </td>
+                                  <td className="px-3 py-4 text-sm text-gray-500">
+                                    {person.user.firstName}{" "}
+                                    {person.user.lastName}
                                   </td>
                                   <td className="px-3 py-4 text-sm font-medium text-right">
                                     <a

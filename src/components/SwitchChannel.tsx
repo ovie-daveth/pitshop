@@ -32,7 +32,12 @@ export default function SwitchChannel() {
 
   return (
     <>
-      <Combobox as="div" value={selectedPerson} onChange={setSelectedPerson}>
+      <Combobox
+        as="div"
+        value={selectedPerson}
+        onChange={setSelectedPerson}
+        className={"mx-2"}
+      >
         <Combobox.Label className="block text-sm font-medium text-gray-700">
           {/* Switch to */}
         </Combobox.Label>

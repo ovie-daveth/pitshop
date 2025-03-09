@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import { ICompany, ICreateCompanyInput } from "../../types";
 
 export type CompanyContextType = {
-  company: ICompany | null;
+  company: ICompany[] | null;
   loading: boolean;
   error: string | null;
   createCompany: (data: ICreateCompanyInput) => Promise<void>;
@@ -34,7 +34,7 @@ export const useCompanyState = () => {
 
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const CompanyContextProvider = ({ children }: IProps) => {
-  const [company, setCompany] = useState<ICompany | null>(null);
+  const [company, setCompany] = useState<ICompany[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,18 +44,13 @@ const CompanyContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.post("/api/v1/companies", data, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
         },
       });
 
-      setCompany(res.data.data.company);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
+      window.location.href = "/dashboard/company";
     } catch (err: any) {
       setError(err.response?.data?.message || "Create Company failed");
       toast.error(err.response?.data?.message || "Create Company failed");
@@ -68,18 +63,13 @@ const CompanyContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.get("/api/v1/companyIndustries", {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
         },
       });
 
-      setCompany(res.data.data.company);
+      setCompany(res.data.data);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
     } catch (err: any) {
       setError(
         err.response?.data?.message || "Fetch Company Industries failed"

@@ -16,6 +16,7 @@ export type CompanyContextType = {
   error: string | null;
   createCompany: (data: ICreateCompanyInput) => Promise<void>;
   getCompanyIndustries: () => Promise<void>;
+  getUserCompanies: () => Promise<void>;
 };
 
 interface IProps {
@@ -68,7 +69,7 @@ const CompanyContextProvider = ({ children }: IProps) => {
       });
 
       setCompany(res.data.data);
-      toast.success(res.data.message);
+      // toast.success(res.data.message);
       setLoading(false);
     } catch (err: any) {
       setError(
@@ -77,6 +78,27 @@ const CompanyContextProvider = ({ children }: IProps) => {
       toast.error(
         err.response?.data?.message || "Fetch Company Industries failed"
       );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getUserCompanies = async () => {
+    try {
+      const res = await axios.get("/api/v1/userCompanyRoles", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
+        },
+      });
+
+      localStorage.setItem("userCompanies", JSON.stringify(res.data.data));
+
+      setCompany(res.data.data);
+      toast.success(res.data.message);
+      setLoading(false);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Fetch Companies failed");
+      toast.error(err.response?.data?.message || "Fetch Companies failed");
     } finally {
       setLoading(false);
     }
@@ -101,6 +123,7 @@ const CompanyContextProvider = ({ children }: IProps) => {
         error,
         createCompany,
         getCompanyIndustries,
+        getUserCompanies,
       }}
     >
       {children}

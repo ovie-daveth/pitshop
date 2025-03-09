@@ -172,7 +172,7 @@ const AuthContextProvider = ({ children }: IProps) => {
       });
       setToken(res.data.data.accessToken);
       setIsAuthenticated(true);
-      toast.success("Authenticated successfully");
+      // toast.success("Authenticated successfully");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err: any) {
       setIsAuthenticated(false);

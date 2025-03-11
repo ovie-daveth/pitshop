@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import { IRoles, ICreateRolesInput } from "../../types";
 
 export type RolesContextType = {
-  roles: IRoles | null;
+  roles: IRoles[] | null;
   loading: boolean;
   error: string | null;
   createRoles: (data: ICreateRolesInput) => Promise<void>;
@@ -35,7 +35,7 @@ export const useRolesState = () => {
 
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const RolesContextProvider = ({ children }: IProps) => {
-  const [roles, setRoles] = useState<IRoles | null>(null);
+  const [roles, setRoles] = useState<IRoles[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,20 +45,16 @@ const RolesContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.post("/api/v1/roles", data, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
-          "secret-key": `${process.env.NEXT_PUBLIC_SECRET_KEY}`,
-          "public-key": `${process.env.NEXT_PUBLIC_PUBLIC_KEY}`,
+          "secret-key": `${localStorage.getItem("secret_key")}`,
+          "public-key": `${localStorage.getItem("public_key")}`,
         },
       });
 
       setRoles(res.data.data.roles);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
+      window.location.href = "/dashboard/roles/";
     } catch (err: any) {
       setError(err.response?.data?.message || "Create Roles failed");
       toast.error(err.response?.data?.message || "Create Roles failed");
@@ -78,15 +74,15 @@ const RolesContextProvider = ({ children }: IProps) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
           Accept: "application/json",
-          "secret-key": `${process.env.NEXT_PUBLIC_SECRET_KEY}`,
-          "public-key": `${process.env.NEXT_PUBLIC_PUBLIC_KEY}`,
+          "secret-key": `${localStorage.getItem("secret_key")}`,
+          "public-key": `${localStorage.getItem("public_key")}`,
         },
       });
 
       setRoles(res.data.data.roles);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
+      window.location.href = "/dashboard/roles";
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Roles failed");
       toast.error(err.response?.data?.message || "Fetch Roles failed");
@@ -101,20 +97,16 @@ const RolesContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.get("/api/v1/roles/permissions", {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
-          "secret-key": `${process.env.NEXT_PUBLIC_SECRET_KEY}`,
-          "public-key": `${process.env.NEXT_PUBLIC_PUBLIC_KEY}`,
+          "secret-key": `${localStorage.getItem("secret_key")}`,
+          "public-key": `${localStorage.getItem("public_key")}`,
         },
       });
 
       setRoles(res.data.data.roles.permissions);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
+      window.location.href = "/dashboard/roles";
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Roles Permissions failed");
       toast.error(

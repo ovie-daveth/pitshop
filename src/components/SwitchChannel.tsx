@@ -1,41 +1,43 @@
-import { useState } from "react";
+import { useState, useLayoutEffect } from "react";
 import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
 import { Combobox } from "@headlessui/react";
+import { switchToObject } from "@/api/utils/switch";
+import { useCompanyState } from "@/api/context/CompanyContext";
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function SwitchChannel() {
-  const people = [
-    {
-      id: 1,
-      name: "Leslie Channel",
-    },
-    {
-      id: 2,
-      name: "Brian Channel",
-    },
-    // More users...
-  ];
+  const { company, getUserCompanies } = useCompanyState();
   const [query, setQuery] = useState("");
-  const [selectedPerson, setSelectedPerson] = useState<
-    (typeof people)[0] | null
-  >(null);
+  const [selectedPerson, setSelectedPerson] = useState<any>(
+    company && company.length > 0 ? company[0] : null
+  );
 
-  const filteredPeople =
-    query === ""
-      ? people
-      : people.filter((person) => {
-          return person.name.toLowerCase().includes(query.toLowerCase());
-        });
+  useLayoutEffect(() => {
+    getUserCompanies();
+    // eslint-disable-next-line
+  }, []);
+
+  useLayoutEffect(() => {
+    if (company && company.length > 0) {
+      setSelectedPerson(company[0]);
+    }
+  }, [company]);
+
+  const handleSelectionChange = (selected: any) => {
+    setSelectedPerson(selected);
+    switchToObject(selected.id, selected);
+    // console.log(selected);
+  };
 
   return (
     <>
       <Combobox
         as="div"
         value={selectedPerson}
-        onChange={setSelectedPerson}
+        onChange={handleSelectionChange}
         className={"mx-2"}
       >
         <Combobox.Label className="block text-sm font-medium text-gray-700">
@@ -45,8 +47,8 @@ export default function SwitchChannel() {
           <Combobox.Input
             className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
             onChange={(event) => setQuery(event.target.value)}
-            displayValue={(person: { name: string } | null) =>
-              person ? person.name : "Switch Pitstop Company"
+            displayValue={(company: any) =>
+              company ? company.company.name : " Switch Channel"
             }
           />
           <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
@@ -56,9 +58,9 @@ export default function SwitchChannel() {
             />
           </Combobox.Button>
 
-          {filteredPeople.length > 0 && (
+          {company && company.length > 0 && (
             <Combobox.Options className="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-              {filteredPeople.map((person) => (
+              {company.map((person) => (
                 <Combobox.Option
                   key={person.id}
                   value={person}
@@ -78,7 +80,7 @@ export default function SwitchChannel() {
                             selected && "font-semibold"
                           )}
                         >
-                          {person.name}
+                          {person.company.name}
                         </span>
                       </div>
 

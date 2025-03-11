@@ -5,7 +5,8 @@ import { useState, useLayoutEffect } from "react";
 import { useCompanyState } from "../../../../api/context/CompanyContext/CompanyContext";
 
 export default function Page() {
-  const { createCompany, getCompanyIndustries, company, } = useCompanyState();
+  const { createCompany, getCompanyIndustries, company, companyIndustry } =
+    useCompanyState();
 
   useLayoutEffect(() => {
     getCompanyIndustries();
@@ -110,8 +111,8 @@ export default function Page() {
                             <option value="" disabled>
                               Select an industry
                             </option>
-                            {company &&
-                              company.map((industry) => (
+                            {companyIndustry &&
+                              companyIndustry.map((industry) => (
                                 <option key={industry.id} value={industry.id}>
                                   {industry.name}
                                 </option>

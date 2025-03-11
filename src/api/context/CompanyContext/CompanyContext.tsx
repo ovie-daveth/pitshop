@@ -9,10 +9,12 @@ import {
 import axios from "axios";
 import toast from "react-hot-toast";
 import { ICompany, ICreateCompanyInput } from "../../types";
+import { saveKeysToLocalStorage } from "@/api/utils/switch";
 
 export type CompanyContextType = {
   company: ICompany[] | null;
   loading: boolean;
+  companyIndustry: ICompany[] | null;
   error: string | null;
   createCompany: (data: ICreateCompanyInput) => Promise<void>;
   getCompanyIndustries: () => Promise<void>;
@@ -36,6 +38,9 @@ export const useCompanyState = () => {
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const CompanyContextProvider = ({ children }: IProps) => {
   const [company, setCompany] = useState<ICompany[] | null>(null);
+  const [companyIndustry, setCompanyIndustry] = useState<ICompany[] | null>(
+    null
+  );
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,7 +73,7 @@ const CompanyContextProvider = ({ children }: IProps) => {
         },
       });
 
-      setCompany(res.data.data);
+      setCompanyIndustry(res.data.data);
       // toast.success(res.data.message);
       setLoading(false);
     } catch (err: any) {
@@ -91,10 +96,11 @@ const CompanyContextProvider = ({ children }: IProps) => {
         },
       });
 
-      localStorage.setItem("userCompanies", JSON.stringify(res.data.data));
+      // localStorage.setItem("userCompanies", JSON.stringify(res.data.data));
 
       setCompany(res.data.data);
-      toast.success(res.data.message);
+      saveKeysToLocalStorage(res.data.data[0]);
+      // toast.success(res.data.message);
       setLoading(false);
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Companies failed");
@@ -120,6 +126,7 @@ const CompanyContextProvider = ({ children }: IProps) => {
       value={{
         company,
         loading,
+        companyIndustry,
         error,
         createCompany,
         getCompanyIndustries,

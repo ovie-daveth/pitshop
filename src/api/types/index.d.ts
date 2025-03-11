@@ -59,6 +59,8 @@ export interface ICreateRolesInput {
 }
 
 export interface IRoles {
+  external: boolean;
+  type: string;
   id: string;
   name: string;
   description: string;

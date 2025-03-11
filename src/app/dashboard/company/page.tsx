@@ -14,7 +14,6 @@ export default function Page() {
 
   useLayoutEffect(() => {
     getUserCompanies();
-    console.log(company);
   }, []);
 
   const itemsPerPage = 5;

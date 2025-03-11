@@ -51,8 +51,6 @@ const UserCompanyRolesContextProvider = ({ children }: IProps) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
           Accept: "application/json",
-          //   "secret-key": `${process.env.NEXT_PUBLIC_SECRET_KEY}`,
-          //   "public-key": `${process.env.NEXT_PUBLIC_PUBLIC_KEY}`,
         },
       });
 
@@ -83,8 +81,8 @@ const UserCompanyRolesContextProvider = ({ children }: IProps) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
           Accept: "application/json",
-          "secret-key": `${process.env.NEXT_PUBLIC_SECRET_KEY}`,
-          "public-key": `${process.env.NEXT_PUBLIC_PUBLIC_KEY}`,
+          "secret-key": `${localStorage.getItem("secret_key")}`,
+          "public-key": `${localStorage.getItem("public_key")}`,
         },
       });
 

@@ -81,11 +81,7 @@ const AuthContextProvider = ({ children }: IProps) => {
         },
         {
           headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-            Accept: "application/json",
           },
         }
       );
@@ -111,11 +107,7 @@ const AuthContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.post("/api/v1/auth/login", data, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
         },
       });
 
@@ -139,8 +131,6 @@ const AuthContextProvider = ({ children }: IProps) => {
       const res = await axios.get("/api/v1/auth", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
-          "Content-Type": "application/json",
         },
       });
 
@@ -163,11 +153,7 @@ const AuthContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.get("/api/v1/auth/token/refresh", {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${authToken || ""}`, // If token exists
-          Accept: "application/json",
         },
       });
       setToken(res.data.data.accessToken);
@@ -199,11 +185,7 @@ const AuthContextProvider = ({ children }: IProps) => {
         { email: data.email },
         {
           headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-            Accept: "application/json",
           },
         }
       );

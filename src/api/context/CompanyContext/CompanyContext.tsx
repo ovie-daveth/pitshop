@@ -95,9 +95,6 @@ const CompanyContextProvider = ({ children }: IProps) => {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
         },
       });
-
-      // localStorage.setItem("userCompanies", JSON.stringify(res.data.data));
-
       setCompany(res.data.data);
       saveKeysToLocalStorage(res.data.data[0]);
       // toast.success(res.data.message);

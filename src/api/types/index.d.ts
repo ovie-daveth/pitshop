@@ -69,7 +69,18 @@ export interface IRoles {
   updatedAt: string;
 }
 
+export interface IPermissions {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  permissionCategory: [];
+}
+
 export interface IUsers {
+  user: any;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;

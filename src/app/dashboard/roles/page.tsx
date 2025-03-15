@@ -11,7 +11,6 @@ export default function Page() {
 
   useLayoutEffect(() => {
     getRoles();
-    console.log(roles);
   }, []);
 
   const itemsPerPage = 5;
@@ -33,7 +32,7 @@ export default function Page() {
                   <div className="sm:flex sm:items-center">
                     <div className="sm:flex-auto">
                       <h1 className="text-xl font-semibold text-gray-900">
-                        Company
+                        Roles
                       </h1>
                       <p className="mt-2 text-sm text-gray-700">
                         A list of all the roles in your account including their
@@ -93,9 +92,9 @@ export default function Page() {
                                     {person.type}
                                   </td>
                                   <td className="px-3 py-4 text-sm text-gray-500">
-                                    {person.external}
+                                    {person.external.toString()}
                                   </td>
-                                  <td className="px-3 py-4 text-sm font-medium text-right">
+                                  <td className="px-3 py-4 text-sm font-medium text-left">
                                     <a
                                       href="#"
                                       className="text-indigo-600 hover:text-indigo-900"
@@ -145,6 +144,12 @@ export default function Page() {
                   <h2 className="text-lg text-center font-bold text-gray-900">
                     No Roles found, please create a Role
                   </h2>
+                  <Link
+                    href="/dashboard/roles/create"
+                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                  >
+                    Add Roles
+                  </Link>
                 </div>
               </>
             )}

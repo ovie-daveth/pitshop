@@ -149,6 +149,12 @@ export default function Page() {
                   <h2 className="text-lg text-center font-bold text-gray-900">
                     No company found, please create a company
                   </h2>
+                  <Link
+                    href="/dashboard/company/create"
+                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                  >
+                    Add Company
+                  </Link>
                 </div>
               </>
             )}

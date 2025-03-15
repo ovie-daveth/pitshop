@@ -16,13 +16,14 @@ import {
 } from "../../types";
 
 export type UserContextType = {
-  users: IUsers | null;
+  users: IUsers[] | null;
   loading: boolean;
   error: string | null;
   createInviteUsers: (data: ICreateUsersInput) => Promise<void>;
   acceptInviteUsers: (data: IAcceptUsersInviteInput) => Promise<void>;
   onboardInvitedUsers: (data: IOnboardInvitedUsers) => Promise<void>;
   getAllInvitedUsers: () => Promise<void>;
+  getAllUsers: () => Promise<void>;
 };
 
 interface IProps {
@@ -41,7 +42,7 @@ export const useUserState = () => {
 
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const UserContextProvider = ({ children }: IProps) => {
-  const [users, setUsers] = useState<IUsers | null>(null);
+  const [users, setUsers] = useState<IUsers[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,11 +52,7 @@ const UserContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.post("/api/v1/invitedUsers", data, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
           "secret-key": `${localStorage.getItem("secret_key")}`,
           "public-key": `${localStorage.getItem("public_key")}`,
         },
@@ -63,8 +60,8 @@ const UserContextProvider = ({ children }: IProps) => {
 
       setUsers(res.data.data.users);
       toast.success(res.data.message);
+      window.location.href = "/dashboard/users";
       setLoading(false);
-      window.location.href = "/";
     } catch (err: any) {
       setError(err.response?.data?.message || "Create Invite failed");
       toast.error(err.response?.data?.message || "Create Invite failed");
@@ -79,9 +76,6 @@ const UserContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.post("/api/v1/invitedUsers/accept", data, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
           Accept: "application/json",
         },
@@ -90,7 +84,6 @@ const UserContextProvider = ({ children }: IProps) => {
       setUsers(res.data.data.users);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
     } catch (err: any) {
       setError(err.response?.data?.message || "Accept Invite failed");
       toast.error(err.response?.data?.message || "Accept Invite failed");
@@ -105,11 +98,7 @@ const UserContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.get("/api/v1/invitedUsers", {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
           "secret-key": `${localStorage.getItem("secret_key")}`,
           "public-key": `${localStorage.getItem("public_key")}`,
         },
@@ -118,7 +107,6 @@ const UserContextProvider = ({ children }: IProps) => {
       setUsers(res.data.data.users);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Invited Users failed");
       toast.error(err.response?.data?.message || "etch Invited Users failed");
@@ -133,21 +121,38 @@ const UserContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.post("/api/v1/invitedUsers/onboard", data, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
         },
       });
 
       setUsers(res.data.data.users);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
     } catch (err: any) {
       setError(err.response?.data?.message || "Onboard Invite failed");
       toast.error(err.response?.data?.message || "Onboard Invite failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAllUsers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.get("/api/v1/userCompanyRoles/company-users", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
+          "secret-key": `${localStorage.getItem("secret_key")}`,
+          "public-key": `${localStorage.getItem("public_key")}`,
+        },
+      });
+
+      setUsers(res.data.data.data);
+      // toast.success(res.data.message);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Fetch Invited Users failed");
+      toast.error(err.response?.data?.message || "etch Invited Users failed");
     } finally {
       setLoading(false);
     }
@@ -174,6 +179,7 @@ const UserContextProvider = ({ children }: IProps) => {
         acceptInviteUsers,
         onboardInvitedUsers,
         getAllInvitedUsers,
+        getAllUsers,
       }}
     >
       {children}

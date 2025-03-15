@@ -8,10 +8,11 @@ import {
 } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { IRoles, ICreateRolesInput } from "../../types";
+import { IRoles, ICreateRolesInput, IPermissions } from "../../types";
 
 export type RolesContextType = {
   roles: IRoles[] | null;
+  permissions: IPermissions[] | null;
   loading: boolean;
   error: string | null;
   createRoles: (data: ICreateRolesInput) => Promise<void>;
@@ -36,6 +37,7 @@ export const useRolesState = () => {
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const RolesContextProvider = ({ children }: IProps) => {
   const [roles, setRoles] = useState<IRoles[] | null>(null);
+  const [permissions, setPermissions] = useState<IPermissions[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +53,7 @@ const RolesContextProvider = ({ children }: IProps) => {
         },
       });
 
-      setRoles(res.data.data.roles);
+      setRoles(res.data.data);
       toast.success(res.data.message);
       setLoading(false);
       window.location.href = "/dashboard/roles/";
@@ -69,20 +71,15 @@ const RolesContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.get("/api/v1/roles", {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
           "secret-key": `${localStorage.getItem("secret_key")}`,
           "public-key": `${localStorage.getItem("public_key")}`,
         },
       });
 
-      setRoles(res.data.data.roles);
-      toast.success(res.data.message);
+      setRoles(res.data.data);
+      // toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/dashboard/roles";
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Roles failed");
       toast.error(err.response?.data?.message || "Fetch Roles failed");
@@ -103,10 +100,8 @@ const RolesContextProvider = ({ children }: IProps) => {
         },
       });
 
-      setRoles(res.data.data.roles.permissions);
-      toast.success(res.data.message);
-      setLoading(false);
-      window.location.href = "/dashboard/roles";
+      setPermissions(res.data.data);
+      // toast.success(res.data.message)
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Roles Permissions failed");
       toast.error(
@@ -132,6 +127,7 @@ const RolesContextProvider = ({ children }: IProps) => {
     <RolesContext.Provider
       value={{
         roles,
+        permissions,
         loading,
         error,
         createRoles,

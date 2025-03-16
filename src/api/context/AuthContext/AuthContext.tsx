@@ -23,7 +23,7 @@ export type AuthContextType = {
   forgotPassword: (data: { email: string }) => Promise<void>;
   resetPassword: (data: {
     email: string;
-    otp: string;
+    token: string;
     password: string;
   }) => Promise<void>;
   checkAuth: (authToken: string | null) => Promise<void>;
@@ -81,11 +81,7 @@ const AuthContextProvider = ({ children }: IProps) => {
         },
         {
           headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-            Accept: "application/json",
           },
         }
       );
@@ -96,7 +92,7 @@ const AuthContextProvider = ({ children }: IProps) => {
       toast.success(res.data.message);
       // localStorage.removeItem("user_details");
       setLoading(false);
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");
       toast.error(err.response?.data?.message || "Signup failed");
@@ -111,11 +107,7 @@ const AuthContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.post("/api/v1/auth/login", data, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
         },
       });
 
@@ -125,7 +117,7 @@ const AuthContextProvider = ({ children }: IProps) => {
       localStorage.setItem("token", res.data.data.tokenInfo.accessToken);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
       toast.error(err.response?.data?.message || "Login failed");
@@ -139,8 +131,6 @@ const AuthContextProvider = ({ children }: IProps) => {
       const res = await axios.get("/api/v1/auth", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          Accept: "application/json",
-          "Content-Type": "application/json",
         },
       });
 
@@ -149,10 +139,8 @@ const AuthContextProvider = ({ children }: IProps) => {
       setIsAuthenticated(true);
       localStorage.setItem("token", res.data.data.tokenInfo.accessToken);
       setLoading(false);
-      // navigate("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch User Failed");
-      toast.error(err.response?.data?.message || "Fetch User Failed");
     } finally {
       setLoading(false);
     }
@@ -164,16 +152,12 @@ const AuthContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.get("/api/v1/auth/token/refresh", {
         headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-          "Content-Type": "application/json",
           Authorization: `Bearer ${authToken || ""}`, // If token exists
-          Accept: "application/json",
         },
       });
       setToken(res.data.data.accessToken);
       setIsAuthenticated(true);
-      toast.success("Authenticated successfully");
+      // toast.success("Authenticated successfully");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err: any) {
       setIsAuthenticated(false);
@@ -200,18 +184,14 @@ const AuthContextProvider = ({ children }: IProps) => {
         { email: data.email },
         {
           headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-            Accept: "application/json",
           },
         }
       );
 
       toast.success(res.data.message);
       // navigate("/dashboard");
-      window.location.href = "/otp";
+      window.location.href = "/verify";
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to request OTP");
       toast.error(err.response?.data?.message || "Failed to request OTP");
@@ -275,7 +255,7 @@ const AuthContextProvider = ({ children }: IProps) => {
 
   const resetPassword = async (data: {
     email: string;
-    otp: string;
+    token: string;
     password: string;
   }) => {
     setLoading(true);

@@ -24,6 +24,9 @@ export interface IUser {
 }
 
 export interface ICompany {
+  roles: any;
+  user: any;
+  company: any;
   id: string;
   created_by: IUser;
   name: string;
@@ -33,20 +36,14 @@ export interface ICompany {
   location: string;
   propertyType: string;
   status: string;
-  images: IImage[];
-  guestCapacity: number;
-  bedrooms: number;
-  privateBed: number;
-  privateBathroom: boolean;
-  dedicatedBathroom: boolean;
-  sharedBathroom: boolean;
-  minimumNights: number;
-  maximumNights: number;
-  amenities: string[];
   createdAt: string;
   updatedAt: string;
-  __v: number;
+
   // bookings: IBooking[];
+}
+
+export interface ICompanyIndustry {
+  company: ICompany[];
 }
 
 export interface ICreateCompanyInput {
@@ -62,16 +59,28 @@ export interface ICreateRolesInput {
 }
 
 export interface IRoles {
+  external: boolean;
+  type: string;
   id: string;
   name: string;
   description: string;
   permissions: string[];
   createdAt: string;
   updatedAt: string;
-  __v: number;
+}
+
+export interface IPermissions {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  permissionCategory: [];
 }
 
 export interface IUsers {
+  user: any;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
@@ -85,3 +94,92 @@ export interface ICreateUsersInput {
   roles: string[];
 }
 
+export interface IAcceptUsersInviteInput {
+  status: string;
+  reference: string;
+}
+
+export interface IOnboardInvitedUsers {
+  email: string;
+  reference: string;
+  password: string;
+}
+
+export interface IUserCompanyRoles {
+  user: [];
+  company: [];
+  roles: [];
+}
+
+export interface IAdPlatform {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IAllAdPlatform {
+  ads: [];
+}
+
+export interface IAdPlatformAccount {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IAllAdPlatformAccount {
+  accounts: [];
+}
+
+export interface IToggleAdPlatformAccount {
+  reference: string;
+  active: boolean;
+}
+
+export interface IAdPlatformAccountUsers {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IAllAdPlatformAccountUsers {
+  users: [];
+}
+
+export interface IAddAdPlatformAccountUsers {
+  reference: string;
+  permissionId: string;
+  userId: string;
+}
+
+export interface IDeleteAdPlatformAccountUsers {
+  reference: string;
+}
+
+export interface IIntegrateAdPlatformAccount {
+  platformId: number;
+  token: string;
+}
+
+export interface IIntegrateAdPlatformAccountResponse {
+  integrations: [];
+}
+
+export interface INotifications {
+  id: number;
+  title: string;
+  message: string;
+  type: string;
+  createdAt: string;
+}
+
+export interface ISendNotifications {
+  to: string;
+  type: string;
+}

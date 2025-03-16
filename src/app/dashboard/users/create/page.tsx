@@ -16,21 +16,19 @@ export default function Page() {
 
   const [formDataA, setFormDataA] = useState({
     email: "",
-    firstName: "",
-    lastName: "",
     roles: [],
   });
 
-  const [formDataB, setFormDataB] = useState({
-    status: "",
-    reference: "",
-  });
+  // const [formDataB, setFormDataB] = useState({
+  //   status: "",
+  //   reference: "",
+  // });
 
-  const [formDataC, setFormDataC] = useState({
-    email: "",
-    reference: "",
-    password: "",
-  });
+  // const [formDataC, setFormDataC] = useState({
+  //   email: "",
+  //   reference: "",
+  //   password: "",
+  // });
 
   const handleChangeA = (e: any) => {
     const { name, value, type, checked } = e.target;
@@ -52,8 +50,6 @@ export default function Page() {
     try {
       await createInviteUsers({
         email: formDataA.email,
-        firstName: formDataA.firstName,
-        lastName: formDataA.lastName,
         roles: formDataA.roles,
       });
     } catch (error) {
@@ -61,48 +57,48 @@ export default function Page() {
     }
   };
 
-  const handleChangeB = (e: any) => {
-    const { name, value } = e.target;
-    setFormDataB((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+  // const handleChangeB = (e: any) => {
+  //   const { name, value } = e.target;
+  //   setFormDataB((prevData) => ({
+  //     ...prevData,
+  //     [name]: value,
+  //   }));
+  // };
 
-  const handleSubmitB = async (e: any) => {
-    e.preventDefault();
+  // const handleSubmitB = async (e: any) => {
+  //   e.preventDefault();
 
-    try {
-      await acceptInviteUsers({
-        status: formDataB.status,
-        reference: formDataB.reference,
-      });
-    } catch (error) {
-      console.error("Signup failed:", error);
-    }
-  };
+  //   try {
+  //     await acceptInviteUsers({
+  //       status: formDataB.status,
+  //       reference: formDataB.reference,
+  //     });
+  //   } catch (error) {
+  //     console.error("Signup failed:", error);
+  //   }
+  // };
 
-  const handleChangeC = (e: any) => {
-    const { name, value } = e.target;
-    setFormDataC((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+  // const handleChangeC = (e: any) => {
+  //   const { name, value } = e.target;
+  //   setFormDataC((prevData) => ({
+  //     ...prevData,
+  //     [name]: value,
+  //   }));
+  // };
 
-  const handleSubmitC = async (e: any) => {
-    e.preventDefault();
+  // const handleSubmitC = async (e: any) => {
+  //   e.preventDefault();
 
-    try {
-      await onboardInvitedUsers({
-        email: formDataC.email,
-        reference: formDataC.reference,
-        password: formDataC.password,
-      });
-    } catch (error) {
-      console.error("Signup failed:", error);
-    }
-  };
+  //   try {
+  //     await onboardInvitedUsers({
+  //       email: formDataC.email,
+  //       reference: formDataC.reference,
+  //       password: formDataC.password,
+  //     });
+  //   } catch (error) {
+  //     console.error("Signup failed:", error);
+  //   }
+  // };
 
   return (
     <>
@@ -118,46 +114,6 @@ export default function Page() {
                         <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
                           Create Users
                         </h2>
-                        <div>
-                          <label
-                            htmlFor="firstName"
-                            className="block text-sm font-medium text-gray-700"
-                          >
-                            Firstname
-                          </label>
-                          <div className="mt-1">
-                            <input
-                              id="firstName"
-                              name="firstName"
-                              type="text"
-                              autoComplete="firstName"
-                              value={formDataA.firstName}
-                              onChange={handleChangeA}
-                              required
-                              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label
-                            htmlFor="lastName"
-                            className="block text-sm font-medium text-gray-700"
-                          >
-                            Lastname
-                          </label>
-                          <div className="mt-1">
-                            <input
-                              id="lastName"
-                              name="lastName"
-                              type="text"
-                              autoComplete="lastName"
-                              value={formDataA.lastName}
-                              onChange={handleChangeA}
-                              required
-                              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            />
-                          </div>
-                        </div>
                         <div>
                           <label
                             htmlFor="email"
@@ -218,7 +174,7 @@ export default function Page() {
                           </button>
                         </div>
                       </form>
-                      <form onSubmit={handleSubmitB} className="space-y-6">
+                      {/* <form onSubmit={handleSubmitB} className="space-y-6">
                         <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
                           Accept Users
                         </h2>
@@ -350,7 +306,7 @@ export default function Page() {
                             Onboard User
                           </button>
                         </div>
-                      </form>
+                      </form> */}
                     </div>
                   </div>
                 </div>

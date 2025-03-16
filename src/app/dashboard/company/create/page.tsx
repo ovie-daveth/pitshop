@@ -11,21 +11,12 @@ export default function Page() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    industryId: "", // Default as empty initially
+    industryId: "", // Default to empty for the placeholder option
   });
 
   useLayoutEffect(() => {
     getCompanyIndustries();
   }, []);
-
-  useLayoutEffect(() => {
-    if (companyIndustry && companyIndustry.length > 0) {
-      setFormData((prevData) => ({
-        ...prevData,
-        industryId: companyIndustry[0].id, // Set first industry as default
-      }));
-    }
-  }, [companyIndustry]);
 
   const handleChange = (e: any) => {
     const { name, value } = e.target;
@@ -118,6 +109,9 @@ export default function Page() {
                             required
                             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           >
+                            <option value="" disabled>
+                              Select an Industry
+                            </option>
                             {companyIndustry?.map((industry) => (
                               <option key={industry.id} value={industry.id}>
                                 {industry.name}

@@ -1,6 +1,6 @@
 "use client";
-import { Fragment, useState } from "react";
-import { Dialog, Switch, Transition } from "@headlessui/react";
+import { useState, useEffect } from "react";
+import { useUserState } from "@/api/context/UserContext/UserContext";
 import { usePathname } from "next/navigation";
 import ProtectedRoute from "@/api/protected/ProtectedRoute";
 import WrapperLayout from "@/components/WrapperLayout";
@@ -22,6 +22,11 @@ function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 export default function Page() {
+  const { getAllInvitedUsers, invites } = useUserState();
+
+  useEffect(() => {
+    getAllInvitedUsers();
+  }, []);
   const [automaticTimezoneEnabled, setAutomaticTimezoneEnabled] =
     useState(true);
   const [autoUpdateApplicantDataEnabled, setAutoUpdateApplicantDataEnabled] =
@@ -241,75 +246,38 @@ export default function Page() {
                                 </div>
                               </div>
                               <div className="mt-5 md:mt-0 md:col-span-2">
-                                <form action="#" method="POST">
-                                  <ul
-                                    role="list"
-                                    className="border border-gray-200 rounded-md divide-y divide-gray-200"
-                                  >
-                                    <li className="pl-3 pr-4 py-3 flex items-center justify-between text-sm">
-                                      <div className="w-0 flex-1 flex items-center">
-                                        <PaperClipIcon
-                                          className="flex-shrink-0 h-5 w-5 text-gray-400"
-                                          aria-hidden="true"
-                                        />
-                                        <span className="ml-2 flex-1 w-0 truncate">
-                                          jamesstandford@gmail.com
-                                        </span>
-                                      </div>
-                                      <div className="ml-4 flex-shrink-0 flex space-x-4">
-                                        {/* <button
-                                          type="button"
-                                          className="bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        >
-                                          Update
-                                        </button>
-                                        <span
-                                          className="text-gray-300"
-                                          aria-hidden="true"
-                                        >
-                                          |
-                                        </span> */}
-                                        <button
-                                          type="button"
-                                          className="bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        >
-                                          Cancel Invite
-                                        </button>
-                                      </div>
-                                    </li>
-                                    <li className="pl-3 pr-4 py-3 flex items-center justify-between text-sm">
-                                      <div className="w-0 flex-1 flex items-center">
-                                        <PaperClipIcon
-                                          className="flex-shrink-0 h-5 w-5 text-gray-400"
-                                          aria-hidden="true"
-                                        />
-                                        <span className="ml-2 flex-1 w-0 truncate">
-                                          jamesstandford@gmail.com
-                                        </span>
-                                      </div>
-                                      <div className="ml-4 flex-shrink-0 flex space-x-4">
-                                        {/* <button
-                                          type="button"
-                                          className="bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        >
-                                          Update
-                                        </button>
-                                        <span
-                                          className="text-gray-300"
-                                          aria-hidden="true"
-                                        >
-                                          |
-                                        </span> */}
-                                        <button
-                                          type="button"
-                                          className="bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                        >
-                                          Cancel Invite
-                                        </button>
-                                      </div>
-                                    </li>
+                                {invites && invites?.length > 0 ? (
+                                  <ul className="border border-gray-200 rounded-md divide-y divide-gray-200">
+                                    {invites.map((invite) => (
+                                      <li
+                                        key={invite.id}
+                                        className="pl-3 pr-4 py-3 flex items-center justify-between text-sm"
+                                      >
+                                        <div className="w-0 flex-1 flex items-center">
+                                          <PaperClipIcon
+                                            className="flex-shrink-0 h-5 w-5 text-gray-400"
+                                            aria-hidden="true"
+                                          />
+                                          <span className="ml-2 flex-1 w-0 truncate">
+                                            {invite.email}
+                                          </span>
+                                        </div>
+                                        <div className="ml-4 flex-shrink-0 flex space-x-4">
+                                          <button
+                                            type="button"
+                                            className="bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                          >
+                                            Cancel Invite
+                                          </button>
+                                        </div>
+                                      </li>
+                                    ))}
                                   </ul>
-                                </form>
+                                ) : (
+                                  <p className="text-sm text-gray-500">
+                                    No pending invites
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </div>

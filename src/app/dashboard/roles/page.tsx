@@ -77,10 +77,10 @@ export default function Page() {
                               </tr>
                             </thead>
                             <tbody className="bg-white">
-                              {currentData.map((person) => (
+                              {currentData.map((person, index) => (
                                 <tr key={person.id}>
                                   <td className="px-4 py-4 text-sm font-medium text-gray-900">
-                                    {person.id}
+                                    {startIndex + index + 1}
                                   </td>
                                   <td className="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
                                     {person.name}
@@ -140,16 +140,20 @@ export default function Page() {
               </>
             ) : (
               <>
-                <div>
-                  <h2 className="text-lg text-center font-bold text-gray-900">
-                    No Roles found, please create a Role
-                  </h2>
-                  <Link
-                    href="/dashboard/roles/create"
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-                  >
-                    Add Roles
-                  </Link>
+                <div className="flex flex-col items-center justify-center h-[500px]">
+                  <div>
+                    <h2 className="text-lg text-center font-bold text-gray-900 py-4">
+                      You haven't created any roles, please create a role
+                    </h2>
+                  </div>
+                  <div>
+                    <Link
+                      href="/dashboard/roles/create"
+                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                    >
+                      Add Roles
+                    </Link>
+                  </div>
                 </div>
               </>
             )}

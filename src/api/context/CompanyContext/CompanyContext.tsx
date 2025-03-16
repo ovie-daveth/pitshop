@@ -8,13 +8,13 @@ import {
 } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { ICompany, ICreateCompanyInput } from "../../types";
+import { ICompany, ICompanyIndustry, ICreateCompanyInput } from "../../types";
 import { saveKeysToLocalStorage } from "@/api/utils/switch";
 
 export type CompanyContextType = {
-  company: ICompany[] | null;
+  company: ICompany[] | undefined;
   loading: boolean;
-  companyIndustry: ICompany[] | null;
+  companyIndustry: ICompanyIndustry[] | null;
   error: string | null;
   createCompany: (data: ICreateCompanyInput) => Promise<void>;
   getCompanyIndustries: () => Promise<void>;
@@ -37,10 +37,10 @@ export const useCompanyState = () => {
 
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const CompanyContextProvider = ({ children }: IProps) => {
-  const [company, setCompany] = useState<ICompany[] | null>(null);
-  const [companyIndustry, setCompanyIndustry] = useState<ICompany[] | null>(
-    null
-  );
+  const [company, setCompany] = useState<ICompany[] | undefined>(undefined);
+  const [companyIndustry, setCompanyIndustry] = useState<
+    ICompanyIndustry[] | null
+  >(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -101,7 +101,7 @@ const CompanyContextProvider = ({ children }: IProps) => {
       setLoading(false);
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Companies failed");
-      toast.error(err.response?.data?.message || "Fetch Companies failed");
+      // toast.error(err.response?.data?.message || "Fetch Companies failed");
     } finally {
       setLoading(false);
     }

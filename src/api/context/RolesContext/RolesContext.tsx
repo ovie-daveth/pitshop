@@ -82,7 +82,7 @@ const RolesContextProvider = ({ children }: IProps) => {
       setLoading(false);
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Roles failed");
-      toast.error(err.response?.data?.message || "Fetch Roles failed");
+      // toast.error(err.response?.data?.message || "Fetch Roles failed");
     } finally {
       setLoading(false);
     }

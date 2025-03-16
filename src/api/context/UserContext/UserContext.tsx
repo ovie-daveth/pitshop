@@ -13,10 +13,12 @@ import {
   ICreateUsersInput,
   IOnboardInvitedUsers,
   IAcceptUsersInviteInput,
+  IInvites,
 } from "../../types";
 
 export type UserContextType = {
   users: IUsers[] | null;
+  invites: IInvites[] | null;
   loading: boolean;
   error: string | null;
   createInviteUsers: (data: ICreateUsersInput) => Promise<void>;
@@ -43,6 +45,7 @@ export const useUserState = () => {
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const UserContextProvider = ({ children }: IProps) => {
   const [users, setUsers] = useState<IUsers[] | null>(null);
+  const [invites, setInvites] = useState<IInvites[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,12 +107,12 @@ const UserContextProvider = ({ children }: IProps) => {
         },
       });
 
-      setUsers(res.data.data.users);
+      setInvites(res.data.data);
       toast.success(res.data.message);
       setLoading(false);
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Invited Users failed");
-      toast.error(err.response?.data?.message || "etch Invited Users failed");
+      // toast.error(err.response?.data?.message || "etch Invited Users failed");
     } finally {
       setLoading(false);
     }
@@ -152,7 +155,7 @@ const UserContextProvider = ({ children }: IProps) => {
       // toast.success(res.data.message);
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Invited Users failed");
-      toast.error(err.response?.data?.message || "etch Invited Users failed");
+      // toast.error(err.response?.data?.message || "etch Invited Users failed");
     } finally {
       setLoading(false);
     }
@@ -173,6 +176,7 @@ const UserContextProvider = ({ children }: IProps) => {
     <UserContext.Provider
       value={{
         users,
+        invites,
         loading,
         error,
         createInviteUsers,

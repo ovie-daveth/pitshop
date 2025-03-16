@@ -141,7 +141,6 @@ const AuthContextProvider = ({ children }: IProps) => {
       setLoading(false);
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch User Failed");
-      toast.error(err.response?.data?.message || "Fetch User Failed");
     } finally {
       setLoading(false);
     }

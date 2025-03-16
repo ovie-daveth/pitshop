@@ -5,24 +5,33 @@ import { useState, useLayoutEffect } from "react";
 import { useCompanyState } from "../../../../api/context/CompanyContext/CompanyContext";
 
 export default function Page() {
-  const { createCompany, getCompanyIndustries, company, companyIndustry } =
+  const { createCompany, getCompanyIndustries, companyIndustry } =
     useCompanyState();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    industryId: "", // Default as empty initially
+  });
 
   useLayoutEffect(() => {
     getCompanyIndustries();
   }, []);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    industryId: 0,
-  });
+  useLayoutEffect(() => {
+    if (companyIndustry && companyIndustry.length > 0) {
+      setFormData((prevData) => ({
+        ...prevData,
+        industryId: companyIndustry[0].id, // Set first industry as default
+      }));
+    }
+  }, [companyIndustry]);
 
   const handleChange = (e: any) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
@@ -79,7 +88,7 @@ export default function Page() {
 
                         <div className="space-y-1">
                           <label
-                            htmlFor="password"
+                            htmlFor="description"
                             className="block text-sm font-medium text-gray-700"
                           >
                             Description
@@ -93,6 +102,7 @@ export default function Page() {
                             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           />
                         </div>
+
                         <div>
                           <label
                             htmlFor="industryId"
@@ -108,15 +118,11 @@ export default function Page() {
                             required
                             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           >
-                            <option value="" disabled>
-                              Select an industry
-                            </option>
-                            {companyIndustry &&
-                              companyIndustry.map((industry) => (
-                                <option key={industry.id} value={industry.id}>
-                                  {industry.name}
-                                </option>
-                              ))}
+                            {companyIndustry?.map((industry) => (
+                              <option key={industry.id} value={industry.id}>
+                                {industry.name}
+                              </option>
+                            ))}
                           </select>
                         </div>
 

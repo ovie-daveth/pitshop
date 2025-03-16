@@ -142,7 +142,7 @@ export default function Page() {
               <>
                 <div>
                   <h2 className="text-lg text-center font-bold text-gray-900">
-                    No Roles found, please create a Role
+                    You haven't created any roles, please create a role
                   </h2>
                   <Link
                     href="/dashboard/roles/create"

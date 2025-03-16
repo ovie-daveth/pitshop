@@ -138,7 +138,7 @@ export default function Page() {
               <>
                 <div>
                   <h2 className="text-lg text-center font-bold text-gray-900">
-                    No Users found, please invite a user
+                    You haven't created any users, please create a user
                   </h2>
                   <Link
                     href="/dashboard/users/create"

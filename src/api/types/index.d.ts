@@ -43,6 +43,8 @@ export interface ICompany {
 }
 
 export interface ICompanyIndustry {
+  name: ReactNode;
+  id: Key | null | undefined;
   company: ICompany[];
 }
 
@@ -87,10 +89,16 @@ export interface IUsers {
   roles: IRoles[];
 }
 
-export interface ICreateUsersInput {
+export interface IInvites {
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
+  // roles: IRoles[];
+}
+
+export interface ICreateUsersInput {
+  email: string;
   roles: string[];
 }
 

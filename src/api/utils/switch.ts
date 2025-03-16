@@ -5,7 +5,6 @@ export function saveKeysToLocalStorage(object: any) {
     !object.company ||
     !object.company.reference
   ) {
-    console.error("Invalid object structure");
     return;
   }
 

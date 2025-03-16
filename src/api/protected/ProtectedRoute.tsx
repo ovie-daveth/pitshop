@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useAuthState } from "../context/AuthContext/AuthContext";
+import { useCompanyState } from "../context/CompanyContext";
 import { useRouter } from "next/navigation";
 
 interface ProtectedRouteProps {
@@ -9,11 +10,18 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isCheckingAuth } = useAuthState();
+  const { company } = useCompanyState();
   const router = useRouter();
 
   useEffect(() => {
+    if (company?.length === 0) {
+      window.location.href = "/dashboard/company/create";
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isCheckingAuth && !isAuthenticated) {
-      router.push("/signin"); // Redirect if not authenticated
+      router.push("/signin");
     }
   }, [isAuthenticated, isCheckingAuth, router]);
 

@@ -5,10 +5,6 @@ import { useState, useLayoutEffect } from "react";
 import Link from "next/link";
 import { useCompanyState } from "@/api/context/CompanyContext";
 
-function classNames(...classes: any) {
-  return classes.filter(Boolean).join(" ");
-}
-
 export default function Page() {
   const { company, getUserCompanies } = useCompanyState();
 
@@ -21,6 +17,7 @@ export default function Page() {
   const totalPages = Math.ceil((company?.length || 0) / itemsPerPage);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
+
   const currentData = company
     ? company.slice(startIndex, startIndex + itemsPerPage)
     : [];
@@ -30,7 +27,7 @@ export default function Page() {
       <ProtectedRoute>
         <WrapperLayout>
           <div>
-            {company ? (
+            {company && company.length > 0 ? (
               <>
                 <div className="px-4 sm:px-6 lg:px-8">
                   <div className="sm:flex sm:items-center">
@@ -77,14 +74,14 @@ export default function Page() {
                                 <th className="px-3 py-3 text-left text-sm font-semibold text-gray-900">
                                   User
                                 </th>
-                                <th className="px-3 py-3">Actions</th>
+                                {/* <th className="px-3 py-3">Actions</th> */}
                               </tr>
                             </thead>
                             <tbody className="bg-white">
-                              {currentData.map((person) => (
+                              {currentData.map((person, index) => (
                                 <tr key={person.id}>
                                   <td className="px-4 py-4 text-sm font-medium text-gray-900">
-                                    {person.id}
+                                    {startIndex + index + 1}
                                   </td>
                                   <td className="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
                                     {person.company.name}
@@ -99,14 +96,14 @@ export default function Page() {
                                     {person.user.firstName}{" "}
                                     {person.user.lastName}
                                   </td>
-                                  <td className="px-3 py-4 text-sm font-medium text-right">
+                                  {/* <td className="px-3 py-4 text-sm font-medium text-right">
                                     <a
                                       href="#"
                                       className="text-indigo-600 hover:text-indigo-900"
                                     >
                                       Edit
                                     </a>
-                                  </td>
+                                  </td> */}
                                 </tr>
                               ))}
                             </tbody>
@@ -145,16 +142,20 @@ export default function Page() {
               </>
             ) : (
               <>
-                <div>
-                  <h2 className="text-lg text-center font-bold text-gray-900">
-                    You haven't created any company, please create a company
-                  </h2>
-                  <Link
-                    href="/dashboard/company/create"
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-                  >
-                    Add Company
-                  </Link>
+                <div className="flex flex-col items-center justify-center h-[500px]">
+                  <div>
+                    <h2 className="text-lg text-center font-bold text-gray-900 py-4">
+                      You haven't created any company, please create a company
+                    </h2>
+                  </div>
+                  <div>
+                    <Link
+                      href="/dashboard/company/create"
+                      className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+                    >
+                      Add Company
+                    </Link>
+                  </div>
                 </div>
               </>
             )}

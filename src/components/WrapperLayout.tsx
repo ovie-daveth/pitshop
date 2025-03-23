@@ -11,6 +11,7 @@ import {
   InboxIcon,
   MenuAlt2Icon,
   UsersIcon,
+  PhotographIcon,
   XIcon,
 } from "@heroicons/react/outline";
 import { SearchIcon } from "@heroicons/react/solid";
@@ -62,6 +63,12 @@ export default function WrapperLayout({
       href: "/dashboard/roles",
       icon: CalendarIcon,
       current: path === "/dashboard/roles" ? true : false,
+    },
+    {
+      name: "Media Library",
+      href: "/dashboard/media",
+      icon: PhotographIcon,
+      current: path === "/dashboard/media" ? true : false,
     },
     {
       name: "Integrations",
@@ -156,7 +163,7 @@ export default function WrapperLayout({
                               item.current
                                 ? "text-indigo-600"
                                 : "text-indigo-600 group-hover:text-gray-500",
-                              "mr-4 flex-shrink-0 h-6 w-6"
+                              "mr-4 flex-shrink-0 h-8 w-8"
                             )}
                             aria-hidden="true"
                           />
@@ -207,8 +214,8 @@ export default function WrapperLayout({
                         className={classNames(
                           item.current
                             ? "text-indigo-600"
-                            : "text-indigo-600 group-hover:text-gray-500",
-                          "mr-3 flex-shrink-0 h-6 w-6"
+                            : "text-indigo-600 group-hover:text-gray-500 ",
+                          "mr-3 flex-shrink-0 h-8 w-8"
                         )}
                         aria-hidden="true"
                       />

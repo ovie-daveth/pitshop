@@ -2,7 +2,6 @@
 import { Fragment, useState } from "react";
 import Link from "next/link";
 import {
-  PlusIcon,
   CursorClickIcon,
   CloudUploadIcon,
   ChevronDownIcon,
@@ -16,9 +15,8 @@ import {
   Menu,
   Popover,
   Transition,
-  RadioGroup,
 } from "@headlessui/react";
-import { PencilIcon, PlusSmIcon, XIcon } from "@heroicons/react/outline";
+import { XIcon } from "@heroicons/react/outline";
 
 const menuNavigation = [
   { name: "View Summary", href: "#" },
@@ -28,6 +26,38 @@ const menuNavigation = [
 ];
 
 const filters = [
+  {
+    id: "Approval Status",
+    name: "Approval Status",
+    options: [
+      { value: "accepted", label: "Accepted" },
+      { value: "rejected", label: "Rejected" },
+    ],
+  },
+  {
+    id: "Display Name",
+    name: "Display Name",
+    options: [
+      { value: "start with", label: "Start With" },
+      { value: "Equal to", label: "Equal to" },
+    ],
+  },
+  {
+    id: "Tag",
+    name: "Tag",
+    options: [
+      { value: "today", label: "Today" },
+      { value: "7days", label: "Last 7 days" },
+    ],
+  },
+  {
+    id: "SKU",
+    name: "SKU",
+    options: [
+      { value: "today", label: "Today" },
+      { value: "7days", label: "Last 7 days" },
+    ],
+  },
   {
     id: "Dimensions",
     name: "Dimensions",
@@ -165,6 +195,7 @@ export default function Page() {
   };
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [openModal2, setOpenModal2] = useState(false);
   const tabs = [
     { name: "All", href: "#", current: true },
     { name: "Images", href: "#", current: false },
@@ -234,17 +265,20 @@ export default function Page() {
                   ))}
                 </select>
               </div> */}
-                <div className="hidden sm:block">
-                  <nav className="flex space-x-4" aria-label="Tabs">
+                <div className="block">
+                  <nav
+                    className="flex space-x-4 bg-gray-200 p-2 rounded-md"
+                    aria-label="Tabs"
+                  >
                     {tabs.map((tab) => (
                       <a
                         key={tab.name}
                         href={tab.href}
                         className={classNames(
                           tab.current
-                            ? "bg-gray-100 text-gray-700"
-                            : "text-gray-500 hover:text-gray-700",
-                          "py-3 px-2 font-medium text-sm rounded-md"
+                            ? "bg-white text-indigo-500"
+                            : "text-gray-500",
+                          "py-2 px-14 text-gray-500 font-medium text-sm rounded-md"
                         )}
                         aria-current={tab.current ? "page" : undefined}
                       >
@@ -263,6 +297,9 @@ export default function Page() {
                     <option>Can view</option>
                   </select>
                   <button
+                    onClick={() => {
+                      setOpenModal2(true);
+                    }}
                     type="button"
                     className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
@@ -275,7 +312,7 @@ export default function Page() {
                 </div>
               </div>
               <div className="">
-                {/* Mobile filter dialog */}
+                {/* filter dialog */}
                 <Transition.Root show={open} as={Fragment}>
                   <Dialog
                     as="div"
@@ -329,7 +366,7 @@ export default function Page() {
                               {({ open }) => (
                                 <>
                                   <h3 className="-mx-2 -my-3 flow-root">
-                                    <Disclosure.Button className="px-2 py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400">
+                                    <Disclosure.Button className="px-2 py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 border-2 border-gray-900 outline-none rounded-md">
                                       <span className="font-medium text-gray-900">
                                         {section.name}
                                       </span>
@@ -449,7 +486,7 @@ export default function Page() {
                             className="relative z-10 inline-block text-left"
                           >
                             <div>
-                              <Popover.Button className="group inline-flex items-center justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
+                              <Popover.Button className="group inline-flex items-center justify-center py-2 px-3 text-sm font-medium rounded-md text-gray-700  outline-none ring-2 ring-gray-200">
                                 <span>{section.name}</span>
                                 {sectionIdx === 0 ? (
                                   <span className=""></span>
@@ -516,8 +553,6 @@ export default function Page() {
                       <div
                         key={product.id}
                         onClick={() => {
-                          console.log("mask ");
-
                           setOpenModal(true);
                         }}
                       >
@@ -684,8 +719,8 @@ export default function Page() {
                   leaveFrom="opacity-100 translate-y-0 md:scale-100"
                   leaveTo="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
                 >
-                  <div className="flex text-base text-left transform transition w-full md:inline-block md:max-w-2xl md:px-4 md:my-8 md:align-middle lg:max-w-4xl">
-                    <div className="w-full relative flex items-center bg-white px-4 pt-14 pb-8 overflow-hidden shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8">
+                  <div className="flex text-base text-left transform transition md:inline-block md:max-w-2xl md:px-4 md:my-8 md:align-middle lg:max-w-4xl">
+                    <div className="relative flex items-center bg-white px-4 pt-14 pb-8 overflow-hidden shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8 rounded-xl">
                       <button
                         type="button"
                         className="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8"
@@ -695,43 +730,39 @@ export default function Page() {
                         <XIcon className="h-6 w-6" aria-hidden="true" />
                       </button>
 
-                      <div className="w-full grid grid-cols-1 gap-y-8 gap-x-6 items-start sm:grid-cols-12 lg:gap-x-8">
-                        <div className="sm:col-span-4 lg:col-span-5">
+                      <div className="flex flex-col justify-center items-center mt-10">
+                        <img
+                          src={currentFile.source}
+                          alt=""
+                          className="w-96 h-96 object-cover rounded-xl"
+                        />
+                        <div className="mt-4 flex flex-row items-center justify-between w-full">
                           <div>
-                            <div className="block w-full aspect-w-10 aspect-h-7 rounded-lg overflow-hidden">
-                              <img
-                                src={currentFile.source}
-                                alt=""
-                                className="object-cover"
+                            <h2 className="text-lg font-medium text-gray-900">
+                              {currentFile.name}
+                            </h2>
+                            <p className="text-sm font-medium text-gray-500">
+                              {currentFile.size}
+                            </p>
+                          </div>
+                          <div>
+                            <button
+                              type="button"
+                              className="ml-4 bg-white rounded-full h-8 w-8 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <HeartIcon
+                                className="h-6 w-6"
+                                aria-hidden="true"
                               />
-                            </div>
-                            <div className="mt-4 flex items-start justify-between">
-                              <div>
-                                <h2 className="text-lg font-medium text-gray-900">
-                                  <span className="sr-only">Details for </span>
-                                  {currentFile.name}
-                                </h2>
-                                <p className="text-sm font-medium text-gray-500">
-                                  {currentFile.size}
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                className="ml-4 bg-white rounded-full h-8 w-8 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              >
-                                <HeartIcon
-                                  className="h-6 w-6"
-                                  aria-hidden="true"
-                                />
-                                <span className="sr-only">Favorite</span>
-                              </button>
-                            </div>
+                              <span className="sr-only">Favorite</span>
+                            </button>
                           </div>
                         </div>
-                        <div className="sm:col-span-8 lg:col-span-7">
+
+                        <div className="w-full py-4">
                           <div>
                             <h3 className="font-medium text-gray-900">
-                              Information
+                              Summary
                             </h3>
                             <dl className="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
                               {Object.keys(currentFile.information).map(
@@ -753,93 +784,6 @@ export default function Page() {
                               )}
                             </dl>
                           </div>
-                          <div>
-                            <h3 className="font-medium text-gray-900">
-                              Description
-                            </h3>
-                            <div className="mt-2 flex items-center justify-between">
-                              <p className="text-sm text-gray-500 italic">
-                                Add a description to this image.
-                              </p>
-                              <button
-                                type="button"
-                                className="bg-white rounded-full h-8 w-8 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              >
-                                <PencilIcon
-                                  className="h-5 w-5"
-                                  aria-hidden="true"
-                                />
-                                <span className="sr-only">Add description</span>
-                              </button>
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-gray-900">
-                              Shared with
-                            </h3>
-                            <ul
-                              role="list"
-                              className="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200"
-                            >
-                              {currentFile.sharedWith.map((person) => (
-                                <li
-                                  key={person.id}
-                                  className="py-3 flex justify-between items-center"
-                                >
-                                  <div className="flex items-center">
-                                    <img
-                                      src={person.imageUrl}
-                                      alt=""
-                                      className="w-8 h-8 rounded-full"
-                                    />
-                                    <p className="ml-4 text-sm font-medium text-gray-900">
-                                      {person.name}
-                                    </p>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    className="ml-6 bg-white rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                  >
-                                    Remove
-                                    <span className="sr-only">
-                                      {" "}
-                                      {person.name}
-                                    </span>
-                                  </button>
-                                </li>
-                              ))}
-                              <li className="py-2 flex justify-between items-center">
-                                <button
-                                  type="button"
-                                  className="group -ml-1 bg-white p-1 rounded-md flex items-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                >
-                                  <span className="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-                                    <PlusSmIcon
-                                      className="h-5 w-5"
-                                      aria-hidden="true"
-                                    />
-                                  </span>
-                                  <span className="ml-4 text-sm font-medium text-indigo-600 group-hover:text-indigo-500">
-                                    Share
-                                  </span>
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                          <div className="flex">
-                            <button
-                              type="button"
-                              className="flex-1 bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                              Download
-                            </button>
-                            <button
-                              type="button"
-                              className="flex-1 ml-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                              Delete
-                            </button>
-                          </div>
 
                           <section
                             aria-labelledby="options-heading"
@@ -860,6 +804,186 @@ export default function Page() {
                               </p>
                             </form>
                           </section>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Transition.Child>
+              </div>
+            </Dialog>
+          </Transition.Root>
+
+          <Transition.Root show={openModal2} as={Fragment}>
+            <Dialog
+              as="div"
+              className="fixed z-10 inset-0 overflow-y-auto"
+              onClose={() => setOpenModal2(false)}
+            >
+              <div
+                className="flex min-h-screen text-center md:block md:px-2 lg:px-4"
+                style={{ fontSize: 0 }}
+              >
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div className="hidden fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity md:block" />
+                </Transition.Child>
+
+                {/* This element is to trick the browser into centering the modal contents. */}
+                <span
+                  className="hidden md:inline-block md:align-middle md:h-screen"
+                  aria-hidden="true"
+                >
+                  &#8203;
+                </span>
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
+                  enterTo="opacity-100 translate-y-0 md:scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 translate-y-0 md:scale-100"
+                  leaveTo="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
+                >
+                  <div className="flex bg-white rounded-xl text-base max-w-5xl w-full mx-auto text-left shadow-2xl transform transition md:inline-block  md:px-4 md:my-8 md:align-middle">
+                    <div className="flex justify-between items-center bg-white px-4 pt-14 pb-8 overflow-hidden sm:px-6 sm:pt-8 md:p-6 lg:p-8 rounded-xl">
+                      <div>
+                        <h3 className="text-lg font-medium leading-6 text-gray-900">
+                          Upload Your Creative Assets
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500">
+                          You can upload images, videos, and text-based assets
+                        </p>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          className=" text-gray-400 hover:text-gray-500"
+                          onClick={() => setOpenModal2(false)}
+                        >
+                          <span className="sr-only">Close</span>
+                          <XIcon className="h-6 w-6" aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className=" px-4 py-5  border-t sm:p-6">
+                        <div className="md:grid md:grid-cols-12 md:gap-6">
+                          <div className="mt-5 md:mt-0 md:col-span-12">
+                            <form
+                              className="space-y-6"
+                              action="#"
+                              method="POST"
+                            >
+                              <fieldset>
+                                <div>
+                                  <legend className="text-base font-medium text-gray-900">
+                                    Distribute media into assets
+                                  </legend>
+                                </div>
+                                <div className="my-2 inline-flex flex-row items-center ">
+                                  <div className="flex items-center mr-2">
+                                    <input
+                                      id="push-everything"
+                                      name="push-notifications"
+                                      type="radio"
+                                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                                    />
+                                    <label
+                                      htmlFor="push-everything"
+                                      className="ml-3 block text-sm font-medium text-gray-700"
+                                    >
+                                      One asset per item
+                                    </label>
+                                  </div>
+                                  <div className="flex items-center mr-2">
+                                    <input
+                                      id="push-email"
+                                      name="push-notifications"
+                                      type="radio"
+                                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                                    />
+                                    <label
+                                      htmlFor="push-email"
+                                      className="ml-3 block text-sm font-medium text-gray-700"
+                                    >
+                                      Group assets by name
+                                    </label>
+                                  </div>
+                                </div>
+                              </fieldset>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                  Upload
+                                </label>
+                                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                  <div className="space-y-1 text-center">
+                                    <svg
+                                      className="mx-auto h-52 w-12 text-gray-400"
+                                      stroke="currentColor"
+                                      fill="none"
+                                      viewBox="0 0 48 48"
+                                      aria-hidden="true"
+                                    >
+                                      <path
+                                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                        strokeWidth={2}
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                    <div className="flex text-sm text-gray-600">
+                                      <span className="">
+                                        Drag & drop your files here or
+                                      </span>
+                                      <label
+                                        htmlFor="file-upload"
+                                        className="relative cursor-pointer bg-white rounded-md font-medium outline-none"
+                                      >
+                                        <span className="text-indigo-600 px-1">
+                                          click Browse Files{" "}
+                                        </span>
+                                        <input
+                                          id="file-upload"
+                                          name="file-upload"
+                                          type="file"
+                                          className="sr-only"
+                                        />
+                                      </label>
+                                      <span className="pl-1">
+                                        to select from your device
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                      Supports PNG, JPG, MP4, and more (Max
+                                      size: 500MB per file)
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex justify-end border-t">
+                                <button
+                                  type="button"
+                                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="submit"
+                                  className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                  Save
+                                </button>
+                              </div>
+                            </form>
+                          </div>
                         </div>
                       </div>
                     </div>

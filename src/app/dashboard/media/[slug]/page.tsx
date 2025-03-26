@@ -11,15 +11,13 @@ import {
   HeartIcon,
   PlusSmIcon,
   PencilIcon,
-  ChevronLeftIcon,
   ChatAltIcon,
-  UserCircleIcon,
-  CheckCircleIcon,
   MinusIcon,
   TagIcon,
 } from "@heroicons/react/outline";
 import { MenuAlt4Icon } from "@heroicons/react/solid";
 import Link from "next/link";
+import { LuCircleX } from "react-icons/lu";
 
 const sidebarNavigation = [
   { name: "Download", icon: CloudDownloadIcon },
@@ -190,25 +188,24 @@ export default function Page() {
           <div>
             <div className="p-2">
               <h1 className="py-4 text-2xl">Download Options</h1>
-              <div className="flex flex-row flex-wrap justify-evenly">
+              <div className="flex flex-row flex-wrap justify-evenly py-2">
                 {navigation.social.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="text-gray-400 hover:text-gray-500 my-2"
+                    className="text-gray-400 hover:text-gray-500 m-2"
                   >
-                    <span className="sr-only">{item.name}</span>
                     <button
                       type="button"
-                      className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-gray-500 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      className="inline-flex items-center px-3 py-2 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-400 bg-white outline-none ring-2 ring-offset-2 ring-gray-400"
                     >
                       <item.icon className="h-6 w-6" aria-hidden="true" />
-                      {item.name}
+                      <span className="px-2"> {item.name}</span>
                     </button>
                   </Link>
                 ))}
               </div>
-              <h2 className="py-4">Mapped Objects</h2>
+              <h2 className="py-4 border-t ">Mapped Objects</h2>
               <div className="flex justify-between items-center p-3">
                 <div className="mr-4 flex-shrink-0 self-center">
                   <img
@@ -261,7 +258,7 @@ export default function Page() {
       case "Summary":
         return (
           <div>
-            <div className="p-2">
+            <div className="py-2 px-4">
               <h1 className="py-4 text-2xl">Summary</h1>
               <div>
                 <div className="mt-4 flex items-start justify-between">
@@ -382,7 +379,7 @@ export default function Page() {
       case "Metadata":
         return (
           <div>
-            <div className="p-2">
+            <div className="py-2 px-4">
               <h1 className="py-4 text-2xl">Metadata</h1>
               <div className="">
                 {product.details.map((detail) => (
@@ -549,198 +546,52 @@ export default function Page() {
   };
 
   const renderContent = () => {
-    switch (selectedTab) {
-      case "Download":
-        return (
-          <div>
-            <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-              <img
-                src={products[0].imageSrc}
-                alt={products[0].imageAlt}
-                className="w-full  overflow-hidden object-center object-contain group-hover:opacity-75"
-              />
-            </div>
-            <div className="my-4">
-              <div className="flex flex-row justify-end items-end">
-                <select
-                  id="asset"
-                  name="asset"
-                  className="inline-flex  mx-3 items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <option>More Options</option>
-                </select>
-                <button
-                  type="button"
-                  className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <ShareIcon
-                    className="-ml-1 mr-2 h-5 w-5"
-                    aria-hidden="true"
-                  />
-                  Share
-                </button>
-              </div>
+    return (
+      <div>
+        <div>
+          <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
+            <img
+              src={products[0].imageSrc}
+              alt={products[0].imageAlt}
+              className="w-full  overflow-hidden object-center object-contain group-hover:opacity-75"
+            />
+          </div>
+          <div className="my-4">
+            <div className="flex flex-row justify-end items-end">
+              <select
+                id="asset"
+                name="asset"
+                className="inline-flex  mx-3 items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <option>More Options</option>
+              </select>
+              <button
+                type="button"
+                className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <ShareIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                Share
+              </button>
             </div>
           </div>
-        );
-      case "Summary":
-        return (
-          <div>
-            <div>
-              <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                <img
-                  src={products[0].imageSrc}
-                  alt={products[0].imageAlt}
-                  className="w-full  overflow-hidden object-center object-contain group-hover:opacity-75"
-                />
-              </div>
-              <div className="my-4">
-                <div className="flex flex-row justify-end items-end">
-                  <select
-                    id="asset"
-                    name="asset"
-                    className="inline-flex  mx-3 items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <option>More Options</option>
-                  </select>
-                  <button
-                    type="button"
-                    className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <ShareIcon
-                      className="-ml-1 mr-2 h-5 w-5"
-                      aria-hidden="true"
-                    />
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case "Metadata":
-        return (
-          <div>
-            <div>
-              <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                <img
-                  src={products[0].imageSrc}
-                  alt={products[0].imageAlt}
-                  className="w-full  overflow-hidden object-center object-contain group-hover:opacity-75"
-                />
-              </div>
-              <div className="my-4">
-                <div className="flex flex-row justify-end items-end">
-                  <select
-                    id="asset"
-                    name="asset"
-                    className="inline-flex  mx-3 items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <option>More Options</option>
-                  </select>
-                  <button
-                    type="button"
-                    className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <ShareIcon
-                      className="-ml-1 mr-2 h-5 w-5"
-                      aria-hidden="true"
-                    />
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case "Comments":
-        return (
-          <div>
-            <div>
-              <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                <img
-                  src={products[0].imageSrc}
-                  alt={products[0].imageAlt}
-                  className="w-full  overflow-hidden object-center object-contain group-hover:opacity-75"
-                />
-              </div>
-              <div className="my-4">
-                <div className="flex flex-row justify-end items-end">
-                  <select
-                    id="asset"
-                    name="asset"
-                    className="inline-flex  mx-3 items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <option>More Options</option>
-                  </select>
-                  <button
-                    type="button"
-                    className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <ShareIcon
-                      className="-ml-1 mr-2 h-5 w-5"
-                      aria-hidden="true"
-                    />
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case "Analysis":
-        return (
-          <div>
-            <div>
-              <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                <img
-                  src={products[0].imageSrc}
-                  alt={products[0].imageAlt}
-                  className="w-full  overflow-hidden object-center object-contain group-hover:opacity-75"
-                />
-              </div>
-              <div className="my-4">
-                <div className="flex flex-row justify-end items-end">
-                  <select
-                    id="asset"
-                    name="asset"
-                    className="inline-flex  mx-3 items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <option>More Options</option>
-                  </select>
-                  <button
-                    type="button"
-                    className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    <ShareIcon
-                      className="-ml-1 mr-2 h-5 w-5"
-                      aria-hidden="true"
-                    />
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      default:
-        return <div>Select a tab to see content.</div>;
-    }
+        </div>
+      </div>
+    );
   };
 
   return (
     <>
       <div className="h-screen flex">
         {/* Narrow sidebar */}
-        <div className="hidden w-28 bg-indigo-700 overflow-y-auto md:block">
+        <div className="hidden w-28 bg-gray-100 overflow-y-auto md:block">
           <div className="w-full py-6 flex flex-col items-center">
             <div className="flex-shrink-0 flex items-center">
               <Link
                 href="/dashboard/media"
                 className="text-white text-2xl font-bold"
               >
-                <ChevronLeftIcon
-                  className="h-8 w-8 text-white"
+                <LuCircleX
+                  className="h-8 w-8 text-indigo-500"
                   aria-hidden="true"
                 />
               </Link>
@@ -752,16 +603,16 @@ export default function Page() {
                   onClick={() => setSelectedTab(item.name)}
                   className={classNames(
                     selectedTab === item.name
-                      ? "bg-indigo-800 text-white"
-                      : "text-indigo-100 hover:bg-indigo-800 hover:text-white",
+                      ? "bg-white text-indigo-600"
+                      : "text-gray-500",
                     "group w-full p-3 rounded-md flex flex-col items-center text-xs font-medium"
                   )}
                 >
                   <item.icon
                     className={classNames(
                       selectedTab === item.name
-                        ? "text-white"
-                        : "text-indigo-300 group-hover:text-white",
+                        ? "text-indigo-600"
+                        : "text-gray-500",
                       "h-6 w-6"
                     )}
                     aria-hidden="true"
@@ -860,8 +711,8 @@ export default function Page() {
         {/* Content area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Main content */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 lg:grid-flow-col lg:gap-4 h-full">
-            <div className="col-span-4 lg:col-span-1 lg:row-span-2 bg-white border-r border-gray-200 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-4 lg:grid-flow-col lg:gap-4 h-full">
+            <div className="lg:col-span-1 lg:row-span-2 bg-white border-r border-gray-200 overflow-y-auto">
               {optionalContent()}
             </div>
             <div className="col-span-8 h-screen w-full p-6">

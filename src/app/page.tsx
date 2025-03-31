@@ -1,6 +1,6 @@
 // import ProtectedRoute from "@/api/protected/ProtectedRoute";
 "use client";
-import Signin from "@/app/signin/page";
+import Signin from "@/app/aut/signin/page";
 import { useEffect } from "react";
 import { useCompanyState } from "@/api/context/CompanyContext/CompanyContext";
 

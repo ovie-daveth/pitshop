@@ -5,6 +5,7 @@ import google from "../../../../public/images/google-icon logo.png"
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
 import { useAuthState } from '@/api/context/AuthContext';
 import { BiLoader } from 'react-icons/bi';
+import AuthButton from './auth-button';
 
 
 const SignUpForm = ({handleFormChnage}: {handleFormChnage: (num: number) => void}) => {
@@ -196,24 +197,11 @@ const SignUpForm = ({handleFormChnage}: {handleFormChnage: (num: number) => void
                 <span className="text-sm">By signing up, you agree to our <a href="#" className="text-blue-600">Terms & Privacy Policy</a></span>
               </div>
     
-              <button
-              disabled={(!formData.email || !formData.password || !formData.confirm_password) || isLoading}
-                type="submit"
-                className={`w-full ${(!formData.email || !formData.password || !formData.confirm_password) ? "bg-blue-300 hover:bg-blue-400" : "bg-blue-600 hover:bg-blue-700"}  text-white py-2 rounded-lg mt-4  `}
-              >
-                {
-                    isLoading ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <BiLoader />
-                        <p>Registering...</p>
-                      </span>
-                    ) : "Get Started"
-                }
-              </button>
+              <AuthButton title="Get Started" isLoading={isLoading} disabled={isLoading || (!formData.email || !formData.password || !formData.confirm_password || !formData.rememberMe)} />
             </form>
     
             <div className="mt-3 text-center text-sm">
-              Already have an account?<button className="text-blue-600 ml-1" onClick={() => handleFormChnage(1)}>Login</button>
+              Already have an account?<button className="text-blue-600 ml-1" onClick={() => handleFormChnage(2)}>Login</button>
             </div>
           </div>
         </div>

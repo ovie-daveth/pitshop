@@ -12,12 +12,12 @@ import AddTeamMateForm from "./component/add-team-mate";
 export default function Page() {
   const [showFormType, setShowFormType] = useState({
     signup: false,
-    login: false,
+    login: true,
     forgetPassword: false,
     resetopt: false,
     resetPassword: false,
     createCompany: false,
-    addTeamMate: true,
+    addTeamMate: false,
     verifyOtp: false,
    
   });

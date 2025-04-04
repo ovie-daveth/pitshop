@@ -1,5 +1,7 @@
 // import ProtectedRoute from "@/api/protected/ProtectedRoute";
 "use client";
+import { useCompanyState } from "@/api/context/CompanyContext";
+import axios from "axios";
 import { useEffect } from "react";
 // import { useCompanyState } from "@/api/context/CompanyContext/CompanyContext";
 // import SignInForm from "./aut/component/signin-form";
@@ -16,8 +18,10 @@ export default function Home({handleFormChnage}: {handleFormChnage: (num: number
   //   }
   // }, []);
 
+   
   useEffect(() => {
-    // Redirect to /aut/signup on first render
+    // getCompanyIndustries()
+    // // Redirect to /aut/signup on first render
     window.location.href = "/auth";
   }, []);
   return (

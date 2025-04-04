@@ -68,15 +68,23 @@ const RolesContextProvider = ({ children }: IProps) => {
   const getRoles = async () => {
     setLoading(true);
     setError(null);
+    const secret_key = sessionStorage.getItem("secret_key") as string
+    const public_key = sessionStorage.getItem("public_key") as string
+    if(!secret_key || !public_key) {
+      setError("Please select a company to view roles")
+      toast.error("Please select a company to view roles")
+      return;
+    }
     try {
       const res = await axios.get("/api/v1/roles", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          "secret-key": `${localStorage.getItem("secret_key")}`,
-          "public-key": `${localStorage.getItem("public_key")}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
         },
       });
 
+      console.log("roles from context", res.data.data);
       setRoles(res.data.data);
       // toast.success(res.data.message);
       setLoading(false);
@@ -121,6 +129,8 @@ const RolesContextProvider = ({ children }: IProps) => {
     } else {
       // setIsCheckingAuth(false);
     }
+
+    getRoles()
   }, []);
 
   return (

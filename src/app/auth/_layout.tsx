@@ -2,9 +2,11 @@ import React from 'react'
 
 const AuthLayout = ({children}: {children: React.ReactNode}) => {
   return (
-    <div className='relative flex h-screen bg-white'>
-      <div className='w-[450px]'>
-      {children}
+    <div className='relative flex h-screen w-full overflow-hidden '>
+      <div className='w-[500px] '>
+     <div className='max-h-full overflow-y-auto hide-sidebar'>
+        {children}
+     </div>
       </div>
       <div className="block relative w-0 flex-1">
           <img

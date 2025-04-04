@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { useAuthState } from '@/api/context/AuthContext';
 import AuthButton from './auth-button';
 import OTPInput from 'react-otp-input';
 import { ArrowLeftIcon } from '@heroicons/react/solid';
 
-const OTPform = ({handleFormChnage}: {handleFormChnage: (num: number) => void}) => {
+const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) => void; isSignUp: boolean}) => {
+
+  const { signup, verifyOtp} = useAuthState()
       const [formData, setFormData] = useState({
         otp: "",
       });
@@ -59,10 +61,43 @@ const OTPform = ({handleFormChnage}: {handleFormChnage: (num: number) => void}) 
         const isValid = validate();
         if (!isValid) return;
         setIsLoading(true);
-        sessionStorage.setItem("otp", formData.otp)
-        setIsLoading(false)
-        handleFormChnage(5)
+
+        await verifyOtp({
+          email: sessionStorage.getItem("email") as string,
+          otp: formData.otp,  
+        })
+        .then(async (res) => {
+          setIsLoading(false);
+          if (res) {
+            if(isSignUp){
+              const id = parseInt(sessionStorage.getItem("id") as string);
+              await signup(id)
+              .then((res) => {
+                console.log(res)
+               if(res){
+                handleFormChnage(6)
+               }
+              })
+              .catch((err) => {
+                console.log(err)
+              })
+            } else {
+              setIsLoading(false)
+              handleFormChnage(5)
+            }
+          }
+        })
+        .catch((err) => {
+          setIsLoading(false)
+          console.log(err)
+        })
+       
+       
       };
+
+      const handleResnedOtp = async () => {
+        // isSignUp ? await requestOtp(formData.email) : await requestOtp(formData.email)
+      }
   return (
     <div className="flex justify-center items-center h-screen bg-white">
       <button className="absolute top-4 left-4" onClick={() => handleFormChnage(3)}>
@@ -107,7 +142,7 @@ const OTPform = ({handleFormChnage}: {handleFormChnage: (num: number) => void}) 
           )}
        
         
-       <AuthButton title="Reset password" isLoading={isLoading} disabled={!formData.otp} />
+       <AuthButton title="Verify Account" isLoading={isLoading} disabled={!formData.otp} />
       </form>
 
       <div className="mt-3 text-center text-sm">

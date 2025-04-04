@@ -6,15 +6,20 @@ import SignInForm from "./component/signin-form";
 import ForgetPassword from "./component/forgetPassword-form";
 import OTPform from "./component/reset-otp-form";
 import ResetPassWordForm from "./component/reset-password.form";
+import CreateCompanyForm from "./component/create-company";
+import AddTeamMateForm from "./component/add-team-mate";
 
 export default function Page() {
   const [showFormType, setShowFormType] = useState({
     signup: false,
-    login: true,
+    login: false,
     forgetPassword: false,
     resetopt: false,
     resetPassword: false,
-    createCompany: false
+    createCompany: false,
+    addTeamMate: true,
+    verifyOtp: false,
+   
   });
 
 
@@ -27,7 +32,10 @@ export default function Page() {
         forgetPassword: false,
         resetopt: false,
         resetPassword: false,
-        createCompany: false
+        createCompany: false,
+        verifyOtp: false,
+        addTeamMate: false,
+       
 
       });
     } else if (num === 2) {
@@ -37,7 +45,11 @@ export default function Page() {
         forgetPassword: false,
         resetPassword: false,
         resetopt: false,
-        createCompany: false
+        createCompany: false,
+        verifyOtp: false,
+        addTeamMate: false,
+        
+
 
       });
     }
@@ -48,7 +60,10 @@ export default function Page() {
         forgetPassword: true,
         resetPassword: false,
         resetopt: false,
-        createCompany: false
+        createCompany: false,
+        verifyOtp: false,
+        addTeamMate: false,
+       
 
       });
     } else if (num === 4) {
@@ -58,7 +73,10 @@ export default function Page() {
         forgetPassword: false,
         resetopt: true,
         resetPassword: false,
-        createCompany: false
+        createCompany: false,
+        verifyOtp: false,
+        addTeamMate: false,
+       
 
       });
     } else if (num === 5) {
@@ -68,7 +86,10 @@ export default function Page() {
         forgetPassword: false,
         resetopt: false,
         resetPassword: true,
-        createCompany: false
+        createCompany: false,
+        verifyOtp: false,
+        addTeamMate: false,
+     
 
       });
     } else if (num === 6) {
@@ -78,7 +99,34 @@ export default function Page() {
         forgetPassword: false,
         resetopt: false,
         resetPassword: false,
-        createCompany: true
+        createCompany: true,
+        verifyOtp: false,
+        addTeamMate: false,
+
+      });
+    } else if (num === 7) {
+      setShowFormType({
+        signup: false,
+        login: false,
+        forgetPassword: false,
+        resetopt: false,
+        resetPassword: false,
+        createCompany: false,
+        verifyOtp: true,
+        addTeamMate: false,
+
+
+      });
+    } else if( num === 8) {
+      setShowFormType({
+        signup: false,
+        login: false,
+        forgetPassword: false,
+        resetopt: false,
+        resetPassword: false,
+        createCompany: false,
+        verifyOtp: false,
+        addTeamMate: true,
 
       });
     }
@@ -96,10 +144,10 @@ export default function Page() {
         ) : showFormType.resetPassword ? (
           <ResetPassWordForm handleFormChnage={handleFormChnage} />
         ) : showFormType.createCompany ? (
-          <div>Create Company</div>
+          <CreateCompanyForm handleFormChnage={handleFormChnage} />
         ) :  showFormType.resetopt ? (
-          <OTPform handleFormChnage={handleFormChnage} />
-        ) : null
+          <OTPform isSignUp={false} handleFormChnage={handleFormChnage} />
+        ) : showFormType.verifyOtp ? <OTPform isSignUp={true} handleFormChnage={handleFormChnage} /> : showFormType.addTeamMate ? <AddTeamMateForm  handleFormChnage={handleFormChnage} /> :  null
       }
     </AuthLayout>
   );

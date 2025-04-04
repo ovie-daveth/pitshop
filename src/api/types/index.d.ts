@@ -27,7 +27,8 @@ export interface ICompany {
   roles: any;
   user: any;
   company: any;
-  id: string;
+  reference: string;
+  id: number;
   created_by: IUser;
   name: string;
   description: string;

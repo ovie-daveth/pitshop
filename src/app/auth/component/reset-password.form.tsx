@@ -67,7 +67,8 @@ const ResetPassWordForm = ({handleFormChnage}: {handleFormChnage: (num: number) 
             return false;
         }
 
-        const password_regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/;
+        const password_regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        // Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character
         if (!password_regex.test(formData.password)) {
             setError((prevState) => ({
               ...prevState,
@@ -95,7 +96,7 @@ const ResetPassWordForm = ({handleFormChnage}: {handleFormChnage: (num: number) 
           await resetPassword({
             email: sessionStorage.getItem("email") as string,
             password: formData.password,
-            token: sessionStorage.getItem("otp") as string,
+            token: parseInt(sessionStorage.getItem("id") as string),
            
           })
           .then((res: any) => {

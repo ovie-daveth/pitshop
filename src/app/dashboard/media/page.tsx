@@ -17,6 +17,7 @@ import {
   Transition,
 } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
+import UploadModal from "@/components/modal/UploadModal";
 
 const menuNavigation = [
   { name: "View Summary", href: "#" },
@@ -96,6 +97,7 @@ const products = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
     imageAlt:
       "Tall slender porcelain bottle with natural clay textured body and cork stopper.",
+    type: "image",
   },
   {
     id: 2,
@@ -106,6 +108,7 @@ const products = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
     imageAlt:
       "Olive drab green insulated bottle with flared screw lid and flat top.",
+    type: "video",
   },
   {
     id: 3,
@@ -116,6 +119,7 @@ const products = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
     imageAlt:
       "Person using a pen to cross a task off a productivity paper card.",
+    type: "image",
   },
   {
     id: 4,
@@ -126,6 +130,7 @@ const products = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
     imageAlt:
       "Hand holding black machined steel mechanical pencil with brass tip and top.",
+    type: "image",
   },
   {
     id: 5,
@@ -136,6 +141,7 @@ const products = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
     imageAlt:
       "Tall slender porcelain bottle with natural clay textured body and cork stopper.",
+    type: "image",
   },
   {
     id: 6,
@@ -146,6 +152,7 @@ const products = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
     imageAlt:
       "Olive drab green insulated bottle with flared screw lid and flat top.",
+    type: "video",
   },
   {
     id: 7,
@@ -156,6 +163,7 @@ const products = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
     imageAlt:
       "Person using a pen to cross a task off a productivity paper card.",
+    type: "video",
   },
   {
     id: 8,
@@ -166,9 +174,12 @@ const products = [
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
     imageAlt:
       "Hand holding black machined steel mechanical pencil with brass tip and top.",
+    type: "image",
   },
 ];
 export default function Page() {
+  const [filterType, setFilterType] = useState("all");
+
   const product = {
     name: "Zip Tote Basket",
     price: "$220",
@@ -201,6 +212,11 @@ export default function Page() {
     { name: "Images", href: "#", current: false },
     { name: "Videos", href: "#", current: false },
   ];
+
+  const filteredProducts =
+    filterType === "all"
+      ? products
+      : products.filter((product) => product.type === filterType.slice(0, -1));
 
   const currentFile = {
     name: "IMG_4985.HEIC",
@@ -270,21 +286,30 @@ export default function Page() {
                     className="flex space-x-4 bg-gray-200 p-2 rounded-md"
                     aria-label="Tabs"
                   >
-                    {tabs.map((tab) => (
-                      <a
-                        key={tab.name}
-                        href={tab.href}
-                        className={classNames(
-                          tab.current
-                            ? "bg-white text-indigo-500"
-                            : "text-gray-500",
-                          "py-2 px-14 text-gray-500 font-medium text-sm rounded-md"
-                        )}
-                        aria-current={tab.current ? "page" : undefined}
-                      >
-                        {tab.name}
-                      </a>
-                    ))}
+                    {tabs.map((tab) => {
+                      const tabValue = tab.name.toLowerCase();
+                      return (
+                        <a
+                          key={tab.name}
+                          href={tab.href}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setFilterType(tabValue);
+                          }}
+                          className={classNames(
+                            filterType === tabValue
+                              ? "bg-white text-indigo-500"
+                              : "text-gray-500",
+                            "py-2 px-14 font-medium text-sm rounded-md"
+                          )}
+                          aria-current={
+                            filterType === tabValue ? "page" : undefined
+                          }
+                        >
+                          {tab.name}
+                        </a>
+                      );
+                    })}
                   </nav>
                 </div>
                 <div className="flex justify-evenly items-center">
@@ -549,7 +574,7 @@ export default function Page() {
                   </h2>
 
                   <div className="grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-                    {products.map((product) => (
+                    {filteredProducts.map((product) => (
                       <div
                         key={product.id}
                         onClick={() => {
@@ -812,186 +837,10 @@ export default function Page() {
               </div>
             </Dialog>
           </Transition.Root>
-
-          <Transition.Root show={openModal2} as={Fragment}>
-            <Dialog
-              as="div"
-              className="fixed z-10 inset-0 overflow-y-auto"
-              onClose={() => setOpenModal2(false)}
-            >
-              <div
-                className="flex min-h-screen text-center md:block md:px-2 lg:px-4"
-                style={{ fontSize: 0 }}
-              >
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div className="hidden fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity md:block" />
-                </Transition.Child>
-
-                {/* This element is to trick the browser into centering the modal contents. */}
-                <span
-                  className="hidden md:inline-block md:align-middle md:h-screen"
-                  aria-hidden="true"
-                >
-                  &#8203;
-                </span>
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
-                  enterTo="opacity-100 translate-y-0 md:scale-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100 translate-y-0 md:scale-100"
-                  leaveTo="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
-                >
-                  <div className="flex bg-white rounded-xl text-base max-w-5xl w-full mx-auto text-left shadow-2xl transform transition md:inline-block  md:px-4 md:my-8 md:align-middle">
-                    <div className="flex justify-between items-center bg-white px-4 pt-14 pb-8 overflow-hidden sm:px-6 sm:pt-8 md:p-6 lg:p-8 rounded-xl">
-                      <div>
-                        <h3 className="text-lg font-medium leading-6 text-gray-900">
-                          Upload Your Creative Assets
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                          You can upload images, videos, and text-based assets
-                        </p>
-                      </div>
-                      <div>
-                        <button
-                          type="button"
-                          className=" text-gray-400 hover:text-gray-500"
-                          onClick={() => setOpenModal2(false)}
-                        >
-                          <span className="sr-only">Close</span>
-                          <XIcon className="h-6 w-6" aria-hidden="true" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className=" px-4 py-5  border-t sm:p-6">
-                        <div className="md:grid md:grid-cols-12 md:gap-6">
-                          <div className="mt-5 md:mt-0 md:col-span-12">
-                            <form
-                              className="space-y-6"
-                              action="#"
-                              method="POST"
-                            >
-                              <fieldset>
-                                <div>
-                                  <legend className="text-base font-medium text-gray-900">
-                                    Distribute media into assets
-                                  </legend>
-                                </div>
-                                <div className="my-2 inline-flex flex-row items-center ">
-                                  <div className="flex items-center mr-2">
-                                    <input
-                                      id="push-everything"
-                                      name="push-notifications"
-                                      type="radio"
-                                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-                                    />
-                                    <label
-                                      htmlFor="push-everything"
-                                      className="ml-3 block text-sm font-medium text-gray-700"
-                                    >
-                                      One asset per item
-                                    </label>
-                                  </div>
-                                  <div className="flex items-center mr-2">
-                                    <input
-                                      id="push-email"
-                                      name="push-notifications"
-                                      type="radio"
-                                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-                                    />
-                                    <label
-                                      htmlFor="push-email"
-                                      className="ml-3 block text-sm font-medium text-gray-700"
-                                    >
-                                      Group assets by name
-                                    </label>
-                                  </div>
-                                </div>
-                              </fieldset>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                  Upload
-                                </label>
-                                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                  <div className="space-y-1 text-center">
-                                    <svg
-                                      className="mx-auto h-52 w-12 text-gray-400"
-                                      stroke="currentColor"
-                                      fill="none"
-                                      viewBox="0 0 48 48"
-                                      aria-hidden="true"
-                                    >
-                                      <path
-                                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                        strokeWidth={2}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                      />
-                                    </svg>
-                                    <div className="flex text-sm text-gray-600">
-                                      <span className="">
-                                        Drag & drop your files here or
-                                      </span>
-                                      <label
-                                        htmlFor="file-upload"
-                                        className="relative cursor-pointer bg-white rounded-md font-medium outline-none"
-                                      >
-                                        <span className="text-indigo-600 px-1">
-                                          click Browse Files{" "}
-                                        </span>
-                                        <input
-                                          id="file-upload"
-                                          name="file-upload"
-                                          type="file"
-                                          className="sr-only"
-                                        />
-                                      </label>
-                                      <span className="pl-1">
-                                        to select from your device
-                                      </span>
-                                    </div>
-                                    <p className="text-xs text-gray-500">
-                                      Supports PNG, JPG, MP4, and more (Max
-                                      size: 500MB per file)
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex justify-end border-t">
-                                <button
-                                  type="button"
-                                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                  Cancel
-                                </button>
-                                <button
-                                  type="submit"
-                                  className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                  Save
-                                </button>
-                              </div>
-                            </form>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Transition.Child>
-              </div>
-            </Dialog>
-          </Transition.Root>
+          <UploadModal
+            isOpen={openModal2}
+            onClose={() => setOpenModal2(false)}
+          />
         </WrapperLayout>
       </ProtectedRoute>
     </>

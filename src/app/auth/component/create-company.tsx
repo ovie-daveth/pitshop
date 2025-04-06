@@ -7,51 +7,38 @@ import toast from "react-hot-toast";
 
 const CreateCompanyForm = ({
   handleFormChnage,
+  isAuth,
 }: {
   handleFormChnage: (num: number) => void;
+  isAuth?: boolean;
 }) => {
   const [errorMessage, setErrorMessage] = useState({
     industry: "",
     description: "",
     companyName: "",
-    firstName: "",
-    lastName: "",
   });
 
   const [error, setError] = useState({
     companyName: false,
     description: false,
     industry: false,
-    firstName: false,
-    lastName: false,
   });
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // Ensure this runs only on the client
-  const { companyIndustry, createCompany } = typeof window !== "undefined" ? useCompanyState() : { companyIndustry: [] };
+  const { companyIndustry, createCompany } =
+   useCompanyState()
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
     industry: "",
     description: "",
     companyName: "",
   });
 
-  const userDetails = localStorage.getItem("user_details");
-
-  // const getIndustry = async() => {
-  //  const data = getCompanyIndustries()
-  //  console.log("data", data)
-  // }
-
-
-
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    console.log("industry", companyIndustry);
+    const userDetails = localStorage.getItem("user_details");
     if (!userDetails) return;
 
     const userData = JSON.parse(userDetails) as {
@@ -63,12 +50,14 @@ const CreateCompanyForm = ({
 
     setFormData((prevData) => ({
       ...prevData,
-      firstName: userData.firstName || "",
-      lastName: userData.lastName || "",
+      firstName: userData.firstName || "John",
+      lastName: userData.lastName || "Mickel",
     }));
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
 
     setError((prevState) => ({
@@ -82,70 +71,50 @@ const CreateCompanyForm = ({
     }));
   };
 
-  // const validateForms = () => {
-  //   let isValid = true;
-  //   const newError = { ...error };
-  //   const newErrorMessage = { ...errorMessage };
-
-  //   const checkField = (field: keyof typeof formData, minLength = 3) => {
-  //     if (!formData[field] || formData[field].length < minLength) {
-  //       newError[field] = true;
-  //       newErrorMessage[field] =
-  //         formData[field].length < minLength
-  //           ? `${field} must be at least ${minLength} characters long`
-  //           : `${field} is required`;
-  //       isValid = false;
-  //     }
-  //   };
-
-  //   checkField("firstName");
-  //   checkField("lastName");
-  //   checkField("companyName");
-  //   checkField("description");
-  //   checkField("industry");
-
-  //   setError(newError);
-  //   setErrorMessage(newErrorMessage);
-
-  //   return isValid;
-  // };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("entered");
+    setIsLoading(true);
 
     try {
-      console.log(formData);
-      setIsLoading(true);
-      // if (!validateForms()) {
-      //   console.log("invalid form data");
-      //   setIsLoading(false);
-      //   return;
-      // }
       if (createCompany) {
         await createCompany({
           name: formData.companyName,
           industryId: parseInt(formData.industry),
-          description: formData.description
+          description: formData.description,
         })
-        .then((res) => {
-          if(res){
-            handleFormChnage(8);
-          }
-        })
-        .catch((err) => {
-          console.log(err)
-          toast.error(err.message)
-        })
+          .then((res) => {
+            if (res) {
+              handleFormChnage(isAuth ? 8 : 2);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            toast.error(err.message);
+          });
       } else {
         console.error("createCompany is undefined");
         toast.error("Unable to create company. Please try again later.");
       }
-     
     } catch (error) {
       console.error("Signup failed:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Define form fields based on isAuth
+  const formFields =[
+        {
+          label: "Company Name",
+          name: "companyName",
+          placeholder: "Naija Studio",
+        },
+        {
+          label: "Description",
+          name: "description",
+          placeholder: "Description",
+        },
+      ];
 
   return (
     <div className="flex justify-center items-center h-screen py-10 w-full overflow-y-scroll hide-sidebar">
@@ -155,17 +124,11 @@ const CreateCompanyForm = ({
         </div>
 
         <form onSubmit={handleSubmit} className="mt-2">
-          {[
-            { label: "First Name", name: "firstName", placeholder: "John", disabled: true },
-            { label: "Last Name", name: "lastName", placeholder: "Doe", disabled: true },
-            { label: "Company Name", name: "companyName", placeholder: "Naija Studio" },
-            { label: "Description", name: "description", placeholder: "Description" },
-          ].map(({ label, name, placeholder, disabled }) => (
+          {formFields.map(({ label, name, placeholder }) => (
             <div key={name} className="mt-5">
               <label className="block text-sm font-medium">{label}</label>
               <input
                 type="text"
-                disabled={disabled}
                 className="w-full px-4 py-2 border rounded-lg mt-1 outline-none focus:border-blue-500 font-light"
                 name={name}
                 value={formData[name as keyof typeof formData]}
@@ -173,7 +136,9 @@ const CreateCompanyForm = ({
                 placeholder={placeholder}
               />
               {error[name as keyof typeof error] && (
-                <span className="text-red-500 text-sm">{errorMessage[name as keyof typeof errorMessage]}</span>
+                <span className="text-red-500 text-sm">
+                  {errorMessage[name as keyof typeof errorMessage]}
+                </span>
               )}
             </div>
           ))}
@@ -193,12 +158,21 @@ const CreateCompanyForm = ({
                 </option>
               ))}
           </select>
-          {error.industry && <span className="text-red-500 text-sm">{errorMessage.industry}</span>}
+          {error.industry && (
+            <span className="text-red-500 text-sm">
+              {errorMessage.industry}
+            </span>
+          )}
 
           <AuthButton
-            title="Get Started"
+            title="Create company"
             isLoading={isLoading}
-            disabled={isLoading || Object.values(formData).some((val) => val === "")}
+            disabled={
+              isLoading ||
+              !formData.companyName ||
+              !formData.description ||
+              !formData.industry
+            }
           />
         </form>
       </div>

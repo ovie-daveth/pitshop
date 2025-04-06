@@ -248,9 +248,6 @@ const SignUpForm = ({handleFormChnage}: {handleFormChnage: (num: number) => void
                   >
                     {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
                   </button>
-                  {
-                      error.password && <span className="text-red-500 text-sm">{errorMessage.password}</span>
-                  }
                 </div>
               </div>
               <div className="w-full">
@@ -271,13 +268,15 @@ const SignUpForm = ({handleFormChnage}: {handleFormChnage: (num: number) => void
                   >
                     {showConfirmPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
                   </button>
-                  {
-                      error.confirm_password && <span className="text-red-500 text-sm">{errorMessage.confirm_password}</span>
-                  }
                 </div>
               </div>
              </div>
-    
+             {
+                      error.password && <span className="text-red-500 text-sm">{errorMessage.password}</span>
+              }
+               {
+                      error.confirm_password && <span className="text-red-500 text-sm">{errorMessage.confirm_password}</span>
+                  }
               <div className="flex items-center mb-4 mt-6">
                 <input type="checkbox" name="rememberMe" checked={formData.rememberMe} onChange={handleChange} className="mr-2" />
                 <span className="text-sm">By signing up, you agree to our <a href="#" className="text-blue-600">Terms & Privacy Policy</a></span>

@@ -4,10 +4,15 @@ import WrapperLayout from "@/components/WrapperLayout";
 import { useState, useLayoutEffect } from "react";
 import Link from "next/link";
 import { useCompanyState } from "@/api/context/CompanyContext";
+import { Button } from "@headlessui/react";
+import { useRouter } from "next/navigation";
+import { useAuthFormStore } from "@/states/useAuthFotmState";
 
 export default function Page() {
   const { company, getUserCompanies } = useCompanyState();
+  const router = useRouter()
 
+  const { showFormType, setFormType } = useAuthFormStore();
   useLayoutEffect(() => {
     getUserCompanies();
   }, []);
@@ -21,6 +26,11 @@ export default function Page() {
   const currentData = company
     ? company.slice(startIndex, startIndex + itemsPerPage)
     : [];
+
+    const handleGotoCreate = () => {
+      setFormType(6)
+      router.push("/dashboard/company/create")
+    }
 
   return (
     <>
@@ -41,12 +51,12 @@ export default function Page() {
                       </p>
                     </div>
                     <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                      <Link
-                        href="/dashboard/company/create"
+                      <Button
+                        onClick={handleGotoCreate}
                         className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
                       >
                         Add Company
-                      </Link>
+                      </Button>
                     </div>
                   </div>
                   <div className="mt-8 flex flex-col">

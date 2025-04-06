@@ -10,7 +10,7 @@ body {
   font-style: normal;
 }
 
-.hide-sidebar{
+.hide-sidebar, .scrollbar-hide{
   scrollbar-width: none;
   -ms-overflow-style: none; /* IE and Edge */ 
 }

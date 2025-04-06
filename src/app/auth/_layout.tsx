@@ -3,7 +3,7 @@ import React from 'react'
 const AuthLayout = ({children}: {children: React.ReactNode}) => {
   return (
     <div className='relative flex h-screen w-full overflow-hidden '>
-      <div className='w-[500px] '>
+      <div className='w-[600px] '>
      <div className='max-h-full overflow-y-auto hide-sidebar'>
         {children}
      </div>

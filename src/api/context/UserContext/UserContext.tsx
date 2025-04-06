@@ -15,14 +15,16 @@ import {
   IAcceptUsersInviteInput,
   IInvites,
 } from "../../types";
+import { useCompanyState } from "@/api/context/CompanyContext"; // Import CompanyContext
 
 export type UserContextType = {
   users: IUsers[] | null;
   invites: IInvites[] | null;
   loading: boolean;
   error: string | null;
-  createInviteUsers: (data: ICreateUsersInput) => Promise<void>;
-  acceptInviteUsers: (data: IAcceptUsersInviteInput) => Promise<void>;
+  createInviteUsers: (data: ICreateUsersInput) => Promise<boolean>;
+  createMultipleInviteUsers: (data: {invitedUserDtos: ICreateUsersInput[]}) =>  Promise<boolean>;
+  acceptInviteUsers: (data: IAcceptUsersInviteInput) => Promise<boolean>;
   onboardInvitedUsers: (data: IOnboardInvitedUsers) => Promise<void>;
   getAllInvitedUsers: () => Promise<void>;
   getAllUsers: () => Promise<void>;
@@ -43,31 +45,68 @@ export const useUserState = () => {
 };
 
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const UserContextProvider = ({ children }: IProps) => {
   const [users, setUsers] = useState<IUsers[] | null>(null);
   const [invites, setInvites] = useState<IInvites[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { currentCompany } = useCompanyState(); // Access currentCompany from CompanyContext
 
   const createInviteUsers = async (data: ICreateUsersInput) => {
     setLoading(true);
     setError(null);
+    const secret_key = sessionStorage.getItem("secret_key");
+    const public_key = sessionStorage.getItem("public_key");
+    if (!secret_key || !public_key) {
+      setError("Please select a company to create invites");
+      setLoading(false);
+      return false;
+    }
     try {
       const res = await axios.post("/api/v1/invitedUsers", data, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          "secret-key": `${localStorage.getItem("secret_key")}`,
-          "public-key": `${localStorage.getItem("public_key")}`,
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
         },
       });
-
       setUsers(res.data.data.users);
       toast.success(res.data.message);
-      window.location.href = "/dashboard/users";
-      setLoading(false);
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Create Invite failed");
       toast.error(err.response?.data?.message || "Create Invite failed");
+      return false
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createMultipleInviteUsers = async (data: {invitedUserDtos: ICreateUsersInput[]}) => {
+    setLoading(true);
+    setError(null);
+    const secret_key = sessionStorage.getItem("secret_key");
+    const public_key = sessionStorage.getItem("public_key");
+    if (!secret_key || !public_key) {
+      setError("Please select a company to create invites");
+      setLoading(false);
+      return false;
+    }
+    try {
+      const res = await axios.post("/api/v1/invitedUsers/multiple", data, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
+        },
+      });
+      toast.success(res.data.message);
+      return true
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Create Invite failed");
+      toast.error(err.response?.data?.message || "Create Invite failed");
+      return false
     } finally {
       setLoading(false);
     }
@@ -79,17 +118,17 @@ const UserContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.post("/api/v1/invitedUsers/accept", data, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
           Accept: "application/json",
         },
       });
-
       setUsers(res.data.data.users);
       toast.success(res.data.message);
-      setLoading(false);
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Accept Invite failed");
       toast.error(err.response?.data?.message || "Accept Invite failed");
+      return false
     } finally {
       setLoading(false);
     }
@@ -98,21 +137,26 @@ const UserContextProvider = ({ children }: IProps) => {
   const getAllInvitedUsers = async () => {
     setLoading(true);
     setError(null);
+    const secret_key = sessionStorage.getItem("secret_key");
+    const public_key = sessionStorage.getItem("public_key");
+    if (!secret_key || !public_key) {
+      setError("Please select a company to view invited users");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await axios.get("/api/v1/invitedUsers", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          "secret-key": `${localStorage.getItem("secret_key")}`,
-          "public-key": `${localStorage.getItem("public_key")}`,
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
         },
       });
-
       setInvites(res.data.data);
-      toast.success(res.data.message);
-      setLoading(false);
+      // toast.success(res.data.message);
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Invited Users failed");
-      // toast.error(err.response?.data?.message || "etch Invited Users failed");
+      // toast.error(err.response?.data?.message || "Fetch Invited Users failed");
     } finally {
       setLoading(false);
     }
@@ -124,13 +168,11 @@ const UserContextProvider = ({ children }: IProps) => {
     try {
       const res = await axios.post("/api/v1/invitedUsers/onboard", data, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
         },
       });
-
       setUsers(res.data.data.users);
       toast.success(res.data.message);
-      setLoading(false);
     } catch (err: any) {
       setError(err.response?.data?.message || "Onboard Invite failed");
       toast.error(err.response?.data?.message || "Onboard Invite failed");
@@ -142,35 +184,39 @@ const UserContextProvider = ({ children }: IProps) => {
   const getAllUsers = async () => {
     setLoading(true);
     setError(null);
+    const secret_key = sessionStorage.getItem("secret_key");
+    const public_key = sessionStorage.getItem("public_key");
+    if (!secret_key || !public_key) {
+      setError("Please select a company to view users");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await axios.get("/api/v1/userCompanyRoles/company-users", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          "secret-key": `${localStorage.getItem("secret_key")}`,
-          "public-key": `${localStorage.getItem("public_key")}`,
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
         },
       });
-
       setUsers(res.data.data.data);
       // toast.success(res.data.message);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Fetch Invited Users failed");
-      // toast.error(err.response?.data?.message || "etch Invited Users failed");
+      setError(err.response?.data?.message || "Fetch Users failed");
+      // toast.error(err.response?.data?.message || "Fetch Users failed");
     } finally {
       setLoading(false);
     }
   };
 
+  // Refetch data when currentCompany changes
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      // setToken(storedToken);
-      // checkAuth(storedToken);
-      // getLoggedInUser(storedToken);
-    } else {
-      // setIsCheckingAuth(false);
+    if (currentCompany) {
+      getAllUsers();
+      getAllInvitedUsers();
     }
-  }, []);
+  }, [currentCompany]); // Dependency on currentCompany
 
   return (
     <UserContext.Provider
@@ -180,6 +226,7 @@ const UserContextProvider = ({ children }: IProps) => {
         loading,
         error,
         createInviteUsers,
+        createMultipleInviteUsers,
         acceptInviteUsers,
         onboardInvitedUsers,
         getAllInvitedUsers,

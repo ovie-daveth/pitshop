@@ -1,14 +1,11 @@
+// RolesContext.tsx
 "use client";
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { IRoles, ICreateRolesInput, IPermissions } from "../../types";
+import { useCompanyState } from "@/api/context/CompanyContext"; // Import CompanyContext
 
 export type RolesContextType = {
   roles: IRoles[] | null;
@@ -28,34 +25,39 @@ const RolesContext = createContext<RolesContextType | undefined>(undefined);
 
 export const useRolesState = () => {
   const state = useContext(RolesContext);
-  if (!state) {
-    throw new Error("RolesContext not found");
-  }
+  if (!state) throw new Error("RolesContext not found");
   return state;
 };
 
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const RolesContextProvider = ({ children }: IProps) => {
   const [roles, setRoles] = useState<IRoles[] | null>(null);
   const [permissions, setPermissions] = useState<IPermissions[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { currentCompany } = useCompanyState(); // Use CompanyContext
 
   const createRoles = async (data: ICreateRolesInput) => {
     setLoading(true);
     setError(null);
+    const secret_key = sessionStorage.getItem("secret_key");
+    const public_key = sessionStorage.getItem("public_key");
+    if (!secret_key || !public_key) {
+      setError("Please select a company to create roles");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await axios.post("/api/v1/roles", data, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          "secret-key": `${localStorage.getItem("secret_key")}`,
-          "public-key": `${localStorage.getItem("public_key")}`,
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
         },
       });
-
       setRoles(res.data.data);
       toast.success(res.data.message);
-      setLoading(false);
       window.location.href = "/dashboard/roles/";
     } catch (err: any) {
       setError(err.response?.data?.message || "Create Roles failed");
@@ -68,29 +70,25 @@ const RolesContextProvider = ({ children }: IProps) => {
   const getRoles = async () => {
     setLoading(true);
     setError(null);
-    const secret_key = sessionStorage.getItem("secret_key") as string
-    const public_key = sessionStorage.getItem("public_key") as string
-    if(!secret_key || !public_key) {
-      setError("Please select a company to view roles")
-      toast.error("Please select a company to view roles")
+    const secret_key = sessionStorage.getItem("secret_key") as string;
+    const public_key = sessionStorage.getItem("public_key") as string;
+    if (!secret_key || !public_key) {
+      setError("Please select a company to view roles");
+      setLoading(false);
       return;
     }
     try {
       const res = await axios.get("/api/v1/roles", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
           "secret-key": secret_key,
           "public-key": public_key,
         },
       });
-
-      console.log("roles from context", res.data.data);
       setRoles(res.data.data);
-      // toast.success(res.data.message);
       setLoading(false);
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Roles failed");
-      // toast.error(err.response?.data?.message || "Fetch Roles failed");
     } finally {
       setLoading(false);
     }
@@ -99,39 +97,38 @@ const RolesContextProvider = ({ children }: IProps) => {
   const getRolesPermissions = async () => {
     setLoading(true);
     setError(null);
+    const secret_key = sessionStorage.getItem("secret_key");
+    const public_key = sessionStorage.getItem("public_key");
+    if (!secret_key || !public_key) {
+      setError("Please select a company to view permissions");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await axios.get("/api/v1/roles/permissions", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
-          "secret-key": `${localStorage.getItem("secret_key")}`,
-          "public-key": `${localStorage.getItem("public_key")}`,
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
         },
       });
-
       setPermissions(res.data.data);
-      // toast.success(res.data.message)
     } catch (err: any) {
       setError(err.response?.data?.message || "Fetch Roles Permissions failed");
-      toast.error(
-        err.response?.data?.message || "Fetch Roles Permissions failed"
-      );
+      toast.error(err.response?.data?.message || "Fetch Roles Permissions failed");
     } finally {
       setLoading(false);
     }
   };
 
+  // React to currentCompany changes
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      // setToken(storedToken);
-      // checkAuth(storedToken);
-      // getLoggedInUser(storedToken);
-    } else {
-      // setIsCheckingAuth(false);
+    if (storedToken && currentCompany) {
+      getRoles();
+      getRolesPermissions(); // Fetch both when company changes
     }
-
-    getRoles()
-  }, []);
+  }, [currentCompany]); // Dependency on currentCompany
 
   return (
     <RolesContext.Provider

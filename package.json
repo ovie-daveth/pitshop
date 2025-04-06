@@ -16,11 +16,13 @@
     "@heroicons/react": "^1.0.6",
     "axios": "^1.7.9",
     "next": "15.1.7",
+    "pitstop": "file:",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
-    "react-otp-input": "^3.1.1"
+    "react-otp-input": "^3.1.1",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/node": "^20",

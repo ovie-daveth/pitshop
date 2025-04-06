@@ -26,8 +26,9 @@ export interface IUser {
 export interface ICompany {
   roles: any;
   user: any;
-  company: any;
-  id: string;
+  company: Company;
+  reference: string;
+  id: number;
   created_by: IUser;
   name: string;
   description: string;
@@ -41,6 +42,19 @@ export interface ICompany {
 
   // bookings: IBooking[];
 }
+
+
+export interface Company {
+  createdAt: string;
+  updatedAt: string;
+  id: number;
+  reference: string;
+  name: string;
+  logo: string | null;
+  description: string;
+  companyIndustry: ICompanyIndustry;
+}
+
 
 export interface ICompanyIndustry {
   name: ReactNode;

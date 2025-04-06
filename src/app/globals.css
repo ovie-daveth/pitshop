@@ -9,3 +9,8 @@ body {
   font-weight: 500;
   font-style: normal;
 }
+
+.hide-sidebar, .scrollbar-hide{
+  scrollbar-width: none;
+  -ms-overflow-style: none; /* IE and Edge */ 
+}

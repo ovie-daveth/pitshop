@@ -23,8 +23,8 @@ export default function RootLayout({
       <body>
         <Toaster />
         <AuthContextProvider>
-          <UserContextProvider>
-            <CompanyContextProvider>
+          <CompanyContextProvider>
+            <UserContextProvider>
               <RolesContextProvider>
                 <UserCompanyRolesContextProvider>
                   <AdPlatformContextProvider>
@@ -32,8 +32,8 @@ export default function RootLayout({
                   </AdPlatformContextProvider>
                 </UserCompanyRolesContextProvider>
               </RolesContextProvider>
-            </CompanyContextProvider>
-          </UserContextProvider>
+            </UserContextProvider>
+          </CompanyContextProvider>
         </AuthContextProvider>
       </body>
     </html>

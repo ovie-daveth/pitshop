@@ -8,8 +8,10 @@ export function saveKeysToLocalStorage(object: any) {
     return;
   }
 
-  localStorage.setItem("secret_key", object.reference);
-  localStorage.setItem("public_key", object.company.reference);
+  console.log("sae ley", object)
+
+  sessionStorage.setItem("secret_key", object.reference);
+  sessionStorage.setItem("public_key", object.company.reference);
 }
 
 export function switchToObject(index: number, data: any[]) {

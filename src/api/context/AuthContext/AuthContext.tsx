@@ -16,16 +16,17 @@ export type AuthContextType = {
   loading: boolean;
   isCheckingAuth: boolean;
   error: string | null;
-  signup: (data: ISignUpInput) => Promise<void>;
+  signup: (data: number) => Promise<boolean>;
   signin: (data: ILoginInput) => Promise<void>;
-  requestOtp: (data: ISignUpInput) => Promise<void>;
-  resendOtp: () => Promise<void>;
-  forgotPassword: (data: { email: string }) => Promise<void>;
+  requestOtp: (data: ISignUpInput) => Promise<boolean>;
+  verifyOtp: (data: {email: string, otp: string}) => Promise<boolean>;
+  resendOtp: () => Promise<boolean>;
+  forgotPassword: (data: { email: string }) => Promise<boolean>;
   resetPassword: (data: {
     email: string;
-    token: string;
+    token: number;
     password: string;
-  }) => Promise<void>;
+  }) => Promise<boolean>;
   checkAuth: (authToken: string | null) => Promise<void>;
   getLoggedInUser: (authToken: string | null) => Promise<void>;
   logout: () => void;
@@ -56,13 +57,15 @@ const AuthContextProvider = ({ children }: IProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const signup = async (data: ISignUpInput) => {
+  const signup = async (data: number) => {
     setLoading(true);
     setError(null);
     try {
       const userDetails = localStorage.getItem("user_details");
       if (!userDetails) {
-        throw new Error("User details not found");
+        // throw new Error("User details not found");
+        toast.error("User details not found")
+        return false
       }
       const userData = JSON.parse(userDetails) as {
         email: string;
@@ -77,7 +80,7 @@ const AuthContextProvider = ({ children }: IProps) => {
           password: userData.password,
           firstName: userData.firstName,
           lastName: userData.lastName,
-          otp: data.otp,
+          otp: data,
         },
         {
           headers: {
@@ -92,10 +95,11 @@ const AuthContextProvider = ({ children }: IProps) => {
       toast.success(res.data.message);
       // localStorage.removeItem("user_details");
       setLoading(false);
-      window.location.href = "/dashboard";
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");
       toast.error(err.response?.data?.message || "Signup failed");
+      return false
     } finally {
       setLoading(false);
     }
@@ -157,11 +161,13 @@ const AuthContextProvider = ({ children }: IProps) => {
       });
       setToken(res.data.data.accessToken);
       setIsAuthenticated(true);
+     
       // toast.success("Authenticated successfully");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err: any) {
       setIsAuthenticated(false);
       setError("Failed to authenticate. Please log in again.");
+      
     } finally {
       setLoading(false);
       setIsCheckingAuth(false);
@@ -190,11 +196,37 @@ const AuthContextProvider = ({ children }: IProps) => {
       );
 
       toast.success(res.data.message);
+      sessionStorage.setItem("id", res.data.data.id);
+      sessionStorage.setItem("email", data.email) 
       // navigate("/dashboard");
-      window.location.href = "/verify";
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to request OTP");
       toast.error(err.response?.data?.message || "Failed to request OTP");
+      return false
+    }
+  };
+
+  const verifyOtp = async (data: {email: string, otp: string}) => {
+    try {
+      const res = await axios.post(
+        "/api/v1/otpNotifications/verify",
+        { email: data.email, otp: data.otp },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
+          },
+        }
+      );
+      console.log("verify token response", res.data);
+      sessionStorage.setItem("id", res.data.data.id);
+      toast.success(res.data.message);
+      // navigate("/dashboard");
+      return true
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to request OTP");
+      toast.error(err.response?.data?.message || "Failed to request OTP");
+      return false
     }
   };
 
@@ -228,9 +260,11 @@ const AuthContextProvider = ({ children }: IProps) => {
 
       toast.success(res.data.message);
       // navigate("/dashboard");
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Signup failed");
       toast.error(err.response?.data?.message || "Signup failed");
+      return false
     } finally {
       setLoading(false);
     }
@@ -246,16 +280,17 @@ const AuthContextProvider = ({ children }: IProps) => {
       );
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/reset-password";
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to send OTP");
       toast.error(err.response?.data?.message || "Failed to send OTP");
+      return false
     }
   };
 
   const resetPassword = async (data: {
     email: string;
-    token: string;
+    token: number;
     password: string;
   }) => {
     setLoading(true);
@@ -267,10 +302,11 @@ const AuthContextProvider = ({ children }: IProps) => {
       );
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/signin";
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to reset password");
       toast.error(err.response?.data?.message || "Failed to reset password");
+      return false
     }
   };
 
@@ -284,7 +320,7 @@ const AuthContextProvider = ({ children }: IProps) => {
     setIsAuthenticated(false);
     localStorage.removeItem("token");
     toast.success("Logged out successfully");
-    window.location.href = "/signin";
+    window.location.href = "/auth";
   };
 
   useEffect(() => {
@@ -310,6 +346,7 @@ const AuthContextProvider = ({ children }: IProps) => {
         signin,
         checkAuth,
         requestOtp,
+        verifyOtp,
         resendOtp,
         getLoggedInUser,
         forgotPassword,

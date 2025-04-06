@@ -1,23 +1,31 @@
 // import ProtectedRoute from "@/api/protected/ProtectedRoute";
 "use client";
-import Signin from "@/app/signin/page";
 import { useEffect } from "react";
-import { useCompanyState } from "@/api/context/CompanyContext/CompanyContext";
+// import { useCompanyState } from "@/api/context/CompanyContext/CompanyContext";
+// import SignInForm from "./aut/component/signin-form";
+// import AuthLayout from "./aut/_layout";
 
 export default function Home() {
-  const { company } = useCompanyState();
+  // const { company } = useCompanyState();
 
+  // useEffect(() => {
+  //   if (company === undefined) return; // Prevent redirection before data is available
+
+  //   if (!company || company.length === 0) {
+  //     window.location.href = "/dashboard/company/create";
+  //   }
+  // }, []);
+
+   
   useEffect(() => {
-    if (company === undefined) return; // Prevent redirection before data is available
-
-    if (!company || company.length === 0) {
-      window.location.href = "/dashboard/company/create";
-    }
+    // getCompanyIndustries()
+    // // Redirect to /aut/signup on first render
+    window.location.href = "/auth";
   }, []);
   return (
     <div>
       <main>
-        <Signin />
+      
         {/* <ProtectedRoute>
           <h1>Hello Pitstop</h1>
         </ProtectedRoute> */}

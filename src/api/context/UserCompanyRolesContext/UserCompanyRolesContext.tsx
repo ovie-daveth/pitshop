@@ -81,8 +81,8 @@ const UserCompanyRolesContextProvider = ({ children }: IProps) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists
           Accept: "application/json",
-          "secret-key": `${localStorage.getItem("secret_key")}`,
-          "public-key": `${localStorage.getItem("public_key")}`,
+          "secret-key": `${sessionStorage.getItem("secret_key")}`,
+          "public-key": `${sessionStorage.getItem("public_key")}`,
         },
       });
 

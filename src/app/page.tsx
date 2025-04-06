@@ -1,13 +1,11 @@
 // import ProtectedRoute from "@/api/protected/ProtectedRoute";
 "use client";
-import { useCompanyState } from "@/api/context/CompanyContext";
-import axios from "axios";
 import { useEffect } from "react";
 // import { useCompanyState } from "@/api/context/CompanyContext/CompanyContext";
 // import SignInForm from "./aut/component/signin-form";
 // import AuthLayout from "./aut/_layout";
 
-export default function Home({handleFormChnage}: {handleFormChnage: (num: number) => void}) {
+export default function Home() {
   // const { company } = useCompanyState();
 
   // useEffect(() => {

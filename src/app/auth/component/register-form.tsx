@@ -102,22 +102,19 @@ const RegisterForm = ({handleFormChnage}: {handleFormChnage: (num: number) => vo
               setIsLoading(false);
               return;
             }
-            await signup({
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              email: sessionStorage.getItem("signup_email") || "",
-              password: sessionStorage.getItem("password") || "",
-              otp: sessionStorage.getItem("signup_otp") || "",
-            })
-            .then((res) => {
-                console.log("res", res);
-                if (res) {
-                    handleFormChnage(5)
-                }
+            const otp = sessionStorage.getItem("signup_otp") as string
+            if(otp){
+              await signup(parseInt(otp))
+              .then((res) => {
+                  console.log("res", res);
+                  if (res) {
+                      handleFormChnage(5)
+                  }
+              }
+              ).catch((err) => {
+                  console.log("error", err);
+              })
             }
-            ).catch((err) => {
-                console.log("error", err);
-            })
 
           } catch (error) {
             console.error("Signup failed:", error);

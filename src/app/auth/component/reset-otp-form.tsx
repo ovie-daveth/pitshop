@@ -120,7 +120,7 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
         <div className="flex justify-start items-start">
                 <OTPInput
                   value={formData.otp}
-                  inputType="number"
+                  inputType="text"
                   onChange={(otp) => handleChange(otp)}
                   numInputs={6}
                   renderSeparator={<span></span>}

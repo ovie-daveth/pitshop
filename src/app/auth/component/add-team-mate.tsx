@@ -5,12 +5,15 @@ import { useCompanyState } from "@/api/context/CompanyContext";
 import { useRolesState } from "@/api/context/RolesContext";
 import { useUserState } from "@/api/context/UserContext";
 import Link from "next/link";
+import { useAuthFormStore } from "@/states/useAuthFotmState";
+import { useRouter } from "next/navigation";
 
 const AddTeamMateForm = ({ handleFormChnage, isAuth }: { handleFormChnage: (num: number) => void, isAuth?: boolean }) => {
   const { company } = useCompanyState();
   const { roles: data } = useRolesState();
   const { createInviteUsers } = useUserState();
 
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false);
   const [roles, setRoles] = useState(data);
 
@@ -58,7 +61,12 @@ const AddTeamMateForm = ({ handleFormChnage, isAuth }: { handleFormChnage: (num:
             await createInviteUsers({
               email: user.email,
             roles: [roleId],
-            });
+            })
+            .then((res) => {
+              if(res){
+                router.push(isAuth ? "/dashboard" : "/dashboard/users")
+              }
+            })
           }
         }
       }

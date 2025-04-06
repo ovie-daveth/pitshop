@@ -108,16 +108,19 @@ const RegisterForm = ({handleFormChnage}: {handleFormChnage: (num: number) => vo
               .then((res) => {
                   console.log("res", res);
                   if (res) {
+                    setIsLoading(false)
                       handleFormChnage(5)
                   }
               }
               ).catch((err) => {
                   console.log("error", err);
+                  setIsLoading(false)
               })
             }
 
           } catch (error) {
             console.error("Signup failed:", error);
+            setIsLoading(false)
           }
         };
 

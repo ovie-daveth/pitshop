@@ -120,6 +120,20 @@ const SignUpForm = ({handleFormChnage}: {handleFormChnage: (num: number) => void
                 }));
                 return false;
             }
+            
+            const password_regex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            // Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character
+            if (!password_regex.test(formData.password)) {
+                setError((prevState) => ({
+                  ...prevState,
+                  password: true,
+                }));
+                setErrorMessage((prevState) => ({
+                  ...prevState,
+                  password: "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+                }));
+                return false;
+            }
 
             const email_regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!email_regex.test(formData.email)) {
@@ -160,10 +174,16 @@ const SignUpForm = ({handleFormChnage}: {handleFormChnage: (num: number) => void
               console.log("res", res);
               if (res) {
                 handleFormChnage(7)
+              } else {
+                setIsLoading(false)
               }
+            })
+            .catch(() => {
+              setIsLoading(false)
             })
           } catch (error) {
             console.error("Signup failed:", error);
+            setIsLoading(false)
           }
         };
 

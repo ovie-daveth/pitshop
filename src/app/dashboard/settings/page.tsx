@@ -23,7 +23,7 @@ export default function BusinessSettings() {
 
   return (
     <WrapperLayout>
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="lg:max-w-6xl w-full mx-auto lg:px-4 py-8">
 
         <div className="md:mb-10 mb-5">
           <h2 className="xl:text-3xl md:text-2xl sm:text-xl text-lg font-medium">Business Settings</h2>

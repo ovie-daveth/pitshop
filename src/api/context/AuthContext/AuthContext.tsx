@@ -317,8 +317,9 @@ const AuthContextProvider = ({ children }: IProps) => {
   const logout = () => {
     setUser(null);
     setToken(null);
+    localStorage.clear()
+    sessionStorage.clear()
     setIsAuthenticated(false);
-    localStorage.removeItem("token");
     toast.success("Logged out successfully");
     window.location.href = "/auth";
   };

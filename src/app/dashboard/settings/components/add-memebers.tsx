@@ -5,7 +5,7 @@ import { Listbox, Tab, Transition } from "@headlessui/react";
 import { HiOutlineChevronDown, HiOutlineTrash, HiOutlineUserCircle, HiCheck } from "react-icons/hi2";
 import { useUserState } from "@/api/context/UserContext";
 import { useRolesState } from "@/api/context/RolesContext";
-import { IRoles } from "@/api/types";
+import { IRole } from "@/api/types";
 import { HiRefresh } from "react-icons/hi";
 import ExistingMembersContainer from "./exisiting-members";
 
@@ -13,16 +13,7 @@ type TeamMember = {
   id: string;
   name: string;
   email: string;
-  role: {
-    id: string;
-    name: string;
-    description: string;
-    permissions: string[];
-    external: boolean;
-    type: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  role: IRole;
 };
 
 
@@ -31,7 +22,7 @@ type PendingInvite = {
   email: string;
 };
 
-const AddMmebers = ({ pendingInvites, setPendingInvites, roles, rolesLoading, rolesError }: { pendingInvites: PendingInvite[], setPendingInvites: Dispatch<SetStateAction<PendingInvite[]>> , roles: IRoles[], rolesLoading: boolean, rolesError: any}) => {
+const AddMmebers = ({ pendingInvites, setPendingInvites, roles, rolesLoading, rolesError }: { pendingInvites: PendingInvite[], setPendingInvites: Dispatch<SetStateAction<PendingInvite[]>> , roles: IRole[], rolesLoading: boolean, rolesError: any}) => {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const { createMultipleInviteUsers } = useUserState();
 
@@ -88,7 +79,7 @@ const AddMmebers = ({ pendingInvites, setPendingInvites, roles, rolesLoading, ro
     //Step 1: Prepare invite data
     const inviteData = teamMembers.map((member) => ({
       email: member.email,
-      roles: [member.role.id],
+      roles: [member.role.id.toString()],
     }));
 
     await createMultipleInviteUsers({invitedUserDtos: inviteData})
@@ -120,14 +111,14 @@ const getInitials = (name: string) => {
 };
 
 return (
-  <div className="flex flex-col lg:flex-row items-start justify-between">
-    <div className="lg:w-[40%] w-full">
+  <div className="flex flex-col items-start justify-between">
+    <div className=" w-full">
       <h2 className="lg:text-2xl text-lg font-medium text-gray-800 mb-2">Members</h2>
       <p className="text-gray-500 mb-6 font-light sm:text-sm text-xs">
         Type an email of the teammate you want to invite, manage user permissions, remove users.
       </p>
     </div>
-    <div className="mb-12 lg:w-[55%] w-full flex flex-col justify-end gap-3">
+    <div className="mb-12  w-full flex flex-col justify-end gap-3">
       <Tab.Group>
         <Tab.List className="grid w-full grid-cols-2 mb-4 bg-gray-100 rounded-md p-1">
           <Tab

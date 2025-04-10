@@ -1,13 +1,9 @@
 "use client";
 
+import { IRole } from "@/api/types";
 import { Dispatch, SetStateAction, useState } from "react";
 import { FiArrowLeft, FiCheck, FiSave } from "react-icons/fi";
 
-type Role = {
-  id: string;
-  name: string;
-  access: string[];
-};
 
 type Permission = {
   id: string;
@@ -29,9 +25,9 @@ export default function PermissionsView({
   isCreating = false, // New prop to indicate create mode
 }: {
   setShowEditView: Dispatch<SetStateAction<boolean>>;
-  setSelectedRole: Dispatch<SetStateAction<Role | null>>;
+  setSelectedRole: Dispatch<SetStateAction<IRole | null>>;
   showEditView: boolean;
-  selectedRole: Role | null;
+  selectedRole: IRole | null;
   isCreating?: boolean;
 }) {
   // Initialize permissions based on mode (create or edit)
@@ -98,9 +94,9 @@ export default function PermissionsView({
     });
 
     // Update the role with new permissions
-    const updatedRole: Role = {
+    const updatedRole: IRole = {
       ...selectedRole,
-      access: updatedAccess,
+     
     };
 
     // In a real app, you'd save this to a backend

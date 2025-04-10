@@ -1,258 +1,286 @@
-import { IRoles } from "@/api/types";
-import { Listbox, Transition } from "@headlessui/react";
-import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
-import { HiRefresh } from "react-icons/hi";
-import { HiCheck, HiOutlineChevronDown, HiOutlineTrash } from "react-icons/hi2";
+"use client"
+
+import { useEffect, useState, Fragment } from "react"
+import { Transition, Menu, Popover } from "@headlessui/react"
+import {
+  BsThreeDots,
+  BsPlus,
+  BsTrash,
+} from "react-icons/bs"
+import { AiOutlineAlert } from "react-icons/ai"
+import {FiRefreshCw} from "react-icons/fi"
+import {RiShieldLine, RiUserUnfollowLine, RiUserFollowLine} from "react-icons/ri"
+import RenderDialog from "./dialog"
+import { IRole } from "@/api/types"
 
 type ExistingMember = {
-    id: string;
-    name: string;
-    email: string;
-    roleId: string;
-    username?: string;
-  };
+  id: string
+  name: string
+  email: string
+  roleIds: number[]
+  username?: string
+  status: "active" | "suspended"
+}
 
-  type TeamMember = {
-    id: string;
-    name: string;
-    email: string;
-    role: {
-      id: string;
-      name: string;
-      description: string;
-      permissions: string[];
-      external: boolean;
-      type: string;
-      createdAt: string;
-      updatedAt: string;
-    };
-  };
-  
-  
+const ExistingMembersContainer = ({ roles }: { roles: IRole[] }) => {
+  const [existingMembers, setExistingMembers] = useState<ExistingMember[]>([])
+  const [membersLoading, setMembersLoading] = useState(true)
+  const [openDialogId, setOpenDialogId] = useState<string | null>(null)
+  const [dialogType, setDialogType] = useState<"remove" | "suspend" | "restore" | "addRole" | "removeRole">("remove")
+  const [selectedRole, setSelectedRole] = useState<number>(0)
+  const [roleToRemove, setRoleToRemove] = useState<number>(0)
+  const [tooltipContent, setTooltipContent] = useState<{ id: string; content: string } | null>(null)
 
-const ExistingMembersContainer = ({ roles}: {roles: IRoles[]}) => {
-
-    const [existingMembers, setExistingMembers] = useState<ExistingMember[]>([]);
-    const [membersLoading, setMembersLoading] = useState(true);
-    const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
-    const [openDialogId, setOpenDialogId] = useState<string | null>(null);
-
-
-    
   useEffect(() => {
     const fetchMembers = async () => {
-      setMembersLoading(true);
+      setMembersLoading(true)
       try {
         const mockMembers = [
           {
             id: "1",
             name: "John Doe",
             email: "john.doe@example.com",
-            roleId: roles[0]?.id || "",
+            roleIds: [roles[0]?.id, roles[1]?.id],
             username: "johndoe",
+            status: "active" as const,
           },
           {
             id: "2",
             name: "Jane Smith",
             email: "jane.smith@example.com",
-            roleId: roles[1]?.id || "",
+            roleIds: [roles[1]?.id],
             username: "janesmith",
+            status: "active" as const,
           },
-        ];
-        setExistingMembers(mockMembers);
+          {
+            id: "3",
+            name: "Michael Brown",
+            email: "michael.brown@example.com",
+            roleIds: [roles[0]?.id, roles[2]?.id],
+            username: "michaelb",
+            status: "suspended" as const,
+          },
+        ]
+        setExistingMembers(mockMembers)
       } catch (error) {
-        console.error("Failed to fetch team members:", error);
+        console.error("Failed to fetch team members:", error)
       } finally {
-        setMembersLoading(false);
+        setMembersLoading(false)
       }
-    };
+    }
 
     if (roles && roles.length > 0) {
-      fetchMembers();
+      fetchMembers()
     }
-  }, [roles]);
+  }, [roles])
 
-//   const updateMemberRole = (memberId: string, role: TeamMember["role"]) => {
-//     setTeamMembers(
-//       teamMembers.map((member) =>
-//         member.id === memberId ? { ...member, role } : member
-//       )
-//     );
-//   };
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((part) => part.charAt(0))
+      .join("")
+      .toUpperCase()
+  }
 
-  const handleRemoveExistingMember = async (memberId: string) => {
-    setActionLoading(memberId);
-    try {
-      setExistingMembers(existingMembers.filter((member) => member.id !== memberId));
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    } catch (error) {
-      console.error("Failed to remove member:", error);
-    } finally {
-      setActionLoading(null);
-    }
-  };
+  const getRoleById = (roleId: number) => {
+    return roles.find((r) => r.id === roleId)
+  }
 
-    const getRoleNameById = (roleId: string) => {
-        const role = roles.find((r) => r.id === roleId);
-        return role ? role.name : "Unknown Role";
-      };
-      
-      const getInitials = (name: string) => {
-        return name
-          .split(" ")
-          .map((part) => part.charAt(0))
-          .join("")
-          .toUpperCase();
-      };
+  const getAvailableRoles = (member: ExistingMember) => {
+    return roles.filter((role) => !member.roleIds.includes(role.id))
+  }
 
-      const handleUpdateExistingMemberRole = async (memberId: string, roleId: string) => {
-        setActionLoading(memberId);
-        try {
-          setExistingMembers(existingMembers.map((member) => (member.id === memberId ? { ...member, roleId } : member)));
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        } catch (error) {
-          console.error("Failed to update member role:", error);
-        } finally {
-          setActionLoading(null);
-        }
-      };
-      
-    return (
-        <>
-         {membersLoading ? (
-              <div className="flex justify-center items-center py-8">
-                <HiRefresh className="h-8 w-8 animate-spin text-blue-600" />
-              </div>
-         ) : (
-            existingMembers.length < 1 ?
-            <div className="border rounded-lg shadow-sm overflow-hidden">
-                { existingMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex flex-col sm:flex-row items-center justify-between p-4 border-b last:border-b-0"
-                  >
-                    <div className="sm:w-auto w-full flex items-center gap-3">
-                      <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
-                        <span className="text-gray-600 font-medium">{getInitials(member.name)}</span>
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-800 sm:text-md text-sm flex items-center gap-2">
-                          {member.name}
-                          {member.username && (
-                            <span className="ml-2 text-xs px-2 py-1 bg-gray-100 border rounded-md">
-                              @{member.username}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-gray-500 sm:text-sm text-xs break-words sm:break-normal">
-                          {member.email}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center sm:w-auto w-full sm:justify-end justify-between mt-3 sm:mt-0">
-                      <Listbox
-                        value={member.roleId}
-                        onChange={(roleId) => handleUpdateExistingMemberRole(member.id, roleId)}
-                        disabled={actionLoading === member.id}
-                      >
-                        <div className="relative w-40 mr-4 cursor-pointer">
-                          <Listbox.Button className="relative w-full py-2 pl-3 pr-10 text-left bg-white border rounded-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 sm:text-sm">
-                            <span className="block truncate sm:text-sm text-xs">
-                              {actionLoading === member.id ? (
-                                <span className="flex items-center">
-                                  <HiRefresh className="mr-1 h-3 w-3 animate-spin" />
-                                  Updating...
-                                </span>
-                              ) : (
-                                getRoleNameById(member.roleId)
-                              )}
-                            </span>
-                            <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                              <HiOutlineChevronDown className="w-5 h-5 text-gray-400" aria-hidden="true" />
-                            </span>
-                          </Listbox.Button>
-                          <Transition
-                            as={Fragment}
-                            leave="transition ease-in duration-100"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                          >
-                            <Listbox.Options className="absolute cursor-pointer z-10 w-full py-1 mt-1 text-base bg-white rounded-md shadow-lg max-h-60 overflow-auto ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                              {roles.map((role) => (
-                                <Listbox.Option
-                                  key={role.id}
-                                  className={({ active }) =>
-                                    `${active ? "text-white bg-blue-600" : "text-gray-900"} cursor-default select-none relative py-2 pl-3 pr-4`
-                                  }
-                                  value={role.id}
-                                >
-                                  {({ selected, active }) => (
-                                    <span
-                                      className={`${selected ? "font-medium" : "font-normal"} block truncate sm:text-sm text-xs flex items-center`}
-                                    >
-                                      {role.name}
-                                      {selected && <HiCheck className="ml-auto h-4 w-4" />}
-                                    </span>
-                                  )}
-                                </Listbox.Option>
-                              ))}
-                            </Listbox.Options>
-                          </Transition>
-                        </div>
-                      </Listbox>
-                      <button
-                        className="text-gray-500 hover:text-red-600 transition-colors"
-                        disabled={actionLoading === member.id}
-                        onClick={() => setOpenDialogId(member.id)}
-                        >
-                        {actionLoading === member.id ? (
-                            <HiRefresh className="h-5 w-5 animate-spin text-gray-400" />
-                        ) : (
-                            <HiOutlineTrash className="h-5 w-5" />
-                        )}
-                        </button>
+  const openAddRoleDialog = (memberId: string) => {
+    setDialogType("addRole")
+    setOpenDialogId(memberId)
+    setSelectedRole(0)
+  }
 
-                        {openDialogId === member.id && (
-                            <div className="fixed inset-0 z-50 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4">
-                                <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-                                <h3 className="text-lg font-medium text-gray-800">Remove Team Member</h3>
-                                <p className="text-gray-500 mt-2">
-                                    Are you sure you want to remove {member.name} from your team? This action cannot be undone.
-                                </p>
-                                <div className="mt-4 flex justify-end gap-2">
-                                    <button
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
-                                    onClick={() => setOpenDialogId(null)}
-                                    >
-                                    Cancel
-                                    </button>
-                                    <button
-                                    className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-md"
-                                    onClick={() => {
-                                        handleRemoveExistingMember(member.id);
-                                        setOpenDialogId(null);
-                                    }}
-                                    >
-                                    Remove
-                                    </button>
-                                </div>
-                                </div>
-                            </div>
-                            )}
-                    </div>
-                  </div>
-                ))}
-      </div>
+  const openRemoveRoleDialog = (memberId: string, roleId: number) => {
+    setDialogType("removeRole")
+    setOpenDialogId(memberId)
+    setRoleToRemove(roleId)
+  }
 
-                : <div className="ml-2">
-                <h1>This team is empty</h1>
+  return (
+    <>
+      {membersLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <FiRefreshCw className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      ) : (
+        <div className="bg-white border rounded-lg shadow-sm overflow-hidden z-50">
+          {existingMembers.map((member) => (
+            <div
+              key={member.id}
+              className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b last:border-b-0 z-50 ${
+                member.status === "suspended" ? "bg-gray-50" : ""
+              }`}
+            >
+              {/* Left side: User info */}
+              <div className="sm:w-auto w-full flex items-center gap-3 z-50">
+                <div
+                  className={`h-10 w-10 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 ${
+                    member.status === "suspended" ? "opacity-70" : ""
+                  }`}
+                >
+                  <span className="font-medium">{getInitials(member.name)}</span>
                 </div>
-        
-         )
-        }
-        </>
-    )
+                <div>
+                  <div className="font-medium text-gray-800 flex items-center gap-2 z-50">
+                    {member.name}
+                    {member.status === "suspended" && (
+                      <div className="relative">
+                        <div
+                          onMouseEnter={() =>
+                            setTooltipContent({ id: `suspended-${member.id}`, content: "Account Suspended" })
+                          }
+                          onMouseLeave={() => setTooltipContent(null)}
+                        >
+                          <AiOutlineAlert className="h-4 w-4 text-amber-500" />
+                        </div>
+                        {tooltipContent?.id === `suspended-${member.id}` && (
+                          <div className="absolute z-50 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md shadow-sm -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                            {tooltipContent.content}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-gray-500 text-sm">{member.email}</div>
+                  {member.username && <div className="text-xs text-gray-500 mt-0.5">@{member.username}</div>}
+                </div>
+              </div>
+
+              {/* Right side: Roles and actions */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center sm:gap-4 mt-3 sm:mt-0 w-full sm:w-auto">
+                <div className="flex flex-wrap gap-1.5 mb-2 sm:mb-0 w-full sm:w-auto">
+                  {member.roleIds.map((roleId) => {
+                    const role = getRoleById(roleId)
+                    if (!role) return null
+
+                    return (
+                      <div key={roleId} className="relative inline-flex items-center bg-gray-100 px-2 py-1 rounded-full border border-gray-200 hover:bg-gray-200">
+                        <span
+                          className=" text-gray-800 text-xs font-medium flex items-center group  transition-colors"
+                        >
+                          <RiShieldLine className="h-3 w-3 mr-1 inline" />
+                          {role.name}
+                        </span>
+                        <button
+                          onClick={() => openRemoveRoleDialog(member.id, roleId)}
+                          className="ml-1 p-1 hover:bg-gray-200 rounded-full transition-colors"
+                          title={`Remove ${role.name} role`}
+                        >
+                          <BsTrash className="h-3 w-3 text-red-500" />
+                        </button>
+                      </div>
+                    )
+                  })}
+                  <button
+                    className={`px-2 py-1 text-xs border border-gray-300 rounded-md flex items-center hover:bg-gray-50 ${
+                      getAvailableRoles(member).length === 0 ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    onClick={() => openAddRoleDialog(member.id)}
+                    disabled={getAvailableRoles(member).length === 0}
+                  >
+                    <BsPlus className="h-3 w-3 mr-1" />
+                    Add Role
+                  </button>
+                </div>
+
+                <Menu as="div" className="relative inline-block text-left">
+                  <div>
+                    <Menu.Button className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100">
+                      <BsThreeDots className="h-4 w-4 text-gray-500" />
+                    </Menu.Button>
+                  </div>
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-100"
+                    enterFrom="transform opacity-0 scale-95"
+                    enterTo="transform opacity-100 scale-100"
+                    leave="transition ease-in duration-75"
+                    leaveFrom="transform opacity-100 scale-100"
+                    leaveTo="transform opacity-0 scale-95"
+                  >
+                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                      <div className="px-1 py-1">
+                        {member.status === "active" ? (
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                className={`${
+                                  active ? "bg-gray-100" : ""
+                                } group flex w-full items-center rounded-md px-2 py-2 text-sm text-amber-600`}
+                                onClick={() => {
+                                  setDialogType("suspend")
+                                  setOpenDialogId(member.id)
+                                }}
+                              >
+                                <RiUserUnfollowLine className="h-4 w-4 mr-2" />
+                                Suspend User
+                              </button>
+                            )}
+                          </Menu.Item>
+                        ) : (
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                className={`${
+                                  active ? "bg-gray-100" : ""
+                                } group flex w-full items-center rounded-md px-2 py-2 text-sm text-green-600`}
+                                onClick={() => {
+                                  setDialogType("restore")
+                                  setOpenDialogId(member.id)
+                                }}
+                              >
+                                <RiUserFollowLine className="h-4 w-4 mr-2" />
+                                Restore User
+                              </button>
+                            )}
+                          </Menu.Item>
+                        )}
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              className={`${
+                                active ? "bg-gray-100" : ""
+                              } group flex w-full items-center rounded-md px-2 py-2 text-sm text-red-600`}
+                              onClick={() => {
+                                setDialogType("remove")
+                                setOpenDialogId(member.id)
+                              }}
+                            >
+                              <BsTrash className="h-4 w-4 mr-2" />
+                              Remove User
+                            </button>
+                          )}
+                        </Menu.Item>
+                      </div>
+                    </Menu.Items>
+                  </Transition>
+                </Menu>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <RenderDialog 
+        openDialogId={openDialogId} 
+        dialogType={dialogType} 
+        selectedRole={selectedRole} 
+        setSelectedRole={setSelectedRole} 
+        roleToRemove={roleToRemove} 
+        setExistingMembers={setExistingMembers} 
+        existingMembers={existingMembers} 
+        setOpenDialogId={setOpenDialogId} 
+        setRoleToRemove={setRoleToRemove} 
+        getAvailableRoles={getAvailableRoles} 
+        getRoleById={getRoleById} 
+      />
+    </>
+  )
 }
 
 export default ExistingMembersContainer

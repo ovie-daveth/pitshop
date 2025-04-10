@@ -4,11 +4,11 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { IRoles, ICreateRolesInput, IPermissions } from "../../types";
+import { IRole, ICreateRolesInput, IPermissions } from "../../types";
 import { useCompanyState } from "@/api/context/CompanyContext"; // Import CompanyContext
 
 export type RolesContextType = {
-  roles: IRoles[] | null;
+  roles: IRole[] | null;
   permissions: IPermissions[] | null;
   loading: boolean;
   error: string | null;
@@ -32,7 +32,7 @@ export const useRolesState = () => {
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const RolesContextProvider = ({ children }: IProps) => {
-  const [roles, setRoles] = useState<IRoles[] | null>(null);
+  const [roles, setRoles] = useState<IRole[] | null>(null);
   const [permissions, setPermissions] = useState<IPermissions[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);

@@ -74,24 +74,27 @@ export interface ICreateRolesInput {
   permissions: string[];
 }
 
-export interface IRoles {
-  external: boolean;
-  type: string;
-  id: string;
-  name: string;
-  description: string;
-  permissions: string[];
-  createdAt: string;
-  updatedAt: string;
+
+export type IRole = {
+  updatedAt: string,
+  id: number,
+  name: string,
+  description: string,
+  type: string,
+  external: boolean,
+  permissions: IPermissions[]
 }
 
-export interface IPermissions {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-  permissionCategory: [];
+export type IPermissions = {
+  updatedAt: string,
+  id: number,
+  name: string,
+  description: null,
+  permissionCategory: {
+      updatedAt: string,
+      id: number,
+      name: string
+  }
 }
 
 export interface IUsers {

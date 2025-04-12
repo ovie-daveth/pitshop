@@ -71,7 +71,7 @@ export interface ICreateCompanyInput {
 export interface ICreateRolesInput {
   name: string;
   description?: string | number;
-  permissions: string[];
+  permissions: number[];
 }
 
 

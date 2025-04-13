@@ -4,17 +4,18 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { IRoles, ICreateRolesInput, IPermissions } from "../../types";
+import { IRole, ICreateRolesInput, IPermissions } from "../../types";
 import { useCompanyState } from "@/api/context/CompanyContext"; // Import CompanyContext
 
 export type RolesContextType = {
-  roles: IRoles[] | null;
+  roles: IRole[] | null;
   permissions: IPermissions[] | null;
   loading: boolean;
   error: string | null;
-  createRoles: (data: ICreateRolesInput) => Promise<void>;
+  createRoles: (data: ICreateRolesInput) => Promise<boolean | undefined>;
   getRoles: () => Promise<void>;
   getRolesPermissions: () => Promise<void>;
+  updateRoles: (data: ICreateRolesInput, id: number) => Promise<boolean | undefined>;
 };
 
 interface IProps {
@@ -32,7 +33,7 @@ export const useRolesState = () => {
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const RolesContextProvider = ({ children }: IProps) => {
-  const [roles, setRoles] = useState<IRoles[] | null>(null);
+  const [roles, setRoles] = useState<IRole[] | null>(null);
   const [permissions, setPermissions] = useState<IPermissions[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,16 +58,47 @@ const RolesContextProvider = ({ children }: IProps) => {
         },
       });
       setRoles(res.data.data);
+      await getRoles()
       toast.success(res.data.message);
-      window.location.href = "/dashboard/roles/";
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Create Roles failed");
       toast.error(err.response?.data?.message || "Create Roles failed");
+      return false
     } finally {
       setLoading(false);
     }
   };
 
+  const updateRoles = async (data: ICreateRolesInput, id: number) => {
+    setLoading(true);
+    setError(null);
+    const secret_key = sessionStorage.getItem("secret_key");
+    const public_key = sessionStorage.getItem("public_key");
+    if (!secret_key || !public_key) {
+      setError("Please select a company to create roles");
+      setLoading(false);
+      return false;
+    }
+    try {
+      const res = await axios.put(`/api/v1/roles/${id}`, data, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
+        },
+      });
+      setRoles(res.data.data);
+      toast.success(res.data.message);
+      return true
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Create Roles failed");
+      toast.error(err.response?.data?.message || "Create Roles failed");
+      return false
+    } finally {
+      setLoading(false);
+    }
+  };
   const getRoles = async () => {
     setLoading(true);
     setError(null);
@@ -138,6 +170,7 @@ const RolesContextProvider = ({ children }: IProps) => {
         loading,
         error,
         createRoles,
+        updateRoles,
         getRoles,
         getRolesPermissions,
       }}

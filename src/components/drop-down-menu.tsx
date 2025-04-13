@@ -64,8 +64,6 @@ export default function BranchDropdown() {
     setIsLoading(true);
     try {
       logout();
-      sessionStorage.clear();
-      router.push("/auth");
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {

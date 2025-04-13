@@ -116,7 +116,7 @@ export interface IInvites {
 
 export interface ICreateUsersInput {
   email: string;
-  roles: string[];
+  roles: number[];
 }
 
 export interface IAcceptUsersInviteInput {

@@ -71,7 +71,7 @@ const AddMmebers = ({ pendingInvites, setPendingInvites, roles, rolesLoading, ro
   const updateMemberRoleHandler = (memberId: string, role: TeamMember["role"]) => {
     setTeamMembers(teamMembers.map((member) => (member.id === memberId ? { ...member, role } : member)));
   };
-
+ 
 
   const inviteUsers = async () => {
     if (teamMembers.length === 0) return;
@@ -79,7 +79,7 @@ const AddMmebers = ({ pendingInvites, setPendingInvites, roles, rolesLoading, ro
     //Step 1: Prepare invite data
     const inviteData = teamMembers.map((member) => ({
       email: member.email,
-      roles: [member.role.id.toString()],
+      roles: [member.role.id as number],
     }));
 
     await createMultipleInviteUsers({invitedUserDtos: inviteData})

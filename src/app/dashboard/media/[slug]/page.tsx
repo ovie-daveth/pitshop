@@ -180,6 +180,150 @@ export default function Page() {
   ];
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Download");
+  const [metadataSection, setMetadataSection] = useState("Tags");
+
+  const tagsMock = ["Fish", "Lightskinned", "Hair", "Blue"];
+  const structuredFields = [
+    { label: "Asset Type" },
+    { label: "Usage Rights" },
+    { label: "Status" },
+    { label: "Expiration Date" },
+    { label: "SKU" },
+  ];
+  const embeddedFields = Array(10).fill("YResolution: 72");
+
+  const customizeMetadataFields = [
+    { name: "Field 001", type: "Text input", value: "Marketing Manager" },
+    {
+      name: "Field 002",
+      type: "Dropdown input",
+      value: ["24fps", "30fps", "40fps"],
+    },
+  ];
+
+
+    const renderMetadataContent = () => {
+      switch (metadataSection) {
+        case "Tags":
+          return (
+            <div className="p-4 space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {tagsMock.map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-gray-200 px-3 py-1 rounded-full text-sm"
+                  >
+                    {tag} <button className="ml-1">×</button>
+                  </span>
+                ))}
+              </div>
+              <input
+                type="text"
+                placeholder="Press enter to add more"
+                className="border p-2 rounded w-full"
+              />
+            </div>
+          );
+        case "Customize your Metadata":
+          return (
+            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <button className="border px-4 py-2 rounded-md mb-2">
+                  Add new field
+                </button>
+                <ul className="space-y-2">
+                  {customizeMetadataFields.map((f, i) => (
+                    <li
+                      key={i}
+                      className="border rounded p-2 flex justify-between items-center bg-gray-50"
+                    >
+                      <span>{f.name}</span>
+                      <button className="text-red-500">🗑</button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Field name</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full border rounded p-2"
+                  placeholder="Enter text"
+                />
+                <label className="block text-sm font-medium mt-4">
+                  Field property
+                </label>
+                <select className="mt-1 block w-full border rounded p-2">
+                  <option>Text input</option>
+                  <option>Dropdown input</option>
+                </select>
+                <label className="block text-sm font-medium mt-4">
+                  Field input
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter value or press enter"
+                  className="mt-1 block w-full border rounded p-2"
+                />
+                <button className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded">
+                  Save
+                </button>
+              </div>
+            </div>
+          );
+        case "Structured Metadata":
+          return (
+            <div className="p-4 space-y-4">
+              {structuredFields.map((field) => (
+                <div key={field.label}>
+                  <label className="block text-sm font-medium text-gray-700">
+                    {field.label}
+                  </label>
+                  <select className="mt-1 block w-full border rounded p-2">
+                    <option>Select</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+          );
+        case "Embedded Metadata":
+          return (
+            <div className="p-4">
+              {embeddedFields.map((entry, i) => (
+                <p key={i} className="text-sm border-b py-1">
+                  {entry}
+                </p>
+              ))}
+            </div>
+          );
+        default:
+          return <div className="p-4">Select a Metadata sub-section</div>;
+      }
+    };
+
+    const renderMetadataSidebar = () => (
+      <div className="px-4 py-2">
+        {[
+          "Tags",
+          "Customize your Metadata",
+          "Structured Metadata",
+          "Embedded Metadata",
+        ].map((section) => (
+          <button
+            key={section}
+            onClick={() => setMetadataSection(section)}
+            className={classNames(
+              metadataSection === section
+                ? "text-indigo-600 font-semibold"
+                : "text-gray-700",
+              "flex justify-between w-full text-left py-2 hover:text-indigo-600"
+            )}
+          >
+            {section}
+          </button>
+        ))}
+      </div>
+    );
 
   const optionalContent = () => {
     switch (selectedTab) {
@@ -188,7 +332,7 @@ export default function Page() {
           <div>
             <div className="p-2">
               <h1 className="py-4 text-2xl">Download Options</h1>
-              <div className="flex flex-row flex-wrap justify-evenly py-2">
+              <div className="grid gap-2 grid-cols-2">
                 {navigation.social.map((item) => (
                   <Link
                     key={item.name}
@@ -197,51 +341,26 @@ export default function Page() {
                   >
                     <button
                       type="button"
-                      className="inline-flex items-center px-3 py-2 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-400 bg-white outline-none ring-2 ring-offset-2 ring-gray-400"
+                      className="inline-flex items-center w-full px-3 py-2 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-400 bg-white outline-none ring-2 ring-offset-2 ring-gray-400"
                     >
                       <item.icon className="h-6 w-6" aria-hidden="true" />
-                      <span className="px-2"> {item.name}</span>
+                      <span className="px-2">{item.name}</span>
                     </button>
                   </Link>
                 ))}
               </div>
               <h2 className="py-4 border-t ">Mapped Objects</h2>
               <div className="flex justify-between items-center p-3">
-                <div className="mr-4 flex-shrink-0 self-center">
+                <div className="mr-4 inline-flex items-center flex-shrink-0 self-center">
                   <img
                     src={products[0].imageSrc}
                     alt={products[0].imageAlt}
                     className="w-20 h-16 object-center object-cover rounded-lg"
                   />
-                </div>
-                <div className="flex flex-row justify-between items-center text-sm">
-                  <div>
+                  <div className="px-2">
                     <span>1080 x 1080</span>
                     <br />
                     <span>3.0mb</span>
-                  </div>
-                </div>
-                <div className="justify-end">
-                  <CloudDownloadIcon
-                    className="-ml-1 mr-2 h-5 w-5"
-                    aria-hidden="true"
-                  />
-                  jpg
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-3">
-                <div className="mr-4 flex-shrink-0 self-center">
-                  <img
-                    src={products[0].imageSrc}
-                    alt={products[0].imageAlt}
-                    className="w-20 h-16 object-center object-cover rounded-lg"
-                  />
-                </div>
-                <div className="flex flex-row justify-between items-center text-sm">
-                  <div>
-                    <span>1080 x 1080</span>
-                    <br />
-                    <span>5.0mb</span>
                   </div>
                 </div>
                 <div className="justify-end">
@@ -425,6 +544,10 @@ export default function Page() {
                     )}
                   </Disclosure>
                 ))}
+
+                <aside className="md:w-64 border-r bg-white">
+                  {renderMetadataSidebar()}
+                </aside>
               </div>
             </div>
           </div>

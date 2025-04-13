@@ -31,33 +31,21 @@ const filters = [
     id: "Approval Status",
     name: "Approval Status",
     options: [
-      { value: "accepted", label: "Accepted" },
+      { value: "accepted", label: "Approved" },
       { value: "rejected", label: "Rejected" },
     ],
   },
   {
     id: "Display Name",
     name: "Display Name",
-    options: [
-      { value: "start with", label: "Start With" },
-      { value: "Equal to", label: "Equal to" },
-    ],
   },
   {
     id: "Tag",
     name: "Tag",
-    options: [
-      { value: "today", label: "Today" },
-      { value: "7days", label: "Last 7 days" },
-    ],
   },
   {
     id: "SKU",
     name: "SKU",
-    options: [
-      { value: "today", label: "Today" },
-      { value: "7days", label: "Last 7 days" },
-    ],
   },
   {
     id: "Dimensions",
@@ -65,12 +53,12 @@ const filters = [
     options: [
       { value: "9:16", label: "9:16" },
       { value: "post/story", label: "Post / Story" },
-      { value: "feed/story", label: "Post / Story" },
-      { value: "1x1 / 9x16", label: "1x1/9x16" },
-      { value: "1:1 / 9:16", label: "1:1/9:16" },
-      { value: "1.1 / 9.16", label: "1.1/9.16" },
-      { value: "4x5 / 9x16", label: "4x5/9x16" },
-      { value: "4:5 / 9:16", label: "4:5/9:16" },
+      { value: "feed/story", label: "Feed / Story" },
+      { value: "1x1 / 9x16", label: "1x1 / 9x16" },
+      { value: "1:1 / 9:16", label: "1:1 / 9:16" },
+      { value: "1.1 / 9.16", label: "1.1 / 9.16" },
+      { value: "4x5 / 9x16", label: "4x5 / 9x16" },
+      { value: "4:5 / 9:16", label: "4:5 / 9:16" },
     ],
   },
   {
@@ -82,7 +70,7 @@ const filters = [
       { value: "30days", label: "Last 30 days" },
       { value: "90days", label: "Last 90 days" },
       { value: "year", label: "This Year" },
-      { value: "customer", label: "Custom" },
+      { value: "custom", label: "Custom" },
     ],
   },
 ];
@@ -177,33 +165,114 @@ const products = [
     type: "image",
   },
 ];
-export default function Page() {
-  const [filterType, setFilterType] = useState("all");
 
-  const product = {
-    name: "Zip Tote Basket",
-    price: "$220",
-    rating: 3.9,
-    href: "#",
-    description:
-      "The Zip Tote Basket is the perfect midpoint between shopping tote and comfy backpack. With convertible straps, you can hand carry, should sling, or backpack this convenient and spacious bag. The zip top and durable canvas construction keeps your goods protected for all-day use.",
-    imageSrc:
-      "https://tailwindui.com/img/ecommerce-images/product-page-03-product-04.jpg",
-    imageAlt: "Back angled view with bag open and handles to the side.",
-    colors: [
-      {
-        name: "Washed Black",
-        bgColor: "bg-gray-700",
-        selectedColor: "ring-gray-700",
-      },
-      { name: "White", bgColor: "bg-white", selectedColor: "ring-gray-400" },
-      {
-        name: "Washed Gray",
-        bgColor: "bg-gray-500",
-        selectedColor: "ring-gray-500",
-      },
-    ],
+export function ApprovalStatusFilter() {
+  return (
+    <select className="w-full border rounded-md p-2 text-sm">
+      <option value="accepted">Approved</option>
+      <option value="rejected">Rejected</option>
+    </select>
+  );
+}
+
+export function DisplayNameFilter() {
+  return (
+    <div>
+      <div className="flex items-center space-x-4 mb-2">
+        <label>
+          <input type="radio" name="displayNameMode" defaultChecked /> Starts
+          With
+        </label>
+        <label>
+          <input type="radio" name="displayNameMode" /> Equals To
+        </label>
+      </div>
+      <input
+        type="text"
+        placeholder="Type to Filter"
+        className="w-full border rounded-md p-2 text-sm"
+      />
+    </div>
+  );
+}
+
+export function TagFilter() {
+  return (
+    <select className="w-full border rounded-md p-2 text-sm">
+      <option value="today">Today</option>
+      <option value="7days">Last 7 days</option>
+    </select>
+  );
+}
+
+// components/filters/SKUFilter.jsx
+export function SKUFilter() {
+  return (
+    <div>
+      <div className="mb-2">
+        <select className="w-full border rounded-md p-2 text-sm">
+          <option>Starts With</option>
+          <option>Equals To</option>
+        </select>
+      </div>
+      <input
+        type="text"
+        placeholder="Type to Filter"
+        className="w-full border rounded-md p-2 text-sm"
+      />
+    </div>
+  );
+}
+
+export function DimensionsFilter({
+  options,
+}: {
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <select className="w-full border rounded-md p-2 text-sm">
+      {options?.map((option, idx) => (
+        <option key={idx} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+export function UploadDateFilter({
+  options,
+}: {
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="space-y-1">
+        {options.map((option, idx) => (
+          <label key={idx} className="block">
+            <input type="radio" name="uploadDate" className="mr-2" />
+            {option.label}
+          </label>
+        ))}
+      </div>
+      <div className="flex space-x-2">
+        <input type="date" className="w-1/2 border rounded-md p-2 text-sm" />
+        <input type="date" className="w-1/2 border rounded-md p-2 text-sm" />
+      </div>
+    </div>
+  );
+}
+
+export default function Page() {
+  const [selectedValues, setSelectedValues] = useState<Record<string, string>>(
+    {}
+  );
+  const [customDateSelected, setCustomDateSelected] = useState(false);
+
+  const updateValue = (id: string, label: string) => {
+    setSelectedValues((prev) => ({ ...prev, [id]: label }));
   };
+  const [filterType, setFilterType] = useState("all");
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [openModal2, setOpenModal2] = useState(false);
@@ -211,6 +280,7 @@ export default function Page() {
     { name: "All", href: "#", current: true },
     { name: "Images", href: "#", current: false },
     { name: "Videos", href: "#", current: false },
+    { name: "Collections", href: "#", current: false },
   ];
 
   const filteredProducts =
@@ -222,7 +292,7 @@ export default function Page() {
     name: "IMG_4985.HEIC",
     size: "3.9 MB",
     source:
-      "https://images.unsplash.com/photo-1582053433976-25c00369fc93?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=512&q=80",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
     information: {
       "Uploaded by": "Marie Culver",
       Created: "June 8, 2020",
@@ -313,14 +383,80 @@ export default function Page() {
                   </nav>
                 </div>
                 <div className="flex justify-evenly items-center">
-                  <select
-                    id="asset"
-                    name="asset"
-                    className="inline-flex  mx-3 items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  <Menu
+                    as="div"
+                    className="relative inline-block text-left mx-3"
                   >
-                    <option>Import Assets</option>
-                    <option>Can view</option>
-                  </select>
+                    <div>
+                      <Menu.Button className="inline-flex z-50 justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
+                        Import Assets
+                        <ChevronDownIcon
+                          className="-mr-1 ml-2 h-5 w-5"
+                          aria-hidden="true"
+                        />
+                      </Menu.Button>
+                    </div>
+
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-100"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+                    >
+                      <Menu.Items className="origin-top-right absolute z-50 right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <div className="py-1">
+                          <Menu.Item>
+                            {({ active }) => (
+                              <a
+                                href="#"
+                                className={classNames(
+                                  active
+                                    ? "bg-gray-100 text-gray-900"
+                                    : "text-gray-700",
+                                  "block px-4 py-2 text-sm"
+                                )}
+                              >
+                                Facebook
+                              </a>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <a
+                                href="#"
+                                className={classNames(
+                                  active
+                                    ? "bg-gray-100 text-gray-900"
+                                    : "text-gray-700",
+                                  "block px-4 py-2 text-sm"
+                                )}
+                              >
+                                Tiktok
+                              </a>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <a
+                                href="#"
+                                className={classNames(
+                                  active
+                                    ? "bg-gray-100 text-gray-900"
+                                    : "text-gray-700",
+                                  "block px-4 py-2 text-sm"
+                                )}
+                              >
+                                Google Ads
+                              </a>
+                            )}
+                          </Menu.Item>
+                        </div>
+                      </Menu.Items>
+                    </Transition>
+                  </Menu>
                   <button
                     onClick={() => {
                       setOpenModal2(true);
@@ -381,62 +517,6 @@ export default function Page() {
                         </div>
 
                         {/* Filters */}
-                        <form className="mt-4">
-                          {filters.map((section) => (
-                            <Disclosure
-                              as="div"
-                              key={section.name}
-                              className="border-t border-gray-200 px-4 py-6"
-                            >
-                              {({ open }) => (
-                                <>
-                                  <h3 className="-mx-2 -my-3 flow-root">
-                                    <Disclosure.Button className="px-2 py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 border-2 border-gray-900 outline-none rounded-md">
-                                      <span className="font-medium text-gray-900">
-                                        {section.name}
-                                      </span>
-                                      <span className="ml-6 flex items-center">
-                                        <ChevronDownIcon
-                                          className={classNames(
-                                            open ? "-rotate-180" : "rotate-0",
-                                            "h-5 w-5 transform"
-                                          )}
-                                          aria-hidden="true"
-                                        />
-                                      </span>
-                                    </Disclosure.Button>
-                                  </h3>
-                                  <Disclosure.Panel className="pt-6">
-                                    <div className="space-y-6">
-                                      {section.options.map(
-                                        (option, optionIdx) => (
-                                          <div
-                                            key={option.value}
-                                            className="flex items-center"
-                                          >
-                                            <input
-                                              id={`filter-mobile-${section.id}-${optionIdx}`}
-                                              name={`${section.id}[]`}
-                                              defaultValue={option.value}
-                                              type="checkbox"
-                                              className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
-                                            />
-                                            <label
-                                              htmlFor={`filter-mobile-${section.id}-${optionIdx}`}
-                                              className="ml-3 text-sm text-gray-500"
-                                            >
-                                              {option.label}
-                                            </label>
-                                          </div>
-                                        )
-                                      )}
-                                    </div>
-                                  </Disclosure.Panel>
-                                </>
-                              )}
-                            </Disclosure>
-                          ))}
-                        </form>
                       </div>
                     </Transition.Child>
                   </Dialog>
@@ -503,62 +583,161 @@ export default function Page() {
                       </button>
 
                       <Popover.Group className="hidden sm:flex sm:items-baseline sm:space-x-8">
-                        {filters.map((section, sectionIdx) => (
-                          <Popover
-                            as="div"
-                            key={section.name}
-                            id="desktop-menu"
-                            className="relative z-10 inline-block text-left"
-                          >
-                            <div>
-                              <Popover.Button className="group inline-flex items-center justify-center py-2 px-3 text-sm font-medium rounded-md text-gray-700  outline-none ring-2 ring-gray-200">
-                                <span>{section.name}</span>
-                                {sectionIdx === 0 ? (
-                                  <span className=""></span>
-                                ) : null}
-                                <ChevronDownIcon
-                                  className="flex-shrink-0 -mr-1 ml-1 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                                  aria-hidden="true"
-                                />
-                              </Popover.Button>
-                            </div>
-
-                            <Transition
-                              as={Fragment}
-                              enter="transition ease-out duration-100"
-                              enterFrom="transform opacity-0 scale-95"
-                              enterTo="transform opacity-100 scale-100"
-                              leave="transition ease-in duration-75"
-                              leaveFrom="transform opacity-100 scale-100"
-                              leaveTo="transform opacity-0 scale-95"
-                            >
-                              <Popover.Panel className="origin-top-right absolute right-0 mt-2 bg-white rounded-md shadow-2xl p-4 ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                <form className="space-y-4">
-                                  {section.options.map((option, optionIdx) => (
-                                    <div
-                                      key={option.value}
-                                      className="flex items-center"
-                                    >
-                                      <input
-                                        id={`filter-${section.id}-${optionIdx}`}
-                                        name={`${section.id}[]`}
-                                        defaultValue={option.value}
-                                        type="checkbox"
-                                        className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
+                        <form className="mt-4">
+                          <div className="flex flex-wrap gap-4">
+                            {filters.map((section) => (
+                              <Popover key={section.id} className="relative">
+                                {({ open }) => (
+                                  <>
+                                    <Popover.Button className="flex items-center justify-between px-4 py-2 text-sm  text-gray-500 bg-white border-2 border-gray-200 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none min-w-[160px]">
+                                      {selectedValues[section.id] ||
+                                        section.name}
+                                      <ChevronDownIcon
+                                        className={`ml-2 h-5 w-5 transition-transform duration-200 ${
+                                          open ? "-rotate-180" : "rotate-0"
+                                        }`}
                                       />
-                                      <label
-                                        htmlFor={`filter-${section.id}-${optionIdx}`}
-                                        className="ml-3 pr-6 text-sm font-medium text-gray-900 whitespace-nowrap"
-                                      >
-                                        {option.label}
-                                      </label>
-                                    </div>
-                                  ))}
-                                </form>
-                              </Popover.Panel>
-                            </Transition>
-                          </Popover>
-                        ))}
+                                    </Popover.Button>
+
+                                    <Popover.Panel className="absolute z-10 mt-2 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-4">
+                                      {/* Approval Status & Dimensions */}
+                                      {section.options &&
+                                        section.id !== "Upload Date" && (
+                                          <ul className="space-y-2">
+                                            {section.options.map((opt) => (
+                                              <li key={opt.value}>
+                                                <button
+                                                  className="w-full text-left text-sm text-gray-500 hover:bg-gray-100 px-2 py-1 rounded"
+                                                  onClick={(e) => {
+                                                    e.preventDefault();
+                                                    updateValue(
+                                                      section.id,
+                                                      opt.label
+                                                    );
+                                                  }}
+                                                >
+                                                  {opt.label}
+                                                </button>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+
+                                      {/* Display Name & SKU behave similarly */}
+
+                                      {section.id === "Display Name" && (
+                                        <div>
+                                          <div className="flex items-center space-x-4 mb-2 text-gray-500">
+                                            <label>
+                                              <input
+                                                type="radio"
+                                                name="displayNameMode"
+                                                defaultChecked
+                                              />{" "}
+                                              Starts With
+                                            </label>
+                                            <label>
+                                              <input
+                                                type="radio"
+                                                name="displayNameMode"
+                                              />{" "}
+                                              Equals To
+                                            </label>
+                                          </div>
+                                          <input
+                                            type="text"
+                                            placeholder="Type to Filter"
+                                            className="w-full border rounded-md p-2 text-sm text-gray-500"
+                                            onChange={(e) => {
+                                              e.preventDefault();
+                                              updateValue(
+                                                section.id,
+                                                e.target.value
+                                              );
+                                            }}
+                                          />
+                                        </div>
+                                      )}
+
+                                      {/* Display for tag ans sku */}
+                                      {section.id === "Tag" ||
+                                      section.id === "SKU" ? (
+                                        <div>
+                                          <div className="mb-2">
+                                            <select className="w-full border rounded-md p-2 text-sm text-gray-500">
+                                              <option>Starts With</option>
+                                              <option>Equals To</option>
+                                            </select>
+                                          </div>
+                                          <input
+                                            type="text"
+                                            placeholder="Type to Filter"
+                                            className="w-full border rounded-md p-2 text-sm"
+                                            onChange={(e) => {
+                                              e.preventDefault();
+                                              updateValue(
+                                                section.id,
+                                                e.target.value
+                                              );
+                                            }}
+                                          />
+                                        </div>
+                                      ) : null}
+
+                                      {/* Upload Date special logic */}
+                                      {section.id === "Upload Date" && (
+                                        <div className="space-y-2">
+                                          <div className="space-y-1">
+                                            {(section.options ?? []).map(
+                                              (option) => (
+                                                <label
+                                                  key={option.value}
+                                                  className="block text-sm text-start text-gray-500"
+                                                >
+                                                  <input
+                                                    type="radio"
+                                                    name="uploadDate"
+                                                    value={option.value}
+                                                    className="mr-2"
+                                                    onChange={(e) => {
+                                                      updateValue(
+                                                        section.id,
+                                                        option.label
+                                                      );
+                                                      setCustomDateSelected(
+                                                        option.value ===
+                                                          "custom"
+                                                      );
+                                                      e.preventDefault();
+                                                    }}
+                                                  />
+                                                  {option.label}
+                                                </label>
+                                              )
+                                            )}
+                                          </div>
+
+                                          {customDateSelected && (
+                                            <div className="flex space-x-2 pt-2 text-gray-500">
+                                              <input
+                                                type="date"
+                                                className="w-1/2 border rounded-md p-2 text-sm"
+                                              />
+                                              <input
+                                                type="date"
+                                                className="w-1/2 border rounded-md p-2 text-sm"
+                                              />
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </Popover.Panel>
+                                  </>
+                                )}
+                              </Popover>
+                            ))}
+                          </div>
+                        </form>
                       </Popover.Group>
                     </div>
                   </section>
@@ -573,7 +752,7 @@ export default function Page() {
                     Products
                   </h2>
 
-                  <div className="grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+                  <div className="grid grid-cols-12 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
                     {filteredProducts.map((product) => (
                       <div
                         key={product.id}
@@ -592,10 +771,10 @@ export default function Page() {
 
                           <div className="flex justify-between items-center">
                             <div>
-                              <h3 className="mt-4 text-sm text-gray-700">
+                              <h3 className="mt-4 text-sm text-gray-500">
                                 {product.name}
                               </h3>
-                              <p className="mt-1 text-xs font-medium text-gray-900">
+                              <p className="mt-1 text-xs font-medium text-gray-500">
                                 {product.price}
                               </p>
                             </div>
@@ -603,13 +782,20 @@ export default function Page() {
                               <Menu as="div" className="ml-3 relative">
                                 <div className="inline-flex justify-center items-center">
                                   <Menu.Button className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                    <CursorClickIcon
-                                      className="h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    <span className="sr-only">
-                                      Open options
-                                    </span>
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      strokeWidth={1.5}
+                                      stroke="currentColor"
+                                      className="size-6"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"
+                                      />
+                                    </svg>
                                   </Menu.Button>
                                 </div>
                                 <Transition
@@ -756,33 +942,24 @@ export default function Page() {
                       </button>
 
                       <div className="flex flex-col justify-center items-center mt-10">
-                        <img
-                          src={currentFile.source}
-                          alt=""
-                          className="w-96 h-96 object-cover rounded-xl"
-                        />
                         <div className="mt-4 flex flex-row items-center justify-between w-full">
                           <div>
-                            <h2 className="text-lg font-medium text-gray-900">
-                              {currentFile.name}
+                            <h2 className="text-lg py-2 font-medium text-gray-900">
+                              View Metadata ({currentFile.name})
                             </h2>
-                            <p className="text-sm font-medium text-gray-500">
-                              {currentFile.size}
-                            </p>
                           </div>
                           <div>
                             <button
                               type="button"
                               className="ml-4 bg-white rounded-full h-8 w-8 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            >
-                              <HeartIcon
-                                className="h-6 w-6"
-                                aria-hidden="true"
-                              />
-                              <span className="sr-only">Favorite</span>
-                            </button>
+                            ></button>
                           </div>
                         </div>
+                        <img
+                          src={currentFile.source}
+                          alt=""
+                          className="w-96 h-96 object-cover rounded-xl"
+                        />
 
                         <div className="w-full py-4">
                           <div>

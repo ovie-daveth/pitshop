@@ -61,31 +61,33 @@ export default function EmailNotifications() {
 
   return (
     <div className="max-w-2xl">
-      <h2 className="text-xl font-medium text-gray-900 mb-2">Email notifications</h2>
-      <p className="text-sm text-gray-500 mb-6">
+      <h2 className="text-xl font-normal text-gray-900 mb-2">Email notifications</h2>
+      <p className="text-sm text-gray-500 mb-6 font-light">
         We will send you notifications to inform you of any updates and/or changes as events occur for you or your
         business in Pitoup. Select which notifications you want to receive below:
       </p>
 
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="mt-10">
+        <div className="space-y-6">
           {notifications.map((notification) => (
             <div key={notification.id} className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-gray-900">{notification.type}</div>
-                <div className="text-sm text-gray-500">{notification.description}</div>
+                <div className="font-normal text-gray-900">{notification.type}</div>
+                <div className="text-sm text-gray-500 font-light">{notification.description}</div>
               </div>
-              <Checkbox
-                id={`notification-${notification.id}`}
-                checked={notification.checked}
-                onChange={() => toggleNotification(notification.id)}
-                className="h-5 w-5 border-blue-500 text-blue-600 focus:ring-blue-500"
-              />
+              <input
+  type="checkbox"
+  id={`notification-${notification.id}`}
+  checked={notification.checked}
+  onChange={() => toggleNotification(notification.id)}
+  className="h-4 w-4 accent-blue-600 focus:ring-blue-500"
+/>
+
             </div>
           ))}
         </div>
 
-        <Button type="submit" className="mt-6 bg-blue-600 hover:bg-blue-700">
+        <Button type="submit" className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
           Save
         </Button>
       </form>

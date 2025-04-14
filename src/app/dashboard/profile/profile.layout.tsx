@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import Sidebar from "./components/sidebar"
 import UserDropdown from "./components/use-drop-down"
+import WrapperLayout from "@/components/WrapperLayout"
 
 interface LayoutProps {
   children: ReactNode
@@ -18,14 +19,9 @@ export default function Layout({
   setShowCreateBusiness,
 }: LayoutProps) {
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <div className="flex flex-col flex-1 max-w-6xl mx-auto bg-white shadow-sm">
-        <header className="flex items-center justify-between p-6 border-b">
-          <h1 className="text-xl font-medium text-gray-900">Profile Settings</h1>
-          <UserDropdown />
-        </header>
-
-        <div className="flex flex-1">
+    <WrapperLayout>
+    <div className="w-full md:py-8 -mt-5">
+        <div className="flex md:flex-row flex-col w-full lg:gap-24 gap-5">
           <Sidebar
             activeTab={activeTab}
             setActiveTab={(tab) => {
@@ -35,9 +31,9 @@ export default function Layout({
               }
             }}
           />
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 md:p-6 p-3">{children}</main>
         </div>
-      </div>
     </div>
+    </WrapperLayout>
   )
 }

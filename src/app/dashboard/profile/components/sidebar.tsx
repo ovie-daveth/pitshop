@@ -32,7 +32,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             className="pl-2 py-2.5 text-left text-sm font-medium w-full bg-blue-50 text-blue-600 border-l-2 border-blue-600"
             onClick={() => setIsExpanded(prev => !prev)}
           >
-            {selectedTab.label}
+            {selectedTab?.label}
           </button>
           <button className="p-2" onClick={() => setIsExpanded(prev => !prev)}>
             <ChevronDoubleRightIcon
@@ -67,7 +67,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
                     setIsExpanded(false)
                   }}
                 >
-                  {tab.label}
+                  {tab?.label}
                 </button>
               ))}
           </div>
@@ -88,7 +88,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
               )}
               onClick={() => setActiveTab(tab.id)}
             >
-              {tab.label}
+              {tab?.label}
             </button>
           ))}
         </nav>

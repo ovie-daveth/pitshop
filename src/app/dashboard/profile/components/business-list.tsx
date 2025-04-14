@@ -56,7 +56,7 @@ export default function BusinessList({ onCreateNew, onEdit }: BusinessListProps)
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ">{business.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button
-                    onClick={() => onEdit(business)}
+                   onClick={() => onEdit(business)}
                     className="text-blue-600 hover:text-blue-900 flex items-end justify-end gap-1 w-full"
                   >
                     <PencilIcon className="h-4 w-4" />

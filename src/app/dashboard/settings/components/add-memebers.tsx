@@ -79,8 +79,11 @@ const AddMmebers = ({ pendingInvites, setPendingInvites, roles, rolesLoading, ro
     //Step 1: Prepare invite data
     const inviteData = teamMembers.map((member) => ({
       email: member.email,
-      roles: [member.role.id as number],
+      roles: [Number(member.role.id)]
     }));
+
+    console.log("inviteData", inviteData);
+
 
     await createMultipleInviteUsers({invitedUserDtos: inviteData})
     .then((res) => {

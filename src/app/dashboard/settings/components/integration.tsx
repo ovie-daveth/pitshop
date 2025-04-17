@@ -1,6 +1,13 @@
 "use client"
 
-import { useState } from "react"
+declare global {
+  interface Window {
+    fbAsyncInit: () => void;
+    FB: any;
+  }
+}
+
+import { useEffect, useState } from "react"
 import { FiChevronRight, FiEye, FiArrowLeft, FiLoader, FiEyeOff } from "react-icons/fi"
 import { FaFacebook, FaSnapchat } from "react-icons/fa"
 import { Switch } from "@headlessui/react"
@@ -10,6 +17,7 @@ import snapshot from "../../../../../public/images/snapshot.png"
 import ads from "../../../../../public/images/adds.png"
 import Image from "next/image"
 import { EyeIcon } from "@heroicons/react/solid"
+import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 
 
 // Integration data
@@ -127,6 +135,28 @@ export default function IntegrationComponent() {
     ),
   )
 
+
+  useEffect(() => {
+    // Load Facebook SDK
+    if (typeof window !== "undefined" && !window.FB) {
+      window.fbAsyncInit = function () {
+        window.FB.init({
+          appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
+          cookie: true,
+          xfbml: true,
+          version: "v18.0",
+        });
+      };
+  
+      const script = document.createElement("script");
+      script.src = "https://connect.facebook.net/en_US/sdk.js";
+      script.async = true;
+      document.body.appendChild(script);
+
+      console.log("passed")
+    }
+  }, []);
+
   // New function to toggle ID visibility
   const toggleIdVisibility = (accountId: number) => {
     setShowAccountIds((prev) => ({
@@ -135,21 +165,87 @@ export default function IntegrationComponent() {
     }))
   }
 
-  const handleConnect = (integrationId: number) => {
-    // Set connecting state
-    setIntegrationStatuses((prev) => ({
-      ...prev,
-      [integrationId]: "connecting",
-    }))
+  // const handleConnect = (integrationId: number) => {
+  //   // Set connecting state
+  //   setIntegrationStatuses((prev) => ({
+  //     ...prev,
+  //     [integrationId]: "connecting",
+  //   }))
 
-    // Simulate API call
-    setTimeout(() => {
+  //   // Simulate API call
+  //   setTimeout(() => {
+  //     setIntegrationStatuses((prev) => ({
+  //       ...prev,
+  //       [integrationId]: "connected",
+  //     }))
+  //   }, 1500)
+  // }
+
+  const handleConnect = async (integrationId: number) => {
+    if (integrationId === 1) {
+      // Meta Ads => Facebook Login
+      console.log("id", window.FB)
+      window.FB.login(
+        async (response: any) => {
+          if (response.authResponse) {
+            const accessToken = response.authResponse.accessToken;
+  
+            // Send to backend
+            try {
+              const res = await fetch("/api/facebook-login", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ accessToken }),
+              });
+  
+              const data = await res.json();
+              console.log("Facebook login response:", data);
+  
+              setIntegrationStatuses((prev) => ({
+                ...prev,
+                [integrationId]: "connected",
+              }));
+            } catch (err) {
+              console.error("Login failed", err);
+              setIntegrationStatuses((prev) => ({
+                ...prev,
+                [integrationId]: "disconnected",
+              }));
+            }
+          } else {
+            console.log("User cancelled login or did not authorize.");
+            setIntegrationStatuses((prev) => ({
+              ...prev,
+              [integrationId]: "disconnected",
+            }));
+          }
+        },
+        { scope: "email,public_profile,pages_show_list,ads_management" } // add scopes as needed
+      );
+  
+      // Set to connecting
       setIntegrationStatuses((prev) => ({
         ...prev,
-        [integrationId]: "connected",
-      }))
-    }, 1500)
-  }
+        [integrationId]: "connecting",
+      }));
+    } else {
+      // Simulate API call for others
+      setIntegrationStatuses((prev) => ({
+        ...prev,
+        [integrationId]: "connecting",
+      }));
+  
+      setTimeout(() => {
+        setIntegrationStatuses((prev) => ({
+          ...prev,
+          [integrationId]: "connected",
+        }));
+      }, 1500);
+    }
+  };
+  
 
   const handleViewDetails = (integrationId: number) => {
     setSelectedIntegration(integrationId)

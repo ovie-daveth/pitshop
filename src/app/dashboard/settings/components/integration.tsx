@@ -16,7 +16,6 @@ import tiktok from "../../../../../public/images/tiktok.png"
 import snapshot from "../../../../../public/images/snapshot.png"
 import ads from "../../../../../public/images/adds.png"
 import Image from "next/image"
-import { EyeIcon } from "@heroicons/react/solid"
 import { useAdPlatformState } from "@/api/context/AdPlatformContext";
 import { IIntegrateAdPlatformAccount } from "@/api/types";
 
@@ -32,7 +31,7 @@ function loadFacebookSDK(appId: string): Promise<void> {
         appId,
         cookie: true,
         xfbml: true,
-        version: "v18.0",
+        version: "v22.0",
       });
       resolve();
     };
@@ -203,8 +202,7 @@ export default function IntegrationComponent() {
   
         await loadFacebookSDK(process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!);
   
-        window.FB.login(
-          async (response: any) => {
+        window.FB.login((response: any) => {
             if (response.authResponse) {
               const accessToken = response.authResponse.accessToken;
   
@@ -213,7 +211,7 @@ export default function IntegrationComponent() {
                 token: accessToken,
               };
   
-              const res = await integrateAdAccount(request);
+              const res = integrateAdAccount(request);
               console.log("Facebook login response:", res);
   
               setIntegrationStatuses((prev) => ({

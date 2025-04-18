@@ -18,6 +18,8 @@ import ads from "../../../../../public/images/adds.png"
 import Image from "next/image"
 import { EyeIcon } from "@heroicons/react/solid"
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import { useAdPlatformState } from "@/api/context/AdPlatformContext";
+import { IIntegrateAdPlatformAccount } from "@/api/types";
 
 
 // Integration data
@@ -112,6 +114,8 @@ export default function IntegrationComponent() {
     ),
   )
 
+  const {integrateAdAccount} = useAdPlatformState()
+
   const [showDetailView, setShowDetailView] = useState(false)
   const [selectedIntegration, setSelectedIntegration] = useState<number | null>(null)
   const [accountStatuses, setAccountStatuses] = useState<Record<number, boolean>>(
@@ -192,16 +196,14 @@ export default function IntegrationComponent() {
   
             // Send to backend
             try {
-              const res = await fetch("/api/facebook-login", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ accessToken }),
-              });
-  
-              const data = await res.json();
-              console.log("Facebook login response:", data);
+
+              const request: IIntegrateAdPlatformAccount = {
+                platformId: 1,
+                token: accessToken
+              }
+              const res = await integrateAdAccount(request)
+
+              console.log("Facebook login response:", res);
   
               setIntegrationStatuses((prev) => ({
                 ...prev,

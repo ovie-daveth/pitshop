@@ -16,7 +16,6 @@ import tiktok from "../../../../../public/images/tiktok.png"
 import snapshot from "../../../../../public/images/snapshot.png"
 import ads from "../../../../../public/images/adds.png"
 import Image from "next/image"
-import { EyeIcon } from "@heroicons/react/solid"
 import { useAdPlatformState } from "@/api/context/AdPlatformContext";
 import { IIntegrateAdPlatformAccount } from "@/api/types";
 
@@ -32,7 +31,7 @@ function loadFacebookSDK(appId: string): Promise<void> {
         appId,
         cookie: true,
         xfbml: true,
-        version: "v18.0",
+        version: "v22.0",
       });
       resolve();
     };

@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useRef } from "react";
 import { Dialog, Transition, Menu, Popover } from "@headlessui/react";
 
 import { ChevronDownIcon, MenuAlt1Icon } from "@heroicons/react/solid";
@@ -30,13 +30,9 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
     {}
   );
 
-  const updateValue = (id: string, label: string) => {
-    setSelectedValues((prev) => ({ ...prev, [id]: label }));
-  };
   const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
-
   const [modalStep, setModalStep] = useState("initial");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [groupByName, setGroupByName] = useState(false);
@@ -44,12 +40,15 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
   const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
   const [finalItems, setFinalItems] = useState<FileGroup[]>([]);
   const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>(0);
+  const [replacementTarget, setReplacementTarget] = useState<{
+    groupIdx: number;
+    fileIdx: number;
+  } | null>(null);
+  const dropRef = useRef<HTMLInputElement | null>(null);
   const [fileTypeFilter, setFileTypeFilter] = useState<
     "all" | "image" | "video"
   >("all");
-
-  const filePattern =
-    /^(.+?)[_\-x:](\d+[x:]\d+|1:1|4:5|9:16|16:9|1\.91:1|post|story|feed)(?:\..+)?$/i;
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const reset = () => {
     setModalStep("initial");
@@ -60,6 +59,155 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
     setFileInputKey((prev) => prev + 1);
     setFileTypeFilter("all");
     onClose();
+  };
+
+  const filteredFiles = uploadedFiles.filter((file) => {
+    if (fileTypeFilter === "image") return file.type.startsWith("image/");
+    if (fileTypeFilter === "video") return file.type.startsWith("video/");
+    return true;
+  });
+
+  const updateValue = (id: string, label: string) => {
+    setSelectedValues((prev) => ({ ...prev, [id]: label }));
+  };
+
+  const filePattern =
+    /^([a-z0-9]+)[_\-x:]?(\d+[x:]\d+|1:1|4:5|9:16|16:9|1\.91:1|post|story|feed|\w+)?(?:\..+)?$/i;
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []) as File[];
+    setUploadedFiles(files);
+  };
+
+  const handleConfirm = () => {
+    if (!uploadedFiles.length) return;
+
+    const grouped: Record<string, File[]> = {};
+    const usedFiles = new Set<File>();
+
+    uploadedFiles.forEach((file) => {
+      const match = file.name.match(filePattern);
+      if (match) {
+        const prefix = match[1].toLowerCase();
+        if (!grouped[prefix]) grouped[prefix] = [];
+        grouped[prefix].push(file);
+        usedFiles.add(file);
+      }
+    });
+
+    const result: FileGroup[] = [];
+
+    if (groupByName) {
+      Object.entries(grouped).forEach(([prefix, files]) => {
+        result.push({ id: prefix, files });
+      });
+
+      let itemCount = 1;
+      uploadedFiles.forEach((file) => {
+        if (!usedFiles.has(file)) {
+          result.push({ id: `item-${itemCount++}`, files: [file] });
+        }
+      });
+    } else {
+      uploadedFiles.forEach((file, idx) => {
+        result.push({ id: `item-${idx + 1}`, files: [file] });
+      });
+    }
+
+    setFinalItems(result);
+    setSelectedGroupIndex(0);
+    setModalStep("review");
+  };
+
+  const handleDeleteFile = (fileToDelete: File) => {
+    const updatedFiles = uploadedFiles.filter((file) => file !== fileToDelete);
+    setUploadedFiles(updatedFiles);
+
+    const updatedFinalItems: FileGroup[] = [];
+    const grouped: Record<string, File[]> = {};
+    const usedFiles = new Set<File>();
+
+    updatedFiles.forEach((file) => {
+      const match = file.name.match(filePattern);
+      if (match) {
+        const prefix = match[1].toLowerCase();
+        if (!grouped[prefix]) grouped[prefix] = [];
+        grouped[prefix].push(file);
+        usedFiles.add(file);
+      }
+    });
+
+    if (groupByName) {
+      Object.entries(grouped).forEach(([prefix, files]) => {
+        updatedFinalItems.push({ id: prefix, files });
+      });
+
+      let itemCount = 1;
+      updatedFiles.forEach((file) => {
+        if (!usedFiles.has(file)) {
+          updatedFinalItems.push({
+            id: `item-${itemCount++}`,
+            files: [file],
+          });
+        }
+      });
+    } else {
+      updatedFiles.forEach((file, idx) => {
+        updatedFinalItems.push({ id: `item-${idx + 1}`, files: [file] });
+      });
+    }
+
+    setFinalItems(updatedFinalItems);
+    if (selectedGroupIndex >= updatedFinalItems.length) {
+      setSelectedGroupIndex(Math.max(0, updatedFinalItems.length - 1));
+    }
+  };
+
+  const handleReplaceFile = (groupIdx: number, fileIdx: number) => {
+    setReplacementTarget({ groupIdx, fileIdx });
+    dropRef.current?.click();
+  };
+
+  const handleFileReplaceUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!replacementTarget || !event.target.files?.[0]) return;
+
+    const newFile = event.target.files[0];
+    const updatedFinalItems = [...finalItems];
+    updatedFinalItems[replacementTarget.groupIdx].files[
+      replacementTarget.fileIdx
+    ] = newFile;
+
+    setFinalItems(updatedFinalItems);
+    setReplacementTarget(null);
+  };
+
+  const handleDragOver = (
+    e: React.DragEvent<HTMLDivElement>,
+    fileIdx: number
+  ) => {
+    e.preventDefault();
+    setDragOverIdx(fileIdx);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIdx(null);
+  };
+
+  const handleDropReplace = (
+    e: React.DragEvent<HTMLDivElement>,
+    groupIdx: number,
+    fileIdx: number
+  ) => {
+    e.preventDefault();
+    setDragOverIdx(null);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    const updatedFinalItems = [...finalItems];
+    updatedFinalItems[groupIdx].files[fileIdx] = file;
+    setFinalItems(updatedFinalItems);
   };
 
   const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -75,61 +223,6 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
   const removeCategory = (cat: string) => {
     setCategories(categories.filter((c) => c !== cat));
   };
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []) as File[];
-    setUploadedFiles(files);
-  };
-
-  const handleConfirm = () => {
-    if (!uploadedFiles.length) return;
-
-    const grouped: Record<string, File[]> = {};
-    const ungrouped: File[] = [];
-
-    uploadedFiles.forEach((file) => {
-      const match = file.name.match(filePattern);
-      if (match) {
-        const prefix = match[1];
-        if (!grouped[prefix]) grouped[prefix] = [];
-        grouped[prefix].push(file);
-      } else {
-        ungrouped.push(file);
-      }
-    });
-
-    const result: FileGroup[] = [];
-
-    if (groupByName) {
-      const groupedEntries = Object.entries(grouped);
-
-      if (groupedEntries.length > 0) {
-        groupedEntries.forEach(([prefix, files]) => {
-          result.push({ id: prefix, files });
-        });
-
-        if (ungrouped.length > 0) {
-          result.push({ id: "Ungrouped", files: ungrouped });
-        }
-      } else {
-        result.push({ id: "All Files", files: uploadedFiles });
-      }
-    } else {
-      uploadedFiles.forEach((file, index) => {
-        result.push({ id: `item-${index + 1}`, files: [file] });
-      });
-    }
-
-    setFinalItems(result);
-    setSelectedGroupIndex(0);
-    setModalStep("review");
-  };
-
-  const filteredFiles = uploadedFiles.filter((file) => {
-    if (fileTypeFilter === "image") return file.type.startsWith("image/");
-    if (fileTypeFilter === "video") return file.type.startsWith("video/");
-    return true;
-  });
 
   const showErrorMessage = (
     <div className="text-left space-y-2 font-light text-gray-500">
@@ -162,6 +255,13 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
 
   return (
     <>
+      <input
+        ref={dropRef}
+        type="file"
+        accept="image/*,video/*"
+        className="hidden"
+        onChange={handleFileReplaceUpload}
+      />
       <Transition.Root show={isCategorizeOpen} as={Fragment}>
         <Dialog
           as="div"
@@ -234,7 +334,6 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                     </button>
                     <button
                       onClick={() => {
-                        // Save action here
                         setIsCategorizeOpen(false);
                       }}
                       className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
@@ -423,7 +522,22 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                                     return (
                                       <div
                                         key={idx}
-                                        className="flex items-center justify-between bg-gray-50 p-2 rounded-lg border"
+                                        className={`flex items-center justify-between bg-gray-50 p-2 rounded-lg border transition-colors ${
+                                          dragOverIdx === idx
+                                            ? "bg-blue-100 border-blue-400"
+                                            : ""
+                                        }`}
+                                        onDragOver={(e) =>
+                                          handleDragOver(e, idx)
+                                        }
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={(e) =>
+                                          handleDropReplace(
+                                            e,
+                                            selectedGroupIndex,
+                                            idx
+                                          )
+                                        }
                                       >
                                         <div className="flex items-center space-x-4">
                                           <img
@@ -460,7 +574,10 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                                             <Popover.Panel className="absolute right-0 z-10 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg py-2">
                                               <button
                                                 onClick={() =>
-                                                  alert("Replace file clicked")
+                                                  handleReplaceFile(
+                                                    selectedGroupIndex,
+                                                    idx
+                                                  )
                                                 }
                                                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                               >
@@ -468,7 +585,7 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                                               </button>
                                               <button
                                                 onClick={() =>
-                                                  alert("Delete file clicked")
+                                                  handleDeleteFile(file)
                                                 }
                                                 className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                                               >

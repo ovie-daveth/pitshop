@@ -19,7 +19,7 @@ export default function BusinessSettings() {
   useEffect(() => {
     getAllInvitedUsers()
     getRolesPermissions()
-  }, [selectedTab])
+  }, [])
 
   return (
     <WrapperLayout>

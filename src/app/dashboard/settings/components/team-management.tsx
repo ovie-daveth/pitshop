@@ -12,6 +12,63 @@ type PendingInvite = {
   email: string
 }
 
+// const mockRoles = [
+//   {
+//     id: 1,
+//     name: "Admin",
+//     description: "Full access to all system features",
+//     permissions: ["read", "write", "delete", "manage_users"],
+//     external: false,
+//     type: "system",
+//     updatedAt: "2023-01-01T00:00:00Z",
+//   },
+//   {
+//     id: 2,
+//     name: "Editor",
+//     description: "Can edit and publish content",
+//     permissions: ["read", "write"],
+//     external: false,
+//     type: "content",
+//     updatedAt: "2023-01-01T00:00:00Z",
+//   },
+//   {
+//     id: 3,
+//     name: "Viewer",
+//     description: "Read-only access to content",
+//     permissions: ["read"],
+//     external: false,
+//     type: "content",
+//     updatedAt: "2023-01-01T00:00:00Z",
+//   },
+//   {
+//     id: 4,
+//     name: "Billing Manager",
+//     description: "Manage billing and subscriptions",
+//     permissions: ["read", "manage_billing"],
+//     external: true,
+//     type: "finance",
+//     updatedAt: "2023-01-01T00:00:00Z",
+//   },
+//   {
+//     id: 5,
+//     name: " Manager",
+//     description: "Manage billing and subscriptions",
+//     permissions: ["read", "manage_billing"],
+//     external: true,
+//     type: "finance",
+//     updatedAt: "2023-01-01T00:00:00Z",
+//   },
+//   {
+//     id: 6,
+//     name: "Billing ",
+//     description: "Manage billing and subscriptions",
+//     permissions: ["read", "manage_billing"],
+//     external: true,
+//     type: "finance",
+//     updatedAt: "2023-01-01T00:00:00Z",
+//   },
+// ]
+
 export default function TeamManagement() {
   const { invites } = useUserState();
   const { roles, loading, error } = useRolesState();
@@ -37,7 +94,7 @@ export default function TeamManagement() {
     <div className="py-6">
       {/* Team Management Content */}
          {
-          loading ? <LoaderIcon /> : roles && <AddMmebers pendingInvites={pendingInvites} setPendingInvites={setPendingInvites} roles={roles} rolesLoading={loading} rolesError={error} />
+          loading ? <LoaderIcon /> : roles && <AddMmebers pendingInvites={pendingInvites} setPendingInvites={setPendingInvites} roles={roles} rolesLoading={loading} rolesError={error}  />
          }
       {/* Pending Invites Section */}
       <PendingInvites  pendingInvites={pendingInvites} setPendingInvites={setPendingInvites} />

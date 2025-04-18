@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
 import {
@@ -76,6 +76,13 @@ export default function WrapperLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const path = usePathname();
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+
   const NavLink = ({ item }: { item: typeof navigation[0] }) => {
     const isActive = path === item.href;
     return (
@@ -109,6 +116,7 @@ export default function WrapperLayout({
   return (
     <>
       <div>
+      {mounted && (
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
             as="div"
@@ -116,7 +124,6 @@ export default function WrapperLayout({
             onClose={setSidebarOpen}
           >
             <Transition.Child
-              as={Fragment}
               enter="transition-opacity ease-linear duration-300"
               enterFrom="opacity-0"
               enterTo="opacity-100"
@@ -124,11 +131,10 @@ export default function WrapperLayout({
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-            
+              <div className="fixed inset-0 bg-gray-600 bg-opacity-75" aria-hidden="true" />
             </Transition.Child>
 
             <Transition.Child
-              as={Fragment}
               enter="transition ease-in-out duration-300 transform"
               enterFrom="-translate-x-full"
               enterTo="translate-x-0"
@@ -138,7 +144,6 @@ export default function WrapperLayout({
             >
               <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white pt-5 pb-4">
                 <Transition.Child
-                  as={Fragment}
                   enter="ease-in-out duration-300"
                   enterFrom="opacity-0"
                   enterTo="opacity-100"
@@ -159,11 +164,7 @@ export default function WrapperLayout({
                 </Transition.Child>
 
                 <div className="flex items-center gap-x-3 px-4">
-                  <Image
-                    src={Favicon}
-                    alt="Pitstop Logo"
-                    className="h-8 w-auto"
-                  />
+                  <Image src={Favicon} alt="Pitstop Logo" className="h-8 w-auto" />
                   <span className="text-2xl font-bold text-gray-900">Pitstop</span>
                 </div>
 
@@ -178,6 +179,7 @@ export default function WrapperLayout({
             </Transition.Child>
           </Dialog>
         </Transition.Root>
+      )}
 
         {/* Static sidebar for desktop */}
         <div className="hidden xl:fixed xl:inset-y-0 xl:flex xl:w-64 xl:flex-col">

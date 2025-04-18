@@ -203,8 +203,7 @@ export default function IntegrationComponent() {
   
         await loadFacebookSDK(process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!);
   
-        window.FB.login(
-          async (response: any) => {
+        window.FB.login((response: any) => {
             if (response.authResponse) {
               const accessToken = response.authResponse.accessToken;
   
@@ -213,7 +212,7 @@ export default function IntegrationComponent() {
                 token: accessToken,
               };
   
-              const res = await integrateAdAccount(request);
+              const res = integrateAdAccount(request);
               console.log("Facebook login response:", res);
   
               setIntegrationStatuses((prev) => ({

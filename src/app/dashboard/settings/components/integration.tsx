@@ -17,9 +17,32 @@ import snapshot from "../../../../../public/images/snapshot.png"
 import ads from "../../../../../public/images/adds.png"
 import Image from "next/image"
 import { EyeIcon } from "@heroicons/react/solid"
-import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import { useAdPlatformState } from "@/api/context/AdPlatformContext";
 import { IIntegrateAdPlatformAccount } from "@/api/types";
+
+function loadFacebookSDK(appId: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (window.FB) {
+      resolve();
+      return;
+    }
+
+    window.fbAsyncInit = function () {
+      window.FB.init({
+        appId,
+        cookie: true,
+        xfbml: true,
+        version: "v18.0",
+      });
+      resolve();
+    };
+
+    const script = document.createElement("script");
+    script.src = "https://connect.facebook.net/en_US/sdk.js";
+    script.async = true;
+    document.body.appendChild(script);
+  });
+}
 
 
 // Integration data
@@ -140,28 +163,29 @@ export default function IntegrationComponent() {
   )
 
 
-  useEffect(() => {
-    // Load Facebook SDK
-    if (typeof window !== "undefined" && !window.FB) {
-      window.fbAsyncInit = function () {
-        window.FB.init({
-          appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
-          cookie: true,
-          xfbml: true,
-          version: "v18.0",
-        });
-      };
+  // useEffect(() => {
+  //   // Load Facebook SDK
+  //   if (typeof window !== "undefined" && !window.FB) {
+  //     window.fbAsyncInit = function () {
+  //       window.FB.init({
+  //         appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
+  //         cookie: true,
+  //         xfbml: true,
+  //         version: "v18.0",
+  //       });
+  //     };
   
-      const script = document.createElement("script");
-      script.src = "https://connect.facebook.net/en_US/sdk.js";
-      script.async = true;
-      document.body.appendChild(script);
+  //     const script = document.createElement("script");
+  //     script.src = "https://connect.facebook.net/en_US/sdk.js";
+  //     script.async = true;
+  //     document.body.appendChild(script);
 
-      console.log("passed")
-    }
-  }, []);
+  //     console.log("passed")
+  //   }
+  // }, []);
 
   // New function to toggle ID visibility
+  
   const toggleIdVisibility = (accountId: number) => {
     setShowAccountIds((prev) => ({
       ...prev,
@@ -169,71 +193,54 @@ export default function IntegrationComponent() {
     }))
   }
 
-  // const handleConnect = (integrationId: number) => {
-  //   // Set connecting state
-  //   setIntegrationStatuses((prev) => ({
-  //     ...prev,
-  //     [integrationId]: "connecting",
-  //   }))
-
-  //   // Simulate API call
-  //   setTimeout(() => {
-  //     setIntegrationStatuses((prev) => ({
-  //       ...prev,
-  //       [integrationId]: "connected",
-  //     }))
-  //   }, 1500)
-  // }
-
   const handleConnect = async (integrationId: number) => {
     if (integrationId === 1) {
-      // Meta Ads => Facebook Login
-      console.log("id", window.FB)
-      window.FB.login(
-        async (response: any) => {
-          if (response.authResponse) {
-            const accessToken = response.authResponse.accessToken;
+      try {
+        setIntegrationStatuses((prev) => ({
+          ...prev,
+          [integrationId]: "connecting",
+        }));
   
-            // Send to backend
-            try {
-
+        await loadFacebookSDK(process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!);
+  
+        window.FB.login(
+          async (response: any) => {
+            if (response.authResponse) {
+              const accessToken = response.authResponse.accessToken;
+  
               const request: IIntegrateAdPlatformAccount = {
                 platformId: 1,
-                token: accessToken
-              }
-              const res = await integrateAdAccount(request)
-
+                token: accessToken,
+              };
+  
+              const res = await integrateAdAccount(request);
               console.log("Facebook login response:", res);
   
               setIntegrationStatuses((prev) => ({
                 ...prev,
                 [integrationId]: "connected",
               }));
-            } catch (err) {
-              console.error("Login failed", err);
+            } else {
+              console.log("User cancelled login or did not authorize.");
               setIntegrationStatuses((prev) => ({
                 ...prev,
                 [integrationId]: "disconnected",
               }));
             }
-          } else {
-            console.log("User cancelled login or did not authorize.");
-            setIntegrationStatuses((prev) => ({
-              ...prev,
-              [integrationId]: "disconnected",
-            }));
+          },
+          {
+            scope: "email,public_profile,pages_show_list,ads_management",
           }
-        },
-        { scope: "email,public_profile,pages_show_list,ads_management" } // add scopes as needed
-      );
-  
-      // Set to connecting
-      setIntegrationStatuses((prev) => ({
-        ...prev,
-        [integrationId]: "connecting",
-      }));
+        );
+      } catch (error) {
+        console.error("Error during Facebook SDK initialization or login", error);
+        setIntegrationStatuses((prev) => ({
+          ...prev,
+          [integrationId]: "disconnected",
+        }));
+      }
     } else {
-      // Simulate API call for others
+      // Simulate API call for other platforms
       setIntegrationStatuses((prev) => ({
         ...prev,
         [integrationId]: "connecting",
@@ -248,6 +255,7 @@ export default function IntegrationComponent() {
     }
   };
   
+  // process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!
 
   const handleViewDetails = (integrationId: number) => {
     setSelectedIntegration(integrationId)

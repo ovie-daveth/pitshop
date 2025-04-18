@@ -1,6 +1,6 @@
 "use client";
 import { Fragment, useState } from "react";
-import { Dialog, Transition, Disclosure } from "@headlessui/react";
+import { Dialog, Transition, Disclosure, Combobox } from "@headlessui/react";
 import {
   CloudDownloadIcon,
   ExclamationCircleIcon,
@@ -11,13 +11,57 @@ import {
   HeartIcon,
   PlusSmIcon,
   PencilIcon,
-  ChatAltIcon,
-  MinusIcon,
-  TagIcon,
+  ChevronRightIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/outline";
-import { MenuAlt4Icon } from "@heroicons/react/solid";
+import CustomizeImage from "../../../../../public/images/customize.png";
+import {
+  MenuAlt4Icon,
+  CheckIcon,
+  SelectorIcon,
+  ChatAltIcon,
+} from "@heroicons/react/solid";
 import Link from "next/link";
-import { LuCircleX } from "react-icons/lu";
+import {
+  LuCircleX,
+  LuBold,
+  LuItalic,
+  LuUnderline,
+  LuLink,
+  LuSmile,
+} from "react-icons/lu";
+import UploadCustomizeModal from "@/components/modal/UploadCustomizeModal";
+
+const reviews = {
+  average: 4,
+  featured: [
+    {
+      id: 1,
+      rating: 5,
+      content: `
+        <p>This icon pack is just what I need for my latest project.</p>
+      `,
+      date: "July 16",
+      datetime: "2021-07-16",
+      author: "Emily Selman",
+      avatarSrc:
+        "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80",
+    },
+    {
+      id: 2,
+      rating: 5,
+      content: `
+        <p>Blown away by how polished this icon pack is. Everything looks so consistent and each SVG is optimized out of the box so I can use it directly with confidence.</p>
+      `,
+      date: "July 12",
+      datetime: "2021-07-12",
+      author: "Hector Gibbons",
+      avatarSrc:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80",
+    },
+    // More reviews...
+  ],
+};
 
 const sidebarNavigation = [
   { name: "Download", icon: CloudDownloadIcon },
@@ -121,51 +165,55 @@ const navigation = {
   ],
 };
 
-const activity = [
-  {
-    id: 1,
-    type: "comment",
-    person: { name: "Eduardo Benz", href: "#" },
-    imageUrl:
-      "https://images.unsplash.com/photo-1520785643438-5bf77931f493?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80",
-    comment:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tincidunt nunc ipsum tempor purus vitae id. Morbi in vestibulum nec varius. Et diam cursus quis sed purus nam. ",
-    date: "6d ago",
-  },
-  {
-    id: 4,
-    type: "comment",
-    person: { name: "Jason Meyers", href: "#" },
-    imageUrl:
-      "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80",
-    comment:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tincidunt nunc ipsum tempor purus vitae id. Morbi in vestibulum nec varius. Et diam cursus quis sed purus nam. Scelerisque amet elit non sit ut tincidunt condimentum. Nisl ultrices eu venenatis diam.",
-    date: "2h ago",
-  },
-];
-
-const product = {
-  details: [
-    {
-      name: "Customize Your Metadata",
-      items: ["Multiple strap configurations"],
-    },
-    {
-      name: "Structured Metadata",
-      items: ["Leather handle and tabs"],
-    },
-    {
-      name: "Embedded Metadata",
-      items: ["Double stitched construction"],
-    },
-  ],
-};
-
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
+type Props = {
+  x: number;
+  y: number;
+  onClose: () => void;
+};
+
 export default function Page() {
+  const [commentBox, setCommentBox] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+  });
+  const [query, setQuery] = useState("");
+  const [selectedAsset, setSelectedAsset] = useState(null);
+  const [selectedUsage, setSelectedUsage] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
+  const asset = [{ name: "Main" }, { name: "Supply" }];
+
+  const filteredAsset =
+    query === ""
+      ? asset
+      : asset.filter((person) => {
+          return person.name.toLowerCase().includes(query.toLowerCase());
+        });
+
+  const usage = [{ name: "New" }, { name: "Recent" }, { name: "Months" }];
+
+  const filteredUsage =
+    query === ""
+      ? usage
+      : usage.filter((person) => {
+          return person.name.toLowerCase().includes(query.toLowerCase());
+        });
+
+  const status = [{ name: "True" }, { name: "False" }, { name: "Not Defined" }];
+
+  const filteredStatus =
+    query === ""
+      ? status
+      : status.filter((person) => {
+          return person.name.toLowerCase().includes(query.toLowerCase());
+        });
+
   const products = [
     {
       id: 1,
@@ -181,6 +229,360 @@ export default function Page() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState("Download");
 
+  const [openSections, setOpenSections] = useState(["Tags"]);
+
+  const toggleSection = (section: any) => {
+    setOpenSections((prev) =>
+      prev.includes(section)
+        ? prev.filter((s) => s !== section)
+        : [...prev, section]
+    );
+  };
+
+  const tagsMock = ["Fish", "Lightskinned", "Hair", "Blue"];
+
+  const embeddedFields = Array(10).fill("YResolution: 72");
+
+  const metadataSections = [
+    { name: "Tags", content: renderTags },
+    { name: "Customize your Metadata", content: renderCustomizeMetadata },
+    { name: "Structured Metadata", content: renderStructuredMetadata },
+    { name: "Embedded Metadata", content: renderEmbeddedMetadata },
+  ];
+
+  function renderTags() {
+    return (
+      <div className="py-4 space-y-4">
+        <div className="flex flex-wrap gap-2">
+          {tagsMock.map((tag) => (
+            <span
+              key={tag}
+              className="bg-gray-200 px-3 py-1 rounded-full text-sm"
+            >
+              {tag} <button className="ml-1">×</button>
+            </span>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="Press enter to add more"
+          className="border p-2 rounded w-full"
+        />
+      </div>
+    );
+  }
+
+  function renderCustomizeMetadata() {
+    return (
+      <div className="py-4 space-y-4">
+        <div className="flex justify-center items-center flex-col">
+          <div>
+            <img src={CustomizeImage.src} alt="customize" className="flex" />
+          </div>
+          <button
+            onClick={() => {
+              setOpenModal(true);
+            }}
+            type="button"
+            className="flex justify-center items-center px-2.5 py-1.5 my-2  ext-xs font-medium rounded shadow-sm text-white bg-indigo-500"
+          >
+            Customize
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  function renderStructuredMetadata() {
+    return (
+      <div className="py-4 space-y-4">
+        <Combobox
+          as="div"
+          value={selectedAsset}
+          onChange={(person: any) => setSelectedAsset(person)}
+        >
+          <Combobox.Label className="block text-sm font-medium text-gray-500">
+            Asset Type
+          </Combobox.Label>
+          <div className="relative mt-1">
+            <Combobox.Input
+              className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+              onChange={(event) => setQuery(event.target.value)}
+              displayValue={(person: any) => person?.name || "Select"}
+            />
+            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
+              <ChevronDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+
+            {filteredAsset.length > 0 && (
+              <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-gray-500 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                {filteredAsset.map((person) => (
+                  <Combobox.Option
+                    key={person.name}
+                    value={person}
+                    className={({ active }) =>
+                      classNames(
+                        "relative cursor-default select-none py-2 pl-3 pr-9",
+                        active ? " text-gray-900" : "text-gray-900"
+                      )
+                    }
+                  >
+                    {({ active, selected }) => (
+                      <>
+                        <div className="flex">
+                          <span
+                            className={classNames(
+                              "truncate text-gray-500",
+                              selected && "font-semibold"
+                            )}
+                          >
+                            {person.name}
+                          </span>
+                        </div>
+
+                        {selected && (
+                          <span
+                            className={classNames(
+                              "absolute inset-y-0 right-0 flex items-center pr-4",
+                              active ? "text-white" : "text-indigo-600"
+                            )}
+                          >
+                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+            )}
+          </div>
+        </Combobox>
+        <Combobox
+          as="div"
+          value={selectedUsage}
+          onChange={(person: any) => setSelectedUsage(person)}
+        >
+          <Combobox.Label className="block text-sm font-medium text-gray-500">
+            Usage Rights
+          </Combobox.Label>
+          <div className="relative mt-1">
+            <Combobox.Input
+              className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+              onChange={(event) => setQuery(event.target.value)}
+              displayValue={(person: any) => person?.name || "Select"}
+            />
+            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
+              <ChevronDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+
+            {filteredUsage.length > 0 && (
+              <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-gray-500 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                {filteredUsage.map((person) => (
+                  <Combobox.Option
+                    key={person.name}
+                    value={person}
+                    className={({ active }) =>
+                      classNames(
+                        "relative cursor-default select-none py-2 pl-3 pr-9",
+                        active ? "text-gray-900" : "text-gray-900"
+                      )
+                    }
+                  >
+                    {({ active, selected }) => (
+                      <>
+                        <div className="flex">
+                          <span
+                            className={classNames(
+                              "truncate text-gray-500",
+                              selected && "font-semibold"
+                            )}
+                          >
+                            {person.name}
+                          </span>
+                        </div>
+
+                        {selected && (
+                          <span
+                            className={classNames(
+                              "absolute inset-y-0 right-0 flex items-center pr-4",
+                              active ? "text-white" : "text-indigo-600"
+                            )}
+                          >
+                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+            )}
+          </div>
+        </Combobox>
+        <Combobox
+          as="div"
+          value={selectedStatus}
+          onChange={(person: any) => setSelectedStatus(person)}
+        >
+          <Combobox.Label className="block text-sm font-medium text-gray-500">
+            Status
+          </Combobox.Label>
+          <div className="relative mt-1">
+            <Combobox.Input
+              className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+              onChange={(event) => setQuery(event.target.value)}
+              displayValue={(person: any) => person?.name || "Select"}
+            />
+            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
+              <ChevronDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+
+            {filteredStatus.length > 0 && (
+              <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-gray-500 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                {filteredStatus.map((person) => (
+                  <Combobox.Option
+                    key={person.name}
+                    value={person}
+                    className={({ active }) =>
+                      classNames(
+                        "relative cursor-default select-none py-2 pl-3 pr-9",
+                        active ? "text-gray-900" : "text-gray-900"
+                      )
+                    }
+                  >
+                    {({ active, selected }) => (
+                      <>
+                        <div className="flex">
+                          <span
+                            className={classNames(
+                              "truncate text-gray-500",
+                              selected && "font-semibold"
+                            )}
+                          >
+                            {person.name}
+                          </span>
+                        </div>
+
+                        {selected && (
+                          <span
+                            className={classNames(
+                              "absolute inset-y-0 right-0 flex items-center pr-4",
+                              active ? "text-white" : "text-indigo-600"
+                            )}
+                          >
+                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+            )}
+          </div>
+        </Combobox>
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-500 mb-1">
+            Expiration Date
+          </label>
+          <div className="relative">
+            <input
+              type="date"
+              value={selectedDate}
+              placeholder="Select"
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm text-gray-700"
+            />
+          </div>
+        </div>
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-500 mb-1">
+            SKU
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Enter SKU"
+              className="w-full rounded-md border border-gray-300 bg-white p-2  focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm text-gray-700"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderEmbeddedMetadata() {
+    return (
+      <div className="py-2">
+        {embeddedFields.map((entry, i) => (
+          <p key={i} className="text-sm text-gray-500  py-2">
+            {entry}
+          </p>
+        ))}
+      </div>
+    );
+  }
+
+  const renderMetadataSidebar = () => (
+    <div className="">
+      {metadataSections.map(({ name, content }) => (
+        <Disclosure key={name} defaultOpen={openSections.includes(name)}>
+          {({ open }) => (
+            <div>
+              <Disclosure.Button
+                onClick={() => toggleSection(name)}
+                className="group relative w-full py-2 flex justify-between items-center text-gray-500 text-left"
+              >
+                <span>{name}</span>
+                {open ? (
+                  <div className="flex justify-end items-center">
+                    <span className="rounded-full bg-indigo-100 mx-1 p-1">
+                      <ChevronDownIcon
+                        className="h-5 w-5 text-indigo-500 "
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    {/* {openSections.includes("Tags") && (
+                      <>
+                        <span className="inline-flex items-center  text-indigo-600 ">
+                          <FaBolt
+                            className="h-3 w-3 text-indigo-500 "
+                            aria-hidden="true"
+                          />
+                          Autotags
+                        </span>
+                      </>
+                    )} */}
+                    <span className="rounded-full bg-indigo-100 mx-1 p-1">
+                      <ChevronRightIcon
+                        className="h-5 w-5 text-indigo-400"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </>
+                )}
+              </Disclosure.Button>
+              <Disclosure.Panel>{open && content()}</Disclosure.Panel>
+            </div>
+          )}
+        </Disclosure>
+      ))}
+    </div>
+  );
+
   const optionalContent = () => {
     switch (selectedTab) {
       case "Download":
@@ -188,7 +590,7 @@ export default function Page() {
           <div>
             <div className="p-2">
               <h1 className="py-4 text-2xl">Download Options</h1>
-              <div className="flex flex-row flex-wrap justify-evenly py-2">
+              <div className="grid gap-2 grid-cols-2">
                 {navigation.social.map((item) => (
                   <Link
                     key={item.name}
@@ -197,51 +599,26 @@ export default function Page() {
                   >
                     <button
                       type="button"
-                      className="inline-flex items-center px-3 py-2 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-400 bg-white outline-none ring-2 ring-offset-2 ring-gray-400"
+                      className="inline-flex items-center w-full px-3 py-2 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-400 bg-white outline-none ring-2 ring-offset-2 ring-gray-400"
                     >
                       <item.icon className="h-6 w-6" aria-hidden="true" />
-                      <span className="px-2"> {item.name}</span>
+                      <span className="px-2">{item.name}</span>
                     </button>
                   </Link>
                 ))}
               </div>
               <h2 className="py-4 border-t ">Mapped Objects</h2>
               <div className="flex justify-between items-center p-3">
-                <div className="mr-4 flex-shrink-0 self-center">
+                <div className="mr-4 inline-flex items-center flex-shrink-0 self-center">
                   <img
                     src={products[0].imageSrc}
                     alt={products[0].imageAlt}
                     className="w-20 h-16 object-center object-cover rounded-lg"
                   />
-                </div>
-                <div className="flex flex-row justify-between items-center text-sm">
-                  <div>
+                  <div className="px-2">
                     <span>1080 x 1080</span>
                     <br />
                     <span>3.0mb</span>
-                  </div>
-                </div>
-                <div className="justify-end">
-                  <CloudDownloadIcon
-                    className="-ml-1 mr-2 h-5 w-5"
-                    aria-hidden="true"
-                  />
-                  jpg
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-3">
-                <div className="mr-4 flex-shrink-0 self-center">
-                  <img
-                    src={products[0].imageSrc}
-                    alt={products[0].imageAlt}
-                    className="w-20 h-16 object-center object-cover rounded-lg"
-                  />
-                </div>
-                <div className="flex flex-row justify-between items-center text-sm">
-                  <div>
-                    <span>1080 x 1080</span>
-                    <br />
-                    <span>5.0mb</span>
                   </div>
                 </div>
                 <div className="justify-end">
@@ -381,150 +758,65 @@ export default function Page() {
           <div>
             <div className="py-2 px-4">
               <h1 className="py-4 text-2xl">Metadata</h1>
-              <div className="">
-                {product.details.map((detail) => (
-                  <Disclosure as="div" key={detail.name}>
-                    {({ open }) => (
-                      <>
-                        <h3>
-                          <Disclosure.Button className="group relative w-full py-6 flex justify-between items-center text-left">
-                            <span
-                              className={classNames(
-                                open ? "text-indigo-600" : "text-gray-900",
-                                "text-sm font-medium"
-                              )}
-                            >
-                              {detail.name}
-                            </span>
-                            <span className="ml-6 flex items-center">
-                              {open ? (
-                                <MinusIcon
-                                  className="block h-6 w-6 text-indigo-400 group-hover:text-indigo-500"
-                                  aria-hidden="true"
-                                />
-                              ) : (
-                                <PlusSmIcon
-                                  className="block h-6 w-6 text-gray-400 group-hover:text-gray-500"
-                                  aria-hidden="true"
-                                />
-                              )}
-                            </span>
-                          </Disclosure.Button>
-                        </h3>
-                        <Disclosure.Panel
-                          as="div"
-                          className="pb-6 prose prose-sm"
-                        >
-                          <ul role="list">
-                            {detail.items.map((item) => (
-                              <li key={item}>{item}</li>
-                            ))}
-                          </ul>
-                        </Disclosure.Panel>
-                      </>
-                    )}
-                  </Disclosure>
-                ))}
-              </div>
+              <div className="">{renderMetadataSidebar()}</div>
             </div>
           </div>
         );
       case "Comments":
         return (
           <div>
-            <div className="p-2">
+            <div className="">
               <h1 className="py-4 text-2xl">Comments</h1>
-              <section
-                aria-labelledby="activity-title"
-                className="mt-8 xl:mt-10"
-              >
+              <section aria-labelledby="activity-title" className="">
                 <div>
                   <div className="divide-y divide-gray-200">
-                    <div className="pt-6">
-                      {/* Activity feed*/}
-                      <div className="flow-root">
-                        <ul role="list" className="-mb-8">
-                          {activity.map((item, itemIdx) => (
-                            <li key={item.id}>
-                              <div className="relative pb-8">
-                                {itemIdx !== activity.length - 1 ? (
-                                  <span
-                                    className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200"
-                                    aria-hidden="true"
-                                  />
-                                ) : null}
-                                <div className="relative flex items-start space-x-3">
-                                  {item.type === "comment" ? (
-                                    <>
-                                      <div className="relative">
-                                        <img
-                                          className="h-10 w-10 rounded-full bg-gray-400 flex items-center justify-center ring-8 ring-white"
-                                          src={item.imageUrl}
-                                          alt=""
-                                        />
+                    <div className="pt-2">
+                      <h6 className="inline-flex items-center text-sm font-medium text-blue-400 bg-blue-50 rounded-md py-1 px-2">
+                        <ChatAltIcon className="h-5 w-5 text-blue-400 " />
+                        <span className="px-2">Add Comment</span>
+                      </h6>
 
-                                        <span className="absolute -bottom-0.5 -right-1 bg-white rounded-tl px-0.5 py-px">
-                                          <ChatAltIcon
-                                            className="h-5 w-5 text-gray-400"
-                                            aria-hidden="true"
-                                          />
-                                        </span>
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        <div>
-                                          <div className="text-sm">
-                                            <a
-                                              href={item.person.href}
-                                              className="font-medium text-gray-900"
-                                            >
-                                              {item.person.name}
-                                            </a>
-                                          </div>
-                                          <p className="mt-0.5 text-sm text-gray-500">
-                                            Commented {item.date}
-                                          </p>
-                                        </div>
-                                        <div className="mt-2 text-sm text-gray-700">
-                                          <p>{item.comment}</p>
-                                        </div>
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <div>
-                                        <div className="relative px-1">
-                                          <div className="h-8 w-8 bg-gray-100 rounded-full ring-8 ring-white flex items-center justify-center">
-                                            <TagIcon
-                                              className="h-5 w-5 text-gray-500"
-                                              aria-hidden="true"
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="min-w-0 flex-1 py-0">
-                                        <div className="text-sm leading-8 text-gray-500">
-                                          <span className="mr-0.5">
-                                            <a
-                                              href={item.person.href}
-                                              className="font-medium text-gray-900"
-                                            >
-                                              {item.person.name}
-                                            </a>{" "}
-                                            added tags
-                                          </span>{" "}
-                                          <span className="whitespace-nowrap">
-                                            {item.date}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      {reviews.featured.map((review, reviewIdx) => (
+                        <div
+                          key={review.id}
+                          className="flex text-sm text-gray-500 space-x-4 px-2"
+                        >
+                          <div className="flex-none py-3">
+                            <img
+                              src={review.avatarSrc}
+                              alt=""
+                              className="w-10 h-10 bg-gray-100 rounded-full"
+                            />
+                          </div>
+                          <div
+                            className={classNames(
+                              reviewIdx === 0 ? "" : "border-t border-gray-200",
+                              "py-3"
+                            )}
+                          >
+                            <div className="flex flex-row justify-between items-center">
+                              <h3 className="font-medium text-gray-900">
+                                {review.author}
+                              </h3>
+                              <p>
+                                <time dateTime={review.datetime}>
+                                  {review.date}
+                                </time>
+                              </p>
+                            </div>
+                            <p className="sr-only">
+                              {review.rating} out of 5 stars
+                            </p>
+
+                            <div
+                              className="mt-4 prose prose-sm max-w-none text-gray-500"
+                              dangerouslySetInnerHTML={{
+                                __html: review.content,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -545,34 +837,55 @@ export default function Page() {
     }
   };
 
-  const renderContent = () => {
+  const renderContent = (selectedTab: any) => {
+    const handleImageClick = (e: any) => {
+      if (selectedTab === "Comments") {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        setCommentBox({ visible: true, x, y });
+      }
+    };
+
+    const closeCommentBox = () => {
+      setCommentBox({ visible: false, x: 0, y: 0 });
+    };
     return (
-      <div>
-        <div>
-          <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-            <img
-              src={products[0].imageSrc}
-              alt={products[0].imageAlt}
-              className="w-full  overflow-hidden object-center object-contain group-hover:opacity-75"
+      <div className="relative">
+        <div
+          className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8 relative"
+          onClick={handleImageClick}
+        >
+          <img
+            src={products[0].imageSrc}
+            alt={products[0].imageAlt}
+            className="w-full object-center object-contain cursor-pointer"
+          />
+          {commentBox.visible && (
+            <FloatingCommentBox
+              x={commentBox.x}
+              y={commentBox.y}
+              onClose={closeCommentBox}
             />
-          </div>
-          <div className="my-4">
-            <div className="flex flex-row justify-end items-end">
-              <select
-                id="asset"
-                name="asset"
-                className="inline-flex  mx-3 items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <option>More Options</option>
-              </select>
-              <button
-                type="button"
-                className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <ShareIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-                Share
-              </button>
-            </div>
+          )}
+        </div>
+
+        <div className="my-4">
+          <div className="flex flex-row justify-end items-end">
+            <select
+              id="asset"
+              name="asset"
+              className="inline-flex mx-3 items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <option>More Options</option>
+            </select>
+            <button
+              type="button"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <ShareIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+              Share
+            </button>
           </div>
         </div>
       </div>
@@ -716,11 +1029,82 @@ export default function Page() {
               {optionalContent()}
             </div>
             <div className="col-span-8 h-screen w-full p-6">
-              {renderContent()}
+              {renderContent(selectedTab)}
             </div>
           </div>
         </div>
       </div>
+      <UploadCustomizeModal
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+      />
     </>
+  );
+}
+
+function FloatingCommentBox({ x, y, onClose }: Props) {
+  const [comment, setComment] = useState("");
+
+  const handleSubmit = () => {
+    console.log("Submitted comment:", comment);
+    setComment("");
+    onClose();
+  };
+
+  return (
+    <div
+      className="absolute bg-white shadow-lg rounded-lg p-3 w-80 z-50"
+      style={{ top: y, left: x }}
+    >
+      {/* Close Button */}
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={() => {
+            setComment("");
+            onClose();
+          }}
+          className="text-gray-400 hover:text-gray-600"
+        >
+          <XIcon className="h-4 w-4 text-gray-500" />
+        </button>
+      </div>
+
+      {/* Textarea */}
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="Add Comment..."
+        rows={3}
+        className="w-full p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
+
+      <div className="flex justify-between items-center mt-2">
+        <div className="flex space-x-2 text-gray-500">
+          <button>
+            <LuBold className="h-4 w-4" />
+          </button>
+          <button>
+            <LuItalic className="h-4 w-4" />
+          </button>
+          <button>
+            <LuUnderline className="h-4 w-4" />
+          </button>
+          <button>
+            <LuLink className="h-4 w-4" />
+          </button>
+          <button>
+            <LuSmile className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="">
+          <button
+            onClick={handleSubmit}
+            className="bg-indigo-600 text-white text-sm px-4 py-1 rounded-md hover:bg-indigo-700"
+          >
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

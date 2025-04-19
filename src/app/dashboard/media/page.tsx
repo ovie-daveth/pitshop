@@ -166,103 +166,6 @@ const products = [
   },
 ];
 
-export function ApprovalStatusFilter() {
-  return (
-    <select className="w-full border rounded-md p-2 text-sm">
-      <option value="accepted">Approved</option>
-      <option value="rejected">Rejected</option>
-    </select>
-  );
-}
-
-export function DisplayNameFilter() {
-  return (
-    <div>
-      <div className="flex items-center space-x-4 mb-2">
-        <label>
-          <input type="radio" name="displayNameMode" defaultChecked /> Starts
-          With
-        </label>
-        <label>
-          <input type="radio" name="displayNameMode" /> Equals To
-        </label>
-      </div>
-      <input
-        type="text"
-        placeholder="Type to Filter"
-        className="w-full border rounded-md p-2 text-sm"
-      />
-    </div>
-  );
-}
-
-export function TagFilter() {
-  return (
-    <select className="w-full border rounded-md p-2 text-sm">
-      <option value="today">Today</option>
-      <option value="7days">Last 7 days</option>
-    </select>
-  );
-}
-
-// components/filters/SKUFilter.jsx
-export function SKUFilter() {
-  return (
-    <div>
-      <div className="mb-2">
-        <select className="w-full border rounded-md p-2 text-sm">
-          <option>Starts With</option>
-          <option>Equals To</option>
-        </select>
-      </div>
-      <input
-        type="text"
-        placeholder="Type to Filter"
-        className="w-full border rounded-md p-2 text-sm"
-      />
-    </div>
-  );
-}
-
-export function DimensionsFilter({
-  options,
-}: {
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <select className="w-full border rounded-md p-2 text-sm">
-      {options?.map((option, idx) => (
-        <option key={idx} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-export function UploadDateFilter({
-  options,
-}: {
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="space-y-1">
-        {options.map((option, idx) => (
-          <label key={idx} className="block">
-            <input type="radio" name="uploadDate" className="mr-2" />
-            {option.label}
-          </label>
-        ))}
-      </div>
-      <div className="flex space-x-2">
-        <input type="date" className="w-1/2 border rounded-md p-2 text-sm" />
-        <input type="date" className="w-1/2 border rounded-md p-2 text-sm" />
-      </div>
-    </div>
-  );
-}
-
 export default function Page() {
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>(
     {}
@@ -353,7 +256,7 @@ export default function Page() {
               </div> */}
                 <div className="block">
                   <nav
-                    className="flex space-x-4 bg-gray-200 p-2 rounded-md"
+                    className="flex space-x-4 bg-gray-100 p-2 rounded-md"
                     aria-label="Tabs"
                   >
                     {tabs.map((tab) => {
@@ -370,7 +273,7 @@ export default function Page() {
                             filterType === tabValue
                               ? "bg-white text-indigo-500"
                               : "text-gray-500",
-                            "py-2 px-14 font-medium text-sm rounded-md"
+                            "py-2 px-8 font-medium text-sm rounded-md"
                           )}
                           aria-current={
                             filterType === tabValue ? "page" : undefined

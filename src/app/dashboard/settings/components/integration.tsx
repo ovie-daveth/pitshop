@@ -33,13 +33,17 @@ function loadFacebookSDK(appId: string): Promise<void> {
         xfbml: true,
         version: "v22.0",
       });
-      resolve();
+      resolve(); // ✅ only resolve after FB.init()
     };
 
-    const script = document.createElement("script");
-    script.src = "https://connect.facebook.net/en_US/sdk.js";
-    script.async = true;
-    document.body.appendChild(script);
+    // Check if the script already exists
+    if (!document.getElementById("facebook-jssdk")) {
+      const script = document.createElement("script");
+      script.id = "facebook-jssdk";
+      script.src = "https://connect.facebook.net/en_US/sdk.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
   });
 }
 

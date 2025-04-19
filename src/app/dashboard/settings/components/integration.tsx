@@ -221,13 +221,17 @@ export default function IntegrationComponent() {
                 token: accessToken,
               };
 
-              const res = integrateAdAccount(request);
-              console.log("Facebook login response:", res);
-
-              setIntegrationStatuses((prev) => ({
-                ...prev,
-                [integrationId]: "connected",
-              }));
+              (async () => {
+                const res = await integrateAdAccount(request);
+                console.log("Facebook login response:", res);
+                if(res){
+                  
+                setIntegrationStatuses((prev) => ({
+                  ...prev,
+                  [integrationId]: "connected",
+                }));
+                }
+              })
             } else {
               console.log("User cancelled login or did not authorize.");
               setIntegrationStatuses((prev) => ({

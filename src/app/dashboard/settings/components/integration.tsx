@@ -203,21 +203,27 @@ export default function IntegrationComponent() {
           ...prev,
           [integrationId]: "connecting",
         }));
-  
+
+        // Wait for Facebook SDK to initialize
         await loadFacebookSDK(process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!);
-  
+
+        // Ensure FB is initialized before proceeding
+        if (!window.FB) {
+          throw new Error('Facebook SDK not initialized');
+        }
+
         window.FB.login((response: any) => {
             if (response.authResponse) {
               const accessToken = response.authResponse.accessToken;
-  
+
               const request: IIntegrateAdPlatformAccount = {
                 platformId: 1,
                 token: accessToken,
               };
-  
+
               const res = integrateAdAccount(request);
               console.log("Facebook login response:", res);
-  
+
               setIntegrationStatuses((prev) => ({
                 ...prev,
                 [integrationId]: "connected",

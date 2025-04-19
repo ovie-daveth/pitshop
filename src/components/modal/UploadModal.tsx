@@ -49,6 +49,7 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
     "all" | "image" | "video"
   >("all");
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const addRef = useRef<HTMLInputElement | null>(null);
 
   const reset = () => {
     setModalStep("initial");
@@ -69,6 +70,9 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
 
   const updateValue = (id: string, label: string) => {
     setSelectedValues((prev) => ({ ...prev, [id]: label }));
+    if (label === "Add new asset") {
+      addRef.current?.click();
+    }
   };
 
   const filePattern =
@@ -120,69 +124,16 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
   };
 
   const handleDeleteFile = (fileToDelete: File) => {
-    const updatedFiles = uploadedFiles.filter((file) => file !== fileToDelete);
-    setUploadedFiles(updatedFiles);
-
-    const updatedFinalItems: FileGroup[] = [];
-    const grouped: Record<string, File[]> = {};
-    const usedFiles = new Set<File>();
-
-    updatedFiles.forEach((file) => {
-      const match = file.name.match(filePattern);
-      if (match) {
-        const prefix = match[1].toLowerCase();
-        if (!grouped[prefix]) grouped[prefix] = [];
-        grouped[prefix].push(file);
-        usedFiles.add(file);
-      }
-    });
-
-    if (groupByName) {
-      Object.entries(grouped).forEach(([prefix, files]) => {
-        updatedFinalItems.push({ id: prefix, files });
-      });
-
-      let itemCount = 1;
-      updatedFiles.forEach((file) => {
-        if (!usedFiles.has(file)) {
-          updatedFinalItems.push({
-            id: `item-${itemCount++}`,
-            files: [file],
-          });
-        }
-      });
-    } else {
-      updatedFiles.forEach((file, idx) => {
-        updatedFinalItems.push({ id: `item-${idx + 1}`, files: [file] });
-      });
-    }
-
-    setFinalItems(updatedFinalItems);
-    if (selectedGroupIndex >= updatedFinalItems.length) {
-      setSelectedGroupIndex(Math.max(0, updatedFinalItems.length - 1));
-    }
-  };
-
-  const handleReplaceFile = (groupIdx: number, fileIdx: number) => {
-    setReplacementTarget({ groupIdx, fileIdx });
-    dropRef.current?.click();
-  };
-
-  const handleFileReplaceUpload = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (!replacementTarget || !event.target.files?.[0]) return;
-
-    const newFile = event.target.files[0];
     const updatedFinalItems = [...finalItems];
-    updatedFinalItems[replacementTarget.groupIdx].files[
-      replacementTarget.fileIdx
-    ] = newFile;
+    const currentGroup = updatedFinalItems[selectedGroupIndex];
+    currentGroup.files = currentGroup.files.filter((f) => f !== fileToDelete);
+    if (currentGroup.files.length === 0) {
+      updatedFinalItems.splice(selectedGroupIndex, 1);
+      setSelectedGroupIndex((prev) => Math.max(0, prev - 1));
+    }
 
     setFinalItems(updatedFinalItems);
-    setReplacementTarget(null);
   };
-
   const handleDragOver = (
     e: React.DragEvent<HTMLDivElement>,
     fileIdx: number
@@ -208,6 +159,40 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
     const updatedFinalItems = [...finalItems];
     updatedFinalItems[groupIdx].files[fileIdx] = file;
     setFinalItems(updatedFinalItems);
+  };
+
+  const handleAddAssetFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!event.target.files?.[0]) return;
+
+    const newFile = event.target.files[0];
+    const updatedFinalItems = [...finalItems];
+
+    updatedFinalItems[selectedGroupIndex].files.push(newFile);
+
+    setFinalItems(updatedFinalItems);
+    event.target.value = "";
+  };
+
+  const handleReplaceFile = (groupIdx: number, fileIdx: number) => {
+    setReplacementTarget({ groupIdx, fileIdx });
+    dropRef.current?.click();
+  };
+
+  const handleFileReplaceUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!replacementTarget || !event.target.files?.[0]) return;
+
+    const newFile = event.target.files[0];
+    const updatedFinalItems = [...finalItems];
+    updatedFinalItems[replacementTarget.groupIdx].files[
+      replacementTarget.fileIdx
+    ] = newFile;
+
+    setFinalItems(updatedFinalItems);
+    setReplacementTarget(null);
   };
 
   const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -261,6 +246,14 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
         accept="image/*,video/*"
         className="hidden"
         onChange={handleFileReplaceUpload}
+      />
+      <input
+        ref={addRef}
+        type="file"
+        multiple
+        accept="image/*,video/*"
+        className="hidden"
+        onChange={handleAddAssetFileUpload}
       />
       <Transition.Root show={isCategorizeOpen} as={Fragment}>
         <Dialog
@@ -461,8 +454,7 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                                             {({ open }) => (
                                               <>
                                                 <Popover.Button className="flex items-center justify-between px-4 py-2 text-sm  text-gray-500 bg-white border-2 border-gray-200 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none min-w-[160px]">
-                                                  {selectedValues[section.id] ||
-                                                    section.name}
+                                                  {section.name}
                                                   <ChevronDownIcon
                                                     className={`ml-2 h-5 w-5 transition-transform duration-200 ${
                                                       open

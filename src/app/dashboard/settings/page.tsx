@@ -51,7 +51,7 @@ export default function BusinessSettings() {
                 }`
               }
             >
-              Team Management
+              Team 
             </Tab>
             <Tab
               className={({ selected }) =>

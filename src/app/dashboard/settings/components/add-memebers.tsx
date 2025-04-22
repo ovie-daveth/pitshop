@@ -5,7 +5,7 @@ import { Listbox, Tab, Transition } from "@headlessui/react";
 import { HiOutlineChevronDown, HiOutlineTrash, HiOutlineUserCircle, HiCheck } from "react-icons/hi2";
 import { useUserState } from "@/api/context/UserContext";
 import { useRolesState } from "@/api/context/RolesContext";
-import { IRole } from "@/api/types";
+import { IInvites, IRole } from "@/api/types";
 import { HiRefresh } from "react-icons/hi";
 import ExistingMembersContainer from "./exisiting-members";
 
@@ -17,14 +17,10 @@ type TeamMember = {
 };
 
 
-type PendingInvite = {
-  id: string;
-  email: string;
-};
-
-const AddMmebers = ({ pendingInvites, setPendingInvites, roles, rolesLoading, rolesError }: { pendingInvites: PendingInvite[], setPendingInvites: Dispatch<SetStateAction<PendingInvite[]>> , roles: IRole[], rolesLoading: boolean, rolesError: any}) => {
+const AddMmebers = ({ roles, rolesLoading, rolesError }: { roles: IRole[], rolesLoading: boolean, rolesError: any}) => {
   const emailInputRef = useRef<HTMLInputElement>(null);
-  const { createMultipleInviteUsers } = useUserState();
+
+  const { createMultipleInviteUsers, getAllInvitedUsers } = useUserState();
 
 
   const [currentEmail, setCurrentEmail] = useState("");
@@ -86,15 +82,11 @@ const AddMmebers = ({ pendingInvites, setPendingInvites, roles, rolesLoading, ro
 
 
     await createMultipleInviteUsers({invitedUserDtos: inviteData})
-    .then((res) => {
+    .then(async (res) => {
       console.log("created", res)
         // Step 2: Update UI immediately with pending invites
-      const newPendingInvites = teamMembers.map((member) => ({
-        id: member.id,
-        email: member.email,
-      }));
+        await getAllInvitedUsers()
       setLoading(false)
-      setPendingInvites([...pendingInvites, ...newPendingInvites]);
       setTeamMembers([]); // Clear team members immediately
     })
     .catch((err) => {

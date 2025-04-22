@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useAuthState } from '@/api/context/AuthContext';
 import AuthButton from './auth-button';
 import OTPInput from 'react-otp-input';
 import { ArrowLeftIcon } from '@heroicons/react/solid';
+import { Step } from '../type';
 
-const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) => void; isSignUp: boolean}) => {
+const OTPform = ({ setStepIndex, setCurrentStep, isSignUp }: { setStepIndex: Dispatch<SetStateAction<number>>, setCurrentStep: Dispatch<SetStateAction<Step>>, isSignUp: boolean }) => {
 
   const { signup, verifyOtp} = useAuthState()
       const [formData, setFormData] = useState({
         otp: "",
+        email: ""
       });
 
       const [errorMessage, setErrorMessage] = useState({
@@ -20,6 +22,17 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
       });
       const [isLoading, setIsLoading] = useState(false);
 
+      useEffect(() => {
+        const rawMail = localStorage.getItem("user_details");
+        if(!rawMail) return
+        if(rawMail){
+          const parsedMail = JSON.parse(rawMail)
+          setFormData((prev) => ({
+            ...prev,
+            email: parsedMail.email
+          }))
+        }
+      }, [])
       const handleChange = (e: any) => {
         setError((prevState) => ({
           ...prevState,
@@ -61,36 +74,39 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
         const isValid = validate();
         if (!isValid) return;
         setIsLoading(true);
-
-        await verifyOtp({
-          email: sessionStorage.getItem("email") as string,
-          otp: formData.otp,  
-        })
-        .then(async (res) => {
-          setIsLoading(false);
-          if (res) {
-            if(isSignUp){
-              const id = parseInt(sessionStorage.getItem("id") as string);
-              await signup(id)
-              .then((res) => {
-                console.log(res)
-               if(res){
-                handleFormChnage(6)
-               }
-              })
-              .catch((err) => {
-                console.log(err)
-              })
-            } else {
-              setIsLoading(false)
-              handleFormChnage(5)
-            }
-          }
-        })
-        .catch((err) => {
-          setIsLoading(false)
-          console.log(err)
-        })
+        setCurrentStep("set-password")
+        setStepIndex(3)
+        // await verifyOtp({
+        //   email: sessionStorage.getItem("email") as string,
+        //   otp: formData.otp,  
+        // })
+        // .then(async (res) => {
+        //   setIsLoading(false);
+        //   if (res) {
+        //     if(isSignUp){
+        //       const id = parseInt(sessionStorage.getItem("id") as string);
+        //       await signup(id)
+        //       .then((res) => {
+        //         console.log(res)
+        //        if(res){
+        //         setCurrentStep("set-password")
+        //         setStepIndex(3)
+        //        }
+        //       })
+        //       .catch((err) => {
+        //         console.log(err)
+        //       })
+        //     } else {
+        //       // setIsLoading(false)
+        //       // setCurrentStep("welcome")
+        //       // setStepIndex(3)
+        //     }
+        //   }
+        // })
+        // .catch((err) => {
+        //   setIsLoading(false)
+        //   console.log(err)
+        // })
        
        
       };
@@ -98,26 +114,23 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
       const handleResnedOtp = async () => {
         // isSignUp ? await requestOtp(formData.email) : await requestOtp(formData.email)
       }
+
+     
+  const handlePrevStep = () => {
+    setCurrentStep("welcome")
+    setStepIndex(1)
+  }
   return (
-    <div className="flex justify-center items-center h-screen bg-white">
-      <button className="absolute top-4 left-4" onClick={() => handleFormChnage(3)}>
-        <div className="flex items-center justify-center w-10 h-10 rounded-full  hover:bg-gray-100 transition duration-200"> 
-        <ArrowLeftIcon className="h-6 w-6 text-blue-500" onClick={() => handleFormChnage(3)} />
+    <div className="w-full pr-10">
+    <div className="text-left">
+          <h1 className="text-3xl font-bold">Verify your email</h1>
+          <p className="mt-2 text-gray-600">
+           We just sent a verification code to {formData.email}
+          </p>
         </div>
-      </button>
-    <div className="px-4 max-w-md w-full">
-    <div className='text-center flex items-center justify-center flex-col gap-2 mb-4'>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Verify Authentication
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Kindly enter the 6-digit verification code sent to your email to
-              verify your account.
-            </p>
-          </div>
-      <form onSubmit={handleSubmit} className="mt-5">
-        <label className="block text-sm font-medium my-5"> 6-Digit Verification Code</label>
-        <div className="flex justify-start items-start">
+      <form onSubmit={handleSubmit} className="mt-5 w-full">
+        <label className="block text-sm font-medium my-5">Enter the 6-digit to continue</label>
+        <div className="flex justify-start items-start w-full">
                 <OTPInput
                   value={formData.otp}
                   inputType="text"
@@ -126,8 +139,8 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
                   renderSeparator={<span></span>}
                   renderInput={(props: any) => <input {...props} />}
                   inputStyle={{
-                    width: "3rem",
-                    height: "3rem",
+                    width: "5rem",
+                    height: "5rem",
                     margin: "0 0.5rem",
                     fontSize: "1.5rem",
                     borderRadius: "6px",
@@ -142,14 +155,15 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
           )}
        
         
+       <div className='mt-8'>
        <AuthButton title="Verify Account" isLoading={isLoading} disabled={!formData.otp} />
+       <div className="text-center mt-5">
+                  <button className="text-[#3A6B6B] text-sm border w-full py-3 rounded-full">Resend Code (03:00)</button>
+                </div>
+       </div>
       </form>
 
-      <div className="mt-3 text-center text-sm">
-        Remembered password? <button onClick={() => handleFormChnage(2)} className="text-blue-600">Login</button>
-      </div>
     </div>
-  </div>
   )
 }
 

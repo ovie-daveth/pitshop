@@ -49,6 +49,53 @@ function loadFacebookSDK(appId: string): Promise<void> {
 
 
 // Integration data
+
+// function loadFacebookSDK(appId: string): Promise<void> {
+//   if(!appId){
+//     console.log("no Id");
+//   }
+//   return new Promise((resolve) => {
+//     console.log("[FacebookSDK] loadFacebookSDK called");
+
+//     if (window.FB) {
+//       console.log("[FacebookSDK] FB already exists, skipping init");
+//       resolve();
+//       return;
+//     }
+
+//     window.fbAsyncInit = function () {
+//       console.log("[FacebookSDK] fbAsyncInit called");
+
+//       window.FB.init({
+//         appId,
+//         cookie: true,
+//         xfbml: true,
+//         version: "v22.0",
+//       });
+
+//       console.log("[FacebookSDK] FB.init done");
+//       resolve();
+//     };
+
+//     // Check if the script is already present
+//     if (!document.getElementById("facebook-jssdk")) {
+//       console.log("[FacebookSDK] Injecting Facebook SDK script");
+
+//       const script = document.createElement("script");
+//       script.id = "facebook-jssdk";
+//       script.src = "https://connect.facebook.net/en_US/sdk.js";
+//       script.async = true;
+//       script.onload = () => console.log("[FacebookSDK] Script loaded");
+//       script.onerror = () => console.error("[FacebookSDK] Script failed to load");
+
+//       document.body.appendChild(script);
+//     } else {
+//       console.log("[FacebookSDK] Script already present, skipping injection");
+//     }
+//   });
+// }
+
+
 const integrations = [
   { id: 1, name: "Meta Ads", icon: fb  },
   { id: 2, name: "Google Ads", icon: ads  },
@@ -164,28 +211,6 @@ export default function IntegrationComponent() {
       {} as Record<number, boolean>,
     ),
   )
-
-
-  // useEffect(() => {
-  //   // Load Facebook SDK
-  //   if (typeof window !== "undefined" && !window.FB) {
-  //     window.fbAsyncInit = function () {
-  //       window.FB.init({
-  //         appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
-  //         cookie: true,
-  //         xfbml: true,
-  //         version: "v18.0",
-  //       });
-  //     };
-  
-  //     const script = document.createElement("script");
-  //     script.src = "https://connect.facebook.net/en_US/sdk.js";
-  //     script.async = true;
-  //     document.body.appendChild(script);
-
-  //     console.log("passed")
-  //   }
-  // }, []);
 
   // New function to toggle ID visibility
   

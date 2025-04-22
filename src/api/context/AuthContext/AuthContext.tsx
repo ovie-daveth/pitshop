@@ -8,7 +8,7 @@ import {
 } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { ILoginInput, ISignUpInput, IUser } from "../../types";
+import { ILoginInput, IOTPInput, ISignUpInput, IUser } from "../../types";
 export type AuthContextType = {
   user: IUser | null;
   token: string | null;
@@ -18,7 +18,7 @@ export type AuthContextType = {
   error: string | null;
   signup: (data: number) => Promise<boolean>;
   signin: (data: ILoginInput) => Promise<void>;
-  requestOtp: (data: ISignUpInput) => Promise<boolean>;
+  requestOtp: (data: IOTPInput) => Promise<boolean>;
   verifyOtp: (data: {email: string, otp: string}) => Promise<boolean>;
   resendOtp: () => Promise<boolean>;
   forgotPassword: (data: { email: string }) => Promise<boolean>;
@@ -174,13 +174,12 @@ const AuthContextProvider = ({ children }: IProps) => {
     }
   };
 
-  const requestOtp = async (data: ISignUpInput) => {
+  const requestOtp = async (data: IOTPInput) => {
     try {
       localStorage.setItem(
         "user_details",
         JSON.stringify({
           email: data.email,
-          password: data.password,
           firstName: data.firstName,
           lastName: data.lastName,
         })

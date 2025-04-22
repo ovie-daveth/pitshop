@@ -1,22 +1,155 @@
-import React from 'react'
+"use client";
 
-const AuthLayout = ({children}: {children: React.ReactNode}) => {
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import Link from "next/link";
+import woman from "../../../public/images/woman.png";
+import laptop from "../../../public/images/laptop.png";
+import forex from "../../../public/images/forex.png";
+import logo from "../../../public/logo.svg";
+import icon from "../../../public/logoicon.svg";
+import Image from "next/image";
+import { Step } from "./type";
+
+export default function AuthLayout({ children, stepIndex, setStepIndex, currentStep, setCurrentStep }: { children: React.ReactNode, stepIndex?: number, setStepIndex?: Dispatch<SetStateAction<number>>, currentStep: Step, setCurrentStep: Dispatch<SetStateAction<Step>> }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const totalSteps = 7
+
+
+  // Array of images for the carousel
+  const images = [laptop, woman, forex];
+
+  // Auto-swipe every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 5000); // 10 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [images.length]);
+
+  useEffect(() => {
+    console.log("step", stepIndex)
+  }, [stepIndex])
+
   return (
-    <div className='relative flex h-screen w-full overflow-hidden '>
-      <div className='w-[600px] '>
-     <div className='max-h-full overflow-y-auto hide-sidebar'>
-        {children}
-     </div>
-      </div>
-      <div className="block relative w-0 flex-1">
-          <img
-            className="absolute inset-0 h-full w-full object-cover"
-            src="https://images.unsplash.com/photo-1505904267569-f02eaeb45a4c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-            alt=""
-          />
-        </div>
-    </div>
-  )
-}
+    <div className="flex gap-32 min-h-screen w-full xl:px-8 xl:py-5">
+      {/* Left side - Marketing content */}
+      <div className="hidden md:flex md:w-[500px] max-h-[95vh] bg-gray-800 relative rounded-3xl">
+        <div className="absolute inset-0 bg-black/30 z-10 rounded-3xl border-none"></div>
+        <div className="relative z-20 p-8 flex flex-col h-full rounded-3xl border-none">
+          <div className="mb-auto">
+            <Link href="/" className="flex items-center w-fit">
+              <div className="text-[#4AE290] flex items-center gap-2">
+                <Image src={icon} alt="icon" width={50} height={50} className="w-8 h-8" />
+                <Image src={logo} alt="logo" width={150} height={150} className="w-36 mt-2" />
+              </div>
+            </Link>
+          </div>
 
-export default AuthLayout
+          <div className="mt-auto">
+            <h2 className="text-white text-3xl font-bold">
+              Built for <span className="text-[#4AE290]">scale.</span>
+              <br />
+              Designed for <span className="text-[#4AE290]">precision.</span>
+            </h2>
+            <p className="text-white/80 mt-4">
+              Plumetrix connects your business operations and ad performance — so you can run leaner, scale faster, and
+              spend smarter.
+            </p>
+
+            {/* Progress bar */}
+            <div className="flex mt-8 space-x-2 bg-gray-600 w-fit p-1 rounded-full">
+              {images.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-8 h-2 rounded-full relative overflow-hidden ${
+                    index === currentImageIndex ? "bg-[#4AE290]" : "bg-gray-500"
+                  }`}
+                >
+                  {index === currentImageIndex && (
+                    <div
+                      className="absolute inset-0 bg-[#4AE290] animate-wipe"
+                      style={{ animationDuration: "10s" }}
+                    ></div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Image carousel */}
+                <div className="absolute inset-0 z-0 rounded-3xl border-none overflow-hidden">
+          {images.map((image, index) => (
+            <Image
+              key={index}
+              src={image}
+              alt={`Background ${index + 1}`}
+              fill
+              className={`object-cover rounded-3xl border-none absolute transition-opacity duration-1000 ${
+                index === currentImageIndex ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Right side - Form content */}
+      <div className="flex-1 flex max-w-[800px] mx-auto">
+        <div className="lg:w-[90%] flex flex-col  pr-10">
+          <div className={`flex justify-between items-center ${currentStep !== "welcome" ? " pt-12" : "pt-28"}`}>
+            <div>
+            {currentStep !== "welcome" && stepIndex && (
+                <div className="">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 flex">
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex gap-2">
+                        {Array.from({ length: totalSteps - 2 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`w-6 h-2 rounded-full ${
+                              i < stepIndex ? "bg-[#3A6B6B]" : "bg-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <div className="text-sm text-gray-600 ml-5">
+                        {stepIndex}/{totalSteps - 2}
+                      </div>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          <div className="flex gap-2 justify-end p-3 rounded-full border w-fit text-[#3A6B6B]">
+            <span> Already a member? </span>
+            <Link href="/login" className=" hover:underline">
+            Login
+            </Link>
+          </div>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center  pb-12 w-full lg:-mt-24">
+            <div className="w-full">{children}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* CSS for wipe animation */}
+      <style jsx>{`
+        @keyframes wipe {
+          0% {
+            width: 0;
+          }
+          100% {
+            width: 100%;
+          }
+        }
+        .animate-wipe {
+          animation: wipe 10s linear forwards;
+        }
+      `}</style>
+    </div>
+  );
+}

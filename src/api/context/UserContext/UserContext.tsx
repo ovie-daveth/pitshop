@@ -14,6 +14,7 @@ import {
   IOnboardInvitedUsers,
   IAcceptUsersInviteInput,
   IInvites,
+  ICancelInviteInterface,
 } from "../../types";
 import { useCompanyState } from "@/api/context/CompanyContext"; // Import CompanyContext
 
@@ -28,6 +29,8 @@ export type UserContextType = {
   onboardInvitedUsers: (data: IOnboardInvitedUsers) => Promise<void>;
   getAllInvitedUsers: () => Promise<void>;
   getAllUsers: () => Promise<void>;
+  cancelInvites: (data: ICancelInviteInterface) => Promise<boolean>;
+  resendInvitationMail: (reference: string) => Promise<boolean>
 };
 
 interface IProps {
@@ -71,6 +74,7 @@ const UserContextProvider = ({ children }: IProps) => {
           "public-key": public_key,
         },
       });
+      console.log("invitedUser", res.data.data.users)
       setUsers(res.data.data.users);
       toast.success(res.data.message);
       return true
@@ -112,6 +116,35 @@ const UserContextProvider = ({ children }: IProps) => {
     }
   };
 
+  const resendInvitationMail = async (reference: string) => {
+    setLoading(true);
+    setError(null);
+    const secret_key = sessionStorage.getItem("secret_key");
+    const public_key = sessionStorage.getItem("public_key");
+    if (!secret_key || !public_key) {
+      setError("Please select a company to create invites");
+      setLoading(false);
+      return false;
+    }
+    try {
+      const res = await axios.get(`api/v1/invitedUsers/${reference}/notify`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
+        },
+      });
+      toast.success(res.data.message);
+      return true
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Create Invite failed");
+      toast.error(err.response?.data?.message || "Create Invite failed");
+      return false
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const acceptInviteUsers = async (data: IAcceptUsersInviteInput) => {
     setLoading(true);
     setError(null);
@@ -133,6 +166,37 @@ const UserContextProvider = ({ children }: IProps) => {
       setLoading(false);
     }
   };
+
+  const cancelInvites = async (data: ICancelInviteInterface) => {
+    setLoading(true);
+    setError(null);
+
+    const secret_key = sessionStorage.getItem("secret_key");
+    const public_key = sessionStorage.getItem("public_key");
+    if (!secret_key || !public_key) {
+      setError("Please select a company to create invites");
+      setLoading(false);
+      return false;
+    }
+    try {
+      const res = await axios.put("/api/v1/invitedUsers", data, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          "secret-key": secret_key,
+          "public-key": public_key,
+        },
+      });
+      console.log("cancel", res.data.data.users);
+      toast.success(res.data.message);
+      return true
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Accept Invite failed");
+      toast.error(err.response?.data?.message || "Accept Invite failed");
+      return false
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const getAllInvitedUsers = async () => {
     setLoading(true);
@@ -225,12 +289,14 @@ const UserContextProvider = ({ children }: IProps) => {
         invites,
         loading,
         error,
+        cancelInvites,
         createInviteUsers,
         createMultipleInviteUsers,
         acceptInviteUsers,
         onboardInvitedUsers,
         getAllInvitedUsers,
         getAllUsers,
+        resendInvitationMail,
       }}
     >
       {children}

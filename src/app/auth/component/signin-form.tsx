@@ -1,12 +1,13 @@
 import Image from 'next/image'
-import React, { useState } from 'react'
+import React, { Dispatch, SetStateAction, useState } from 'react'
 import google from "../../../../public/images/google-icon logo.png"
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
 import { useAuthState } from '@/api/context/AuthContext';
 import { BiLoader } from 'react-icons/bi';
 import AuthButton from './auth-button';
+import { Step } from '../type';
 
-const SignInForm = ({handleFormChnage}: {handleFormChnage: (num: number) => void}) => {
+const SignInForm = ({setStepIndex, setCurrentStep}: {setStepIndex: Dispatch<SetStateAction<number>>, setCurrentStep: Dispatch<SetStateAction<Step>>}) => {
       const [showPassword, setShowPassword] = useState(false);
        const [errorMessage, setErrorMessage] = useState({
               email: "",
@@ -143,7 +144,7 @@ const SignInForm = ({handleFormChnage}: {handleFormChnage: (num: number) => void
 
        <div className="flex items-center justify-between mt-3">
        <label className="block mt-3 text-sm font-medium">Password</label>
-       <button type="button" onClick={() => handleFormChnage(3)} className="block mt-3 text-sm font-medium text-blue-600">Forgot Password</button>
+       <button type="button" className="block mt-3 text-sm font-medium text-blue-600">Forgot Password</button>
        </div>
         <div className="relative">
           <input
@@ -169,7 +170,7 @@ const SignInForm = ({handleFormChnage}: {handleFormChnage: (num: number) => void
       </form>
 
       <div className="mt-3 text-center text-sm">
-        Don't have an account? <button onClick={() => handleFormChnage(1)} className="text-blue-600">Sign up</button>
+        Don't have an account? <button  className="text-blue-600">Sign up</button>
       </div>
     </div>
   </div>

@@ -203,8 +203,8 @@ export default function WrapperLayout({
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col xl:pl-64">
-          <div className="sticky top-0 z-10 flex h-16 flex-shrink-0 border-b border-gray-200 bg-white">
+        <div className="flex flex-1 flex-col xl:pl-64 z-50 ">
+          <div className="sticky top-0 z-50 flex h-16 flex-shrink-0 border-b border-gray-200 bg-white">
             <button
               type="button"
               className="border-r border-gray-200 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 xl:hidden"

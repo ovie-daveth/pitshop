@@ -9,8 +9,9 @@ import logo from "../../../public/logo.svg";
 import icon from "../../../public/logoicon.svg";
 import Image from "next/image";
 import { Step } from "./type";
+import { BiEdit } from "react-icons/bi";
 
-export default function AuthLayout({ children, stepIndex, setStepIndex, currentStep, setCurrentStep }: { children: React.ReactNode, stepIndex?: number, setStepIndex?: Dispatch<SetStateAction<number>>, currentStep: Step, setCurrentStep: Dispatch<SetStateAction<Step>> }) {
+export default function AuthLayout({ children, stepIndex, setStepIndex, currentStep, setCurrentStep }: { children: React.ReactNode, stepIndex?: number, setStepIndex: Dispatch<SetStateAction<number>>, currentStep: Step, setCurrentStep: Dispatch<SetStateAction<Step>> }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const totalSteps = 7
 
@@ -31,6 +32,10 @@ export default function AuthLayout({ children, stepIndex, setStepIndex, currentS
     console.log("step", stepIndex)
   }, [stepIndex])
 
+  const handleEdit = () => {
+    setStepIndex(4)
+    setCurrentStep("create-company")
+  }
   return (
     <div className="flex gap-32 min-h-screen w-full xl:px-8 xl:py-5">
       {/* Left side - Marketing content */}
@@ -123,12 +128,20 @@ export default function AuthLayout({ children, stepIndex, setStepIndex, currentS
                 </div>
               )}
             </div>
-          <div className="flex gap-2 justify-end p-3 rounded-full border w-fit text-[#3A6B6B]">
-            <span> Already a member? </span>
-            <Link href="/login" className=" hover:underline">
-            Login
-            </Link>
-          </div>
+              {
+                (currentStep !== "create-company" && currentStep !== "invite-user" ) && <div className="flex gap-2 justify-end p-3 rounded-full border w-fit text-[#3A6B6B]">
+                <span> Already a member? </span>
+                <Link href="/login" className=" hover:underline">
+                Login
+                </Link>
+              </div>
+              }
+              {
+                currentStep == "invite-user" && <div className="flex items-center text-sm rounded-full border p-2">
+                 <span className="font-light text-gray-500 text-xs">Company Name: <span className="font-bold text-gray-700 text-sm">{"BRUNT HUB"}</span> </span>
+                  <button onClick={handleEdit} className="ml-2 text-gray-500 z-50"><BiEdit size={20} /></button>
+                </div>
+              }
           </div>
           <div className="flex-1 flex flex-col items-center justify-center  pb-12 w-full lg:-mt-24">
             <div className="w-full">{children}</div>

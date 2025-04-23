@@ -36,6 +36,9 @@ export default function Page() {
       {currentStep === "welcome" && <WelcomeForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} />}
       {currentStep === "personal-info" && <SignUpForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} />}
       {currentStep === "verify-email" && <OTPform setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} isSignUp={true} />}
+      {currentStep === "set-password" && <ResetPassWordForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} isSignUP={true} />}
+      {currentStep === "create-company" && <CreateCompanyForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} />}
+      {currentStep === "invite-user" && <AddTeamMateForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} isSignUP={true} />}
     </AuthLayout>
   );
 }

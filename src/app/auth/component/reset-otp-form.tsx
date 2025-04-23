@@ -156,7 +156,7 @@ const OTPform = ({ setStepIndex, setCurrentStep, isSignUp }: { setStepIndex: Dis
        
         
        <div className='mt-8'>
-       <AuthButton title="Verify Account" isLoading={isLoading} disabled={!formData.otp} />
+       <AuthButton title="Verify Account" isLoading={isLoading} disabled={formData.otp.length < 6} />
        <div className="text-center mt-5">
                   <button className="text-[#3A6B6B] text-sm border w-full py-3 rounded-full">Resend Code (03:00)</button>
                 </div>

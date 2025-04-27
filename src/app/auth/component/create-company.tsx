@@ -5,8 +5,12 @@ import AuthButton from "./auth-button";
 import { useCompanyState } from "@/api/context/CompanyContext";
 import toast from "react-hot-toast";
 import { Step } from "../type";
+import { useRouter } from "next/navigation";
 
 const CreateCompanyForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dispatch<SetStateAction<number>>, setCurrentStep: Dispatch<SetStateAction<Step>>}) => {
+  
+  const router = useRouter()
+  
   const [errorMessage, setErrorMessage] = useState({
     industry: "",
     description: "",
@@ -21,8 +25,10 @@ const CreateCompanyForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dis
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const { companyIndustry, createCompany } =
+  const { companyIndustry, createCompany, company } =
    useCompanyState()
+
+   console.log("company", company)
 
   const [formData, setFormData] = useState({
     industry: "",
@@ -48,6 +54,7 @@ const CreateCompanyForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dis
       firstName: userData.firstName || "John",
       lastName: userData.lastName || "Mickel",
     }));
+
   }, []);
 
   const handleChange = (
@@ -69,33 +76,36 @@ const CreateCompanyForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dis
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setCurrentStep("invite-user")
-    setStepIndex(5)
-    // try {
-    //   if (createCompany) {
-    //     await createCompany({
-    //       name: formData.companyName,
-    //       industryId: parseInt(formData.industry),
-    //       description: formData.description,
-    //     })
-    //       .then((res) => {
-    //         if (res) {
-             
-    //         }
-    //       })
-    //       .catch((err) => {
-    //         console.error(err);
-    //         toast.error(err.message);
-    //       });
-    //   } else {
-    //     console.error("createCompany is undefined");
-    //     toast.error("Unable to create company. Please try again later.");
-    //   }
-    // } catch (error) {
-    //   console.error("Signup failed:", error);
-    // } finally {
-    //   setIsLoading(false);
-    // }
+
+    try {
+      if (createCompany) {
+        await createCompany({
+          name: formData.companyName,
+          industryId: parseInt(formData.industry),
+          description: formData.description,
+        })
+          .then((res) => {
+            if (res) {
+              localStorage.setItem("company_name", formData.companyName)
+              localStorage.setItem("stepIndex", "5")
+              localStorage.setItem("currentStep", "invite-user")
+              setCurrentStep("invite-user")
+              setStepIndex(5)
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            toast.error(err.message);
+          });
+      } else {
+        console.error("createCompany is undefined");
+        toast.error("Unable to create company. Please try again later.");
+      }
+    } catch (error) {
+      console.error("Signup failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Define form fields based on isAuth
@@ -112,11 +122,17 @@ const CreateCompanyForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dis
         },
       ];
 
+    const handleSkip = () => {
+      localStorage.removeItem("stepIndex")
+      localStorage.removeItem("currentStep")
+      router.push("/dashboard")
+    }
+
   return (
     <div className="px-4 w-full">
       <div className="text-left">
-          <h1 className="text-3xl font-bold">Create a company</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="lg:text-3xl text-xl font-bold">Create a company</h1>
+          <p className="mt-2 text-gray-600 lg:text-base text-sm">
             Provide the necessary details to create your company's profile
           </p>
         </div>
@@ -126,7 +142,7 @@ const CreateCompanyForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dis
           <label className="block text-sm font-medium">{label}</label>
           <input
             type="text"
-            className="w-full px-4 py-4 border rounded-lg mt-1 outline-none focus:border-blue-500 font-light"
+            className="w-full px-4 py-3 lg:py-4 focus:border-green-500 font-light lg:text-base text-sm border rounded-lg mt-1 outline-none focus:border-blue-500 font-light"
             name={name}
             value={formData[name as keyof typeof formData]}
             onChange={handleChange}
@@ -142,7 +158,7 @@ const CreateCompanyForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dis
 
       <label className="block mt-7 text-sm font-medium">Industry</label>
       <select
-        className="w-full px-4 py-4 border rounded-lg mt-1 outline-none focus:border-blue-500 font-light"
+        className="w-full px-4 py-3 lg:py-4 focus:border-green-500 font-light lg:text-base text-sm border rounded-lg mt-1 outline-none focus:border-blue-500 font-light"
         name="industry"
         value={formData.industry}
         onChange={handleChange}
@@ -162,7 +178,7 @@ const CreateCompanyForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dis
       )}
       <div className="flex flex-col w-full gap-4 mt-8">
       <AuthButton
-        title="Create company"
+        title="Continue"
         isLoading={isLoading}
         disabled={
           isLoading ||
@@ -171,7 +187,7 @@ const CreateCompanyForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dis
         }
       />
 
-      <button className="text-green-800 hover:text-green-700">Skip for now</button>
+      <button type="button" onClick={handleSkip} className="text-green-800 hover:text-green-700">Skip for now</button>
       </div>
     </form>
   </div>

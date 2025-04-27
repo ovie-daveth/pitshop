@@ -109,39 +109,38 @@ const SignUpForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dispatch<S
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    console.log("entered");
-    setCurrentStep("verify-email")
-    setStepIndex(2)
-    // try {
-    //   console.log(formData);
-    //   setIsLoading(true);
-    //   const isValid = validateForms();
-    //   if (!isValid) {
-    //     console.log("invalid form data");
-    //     setIsLoading(false);
-    //     return;
-    //   }
-    //   await requestOtp({
-    //     firstName: formData.firstName,
-    //     lastName: formData.lastName,
-    //     email: formData.email
-    //   })
-    //     .then((res) => {
-    //       console.log("res", res);
-    //       if (res) {
-    //         setCurrentStep("verify-email")
-    //         setStepIndex(3)
-    //       } else {
-    //         setIsLoading(false)
-    //       }
-    //     })
-    //     .catch(() => {
-    //       setIsLoading(false)
-    //     })
-    // } catch (error) {
-    //   console.error("Signup failed:", error);
-    //   setIsLoading(false)
-    // }
+    try {
+      console.log(formData);
+      setIsLoading(true);
+      const isValid = validateForms();
+      if (!isValid) {
+        console.log("invalid form data");
+        setIsLoading(false);
+        return;
+      }
+      await requestOtp({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email
+      })
+        .then((res) => {
+          console.log("res", res);
+          if (res) {
+            setCurrentStep("verify-email")
+            localStorage.setItem("currentStep", "verify-email")
+            setStepIndex(2)
+            localStorage.setItem("stepIndex", "2")
+          } else {
+            setIsLoading(false)
+          }
+        })
+        .catch(() => {
+          setIsLoading(false)
+        })
+    } catch (error) {
+      console.error("Signup failed:", error);
+      setIsLoading(false)
+    }
   };
 
   const handlePrevStep = () => {
@@ -154,19 +153,19 @@ const SignUpForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dispatch<S
     <div className="">
       <div className="">
         <div className="text-left">
-          <h1 className="text-3xl font-bold">Get started</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="lg:text-3xl text-xl font-bold">Get started</h1>
+          <p className="mt-2 text-gray-600 lg:text-base text-sm">
             Welcome to Plumetrix! Let's kick things off by setting up your account.
           </p>
         </div>
 
 
-        <form onSubmit={handleSubmit} className="mt-7 space-y-6">
+        <form onSubmit={handleSubmit} className="mt-7 md:space-y-6 space-y-4">
           <div>
             <label className="block text-sm font-medium">First Name</label>
             <input
               type="text"
-              className="w-full px-4 py-3 border rounded-lg mt-1 outline-none focus:border-green-500 font-light"
+              className="w-full px-4 py-3 border rounded-lg mt-1 outline-none focus:border-green-500 font-light lg:text-base text-sm"
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
@@ -180,7 +179,7 @@ const SignUpForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dispatch<S
             <label className="block text-sm font-medium">Last Name</label>
             <input
               type="text"
-              className="w-full px-4 py-3 border rounded-lg mt-1 outline-none focus:border-green-500 font-light"
+              className="w-full px-4 py-3 border rounded-lg mt-1 outline-none focus:border-green-500 font-light lg:text-base text-sm"
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
@@ -194,7 +193,7 @@ const SignUpForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dispatch<S
             <label className="block text-sm font-medium">Email</label>
             <input
               type="email"
-              className="w-full px-4 py-3 border rounded-lg mt-1 outline-none focus:border-green-500 font-light"
+              className="w-full px-4 py-3 border rounded-lg mt-1 outline-none focus:border-green-500 font-light lg:text-base text-sm"
               name="email"
               value={formData.email}
               onChange={handleChange}
@@ -204,6 +203,9 @@ const SignUpForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dispatch<S
               error.email && <span className="text-red-500 text-sm">{errorMessage.email}</span>
             }
           </div>
+         <div className='text-right text-xs w-full text-green-600'>
+         <span className=''>Already a memeber? <Link className='hover:underline text-green-800' href="/">Login</Link></span>
+         </div>
           <div className="flex items-start">
             <div className="flex items-center h-5">
               <input
@@ -215,7 +217,7 @@ const SignUpForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dispatch<S
                 className="h-4 w-4 text-[#3A6B6B] focus:ring-[#3A6B6B] border-gray-300 rounded"
               />
             </div>
-            <div className="ml-3 text-sm">
+            <div className="ml-3 lg:text-sm text-xs">
               <label htmlFor="terms" className="text-gray-500">
                 By creating an account you have agreed to{" "}
                 <Link href="#" className="text-[#3A6B6B] hover:underline">
@@ -224,7 +226,7 @@ const SignUpForm = ({ setStepIndex, setCurrentStep }: { setStepIndex: Dispatch<S
               </label>
             </div>
           </div>
-          <div className="flex flex-col md:flex-row pt-4 w-full items-end md:gap-10 gap-4">
+          <div className="flex flex-col md:flex-row pt-4 w-full items-end md:gap-10 sm:gap-4">
             <button onClick={handlePrevStep} className="text-[#3A6B6B] border p-3 rounded-full md:w-[20%] w-full">
               Go back
             </button>

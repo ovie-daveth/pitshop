@@ -29,8 +29,8 @@ export default function Page() {
             {/* <div className='w-[500px] '>
               <div className='max-h-full overflow-y-auto hide-sidebar'> */}
                 {
-                  showFormType.createCompany ? <CreateCompanyForm handleFormChnage={setFormType} /> : <AddTeamMateForm handleFormChnage={setFormType} />
-                }
+                  showFormType.createCompany ? "" : ""
+                } 
               </div>
             
 

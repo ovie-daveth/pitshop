@@ -16,7 +16,10 @@ export type AuthContextType = {
   loading: boolean;
   isCheckingAuth: boolean;
   error: string | null;
-  signup: (data: number) => Promise<boolean>;
+  signup: (data: {
+    otp: number,
+    password: string
+  }) => Promise<boolean>;
   signin: (data: ILoginInput) => Promise<void>;
   requestOtp: (data: IOTPInput) => Promise<boolean>;
   verifyOtp: (data: {email: string, otp: string}) => Promise<boolean>;
@@ -57,7 +60,10 @@ const AuthContextProvider = ({ children }: IProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const signup = async (data: number) => {
+  const signup = async (data: {
+    otp: number,
+    password: string
+  }) => {
     setLoading(true);
     setError(null);
     try {
@@ -77,10 +83,10 @@ const AuthContextProvider = ({ children }: IProps) => {
         "/api/v1/auth/signup",
         {
           email: userData.email,
-          password: userData.password,
+          password: data.password,
           firstName: userData.firstName,
           lastName: userData.lastName,
-          otp: data,
+          otp: data.otp,
         },
         {
           headers: {
@@ -320,7 +326,7 @@ const AuthContextProvider = ({ children }: IProps) => {
     sessionStorage.clear()
     setIsAuthenticated(false);
     toast.success("Logged out successfully");
-    window.location.href = "/auth";
+    window.location.href = "/auth/login";
   };
 
   useEffect(() => {

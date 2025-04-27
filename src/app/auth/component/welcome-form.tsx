@@ -18,12 +18,12 @@ const WelcomeForm = ({setStepIndex, setCurrentStep}: {setStepIndex: Dispatch<Set
     return (
         <div className="w-full">
               <div className="space-y-8">
-                <div className="text-left">
-                  <h1 className="text-3xl font-bold">Get started</h1>
-                  <p className="mt-2 text-gray-600">
-                    Welcome to Plumetrix! Let's kick things off by setting up your account.
-                  </p>
-                </div>
+              <div className="text-left">
+          <h1 className="lg:text-3xl text-xl font-bold">Get started</h1>
+          <p className="mt-2 text-gray-600 lg:text-base text-sm">
+            Welcome to Plumetrix! Let's kick things off by setting up your account.
+          </p>
+        </div>
 
                 <button className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-full py-4 px-4 text-gray-700 hover:bg-gray-50 transition-colors text-lg">
                  <Image src={google.src} height={17} width={17} alt="icon" className="" />

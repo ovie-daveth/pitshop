@@ -25,10 +25,20 @@ export default function Page() {
   useCompanyState()
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     getRoles()
     getCompanyIndustries()
     getUserCompanies()
-  }, [showFormType])
+
+    const step = localStorage.getItem("currentStep") as Step;
+    if(step){
+      setCurrentStep(step)
+    }
+    const index =  localStorage.getItem("stepIndex",)
+    if(index){
+      setStepIndex(parseInt(index))
+    }
+  }, [showFormType, currentStep, stepIndex])
 
 
   return (

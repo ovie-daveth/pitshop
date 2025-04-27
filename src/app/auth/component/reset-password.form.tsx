@@ -13,13 +13,12 @@ const ResetPassWordForm = ({ setStepIndex, setCurrentStep, isSignUP }: { setStep
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-
   const [formData, setFormData] = useState({
     password: "",
     confirm_password: "",
   });
 
-  const { resetPassword } = useAuthState();
+  const { resetPassword, signup } = useAuthState();
 
   const [errorMessage, setErrorMessage] = useState({
     password: "",
@@ -104,31 +103,48 @@ const ResetPassWordForm = ({ setStepIndex, setCurrentStep, isSignUP }: { setStep
     const isValid = validateForms();
     if (!isValid) return;
     setIsLoading(true);
-    setCurrentStep("create-company")
-    setStepIndex(4)
 
-    // try {
+    try {
 
-    //   await resetPassword({
-    //     email: sessionStorage.getItem("email") as string,
-    //     password: formData.password,
-    //     token: parseInt(sessionStorage.getItem("id") as string),
 
-    //   })
-    //     .then((res: any) => {
-    //       if (res) {
+      if(isSignUP){
+        const request = {
+          password: formData.password,
+          otp: parseInt(sessionStorage.getItem("id") as string)
+        }
 
-    //       }
-    //     }
-    //     )
-    //     .catch(() => {
-    //       setIsLoading(false);
+        await signup(request)
+        .then((res) => {
+          if(res){
+            localStorage.setItem("stepIndex", "4")
+            localStorage.setItem("currentStep", "create-company")
+            setCurrentStep("create-company")
+            setStepIndex(4)
+          }
+        })
+      }
+      // await resetPassword({
+      //   email: sessionStorage.getItem("email") as string,
+      //   password: formData.password,
+      //   token: parseInt(sessionStorage.getItem("id") as string),
 
-    //     });
-    // } catch (error) {
-    //   setIsLoading(false);
-    //   console.error("Signup failed:", error);
-    // }
+      // })
+      // })
+      //   .then((res: any) => {
+      //     if (res) {
+          
+      //     }
+      //   }
+      //   )
+      //   .catch(() => {
+      //     setIsLoading(false);
+
+      //   });
+      
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Signup failed:", error);
+    }
   };
 
   const handlePrevStep = () => {
@@ -139,12 +155,10 @@ const ResetPassWordForm = ({ setStepIndex, setCurrentStep, isSignUP }: { setStep
   }
   return (
     <div className="w-full text-left">
-      {
-        isSignUP ?  <div>
-        <h1 className="text-3xl font-bold">Set up your password</h1>
-        <p className="mt-2 text-gray-600">To secure your account, please create a strong password.</p>
-      </div> : ""
-      }
+    <div>
+        <h1 className="lg:text-3xl text-xl font-bold">Set up your password</h1>
+        <p className="mt-2 text-gray-600 lg:text-base text-sm">To secure your account, please create a strong password.</p>
+      </div>
      
       <form onSubmit={handleSubmit} className="mt-7">
         <div className="space-y-8">
@@ -160,7 +174,7 @@ const ResetPassWordForm = ({ setStepIndex, setCurrentStep, isSignUP }: { setStep
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full px-3 py-4 border border-gray-200 rounded-md shadow-sm focus:outline-none placeholder:text-gray-400 text-sm focus:ring-[#3A6B6B] focus:border-green-300"
+                  className="block w-full px-3 py-3 border border-gray-200 rounded-md shadow-sm focus:outline-none placeholder:text-gray-400 focus:border-green-500 font-light lg:text-base text-sm"
                   placeholder="Enter your password"
                 />
                 <button
@@ -179,31 +193,31 @@ const ResetPassWordForm = ({ setStepIndex, setCurrentStep, isSignUP }: { setStep
 
             <div className="flex flex-wrap gap-x-2 gap-y-2 text-xs">
               <div
-                className={`flex items-center gap-1 rounded-full py-1 px-2 ${passwordStrength.minLength ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
+                className={`flex items-center gap-1 rounded-full py-1 px-2  ${passwordStrength.minLength ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
               >
                 {passwordStrength.minLength ? <FaCheck className="text-[#4AE290]" /> : null}
                 <span>Minimum of 8 characters</span>
               </div>
               <div
-                className={`flex items-center gap-1 rounded-full py-1 px-2 ${passwordStrength.hasUppercase ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
+                className={`flex items-center gap-1 rounded-full py-1 px-2  ${passwordStrength.hasUppercase ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
               >
                 {passwordStrength.hasUppercase ? <FaCheck className="text-[#4AE290]" /> : null}
                 <span>An uppercase letter</span>
               </div>
               <div
-                className={`flex items-center gap-1 rounded-full py-1 px-2 ${passwordStrength.hasLowercase ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
+                className={`flex items-center gap-1 rounded-full py-1 px-2  ${passwordStrength.hasLowercase ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
               >
                 {passwordStrength.hasLowercase ? <FaCheck className="text-[#4AE290]" /> : null}
                 <span>A lowercase letter</span>
               </div>
               <div
-                className={`flex items-center gap-1 rounded-full py-1 px-2 ${passwordStrength.hasSymbol ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
+                className={`flex items-center gap-1 rounded-full py-1 px-2  ${passwordStrength.hasSymbol ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
               >
                 {passwordStrength.hasSymbol ? <FaCheck className="text-[#4AE290]" /> : null}
                 <span>A symbol</span>
               </div>
               <div
-                className={`flex items-center gap-1 rounded-full py-1 px-2 ${passwordStrength.hasNumber ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
+                className={`flex items-center gap-1 rounded-full py-1 px-2  ${passwordStrength.hasNumber ? "text-green-500 bg-green-100" : "text-gray-500 bg-gray-200"}`}
               >
                 {passwordStrength.hasNumber ? <FaCheck className="text-[#4AE290]" /> : null}
                 <span>A number</span>
@@ -222,7 +236,7 @@ const ResetPassWordForm = ({ setStepIndex, setCurrentStep, isSignUP }: { setStep
                 name="confirm_password"
                 value={formData.confirm_password}
                 onChange={handleChange}
-                className="block w-full px-3 py-4 border border-gray-200 rounded-md shadow-sm focus:outline-none placeholder:text-gray-400 text-sm focus:ring-[#3A6B6B] focus:border-green-300"
+                className="block w-full px-3 py-3 border border-gray-200 rounded-md shadow-sm focus:outline-none placeholder:text-gray-400 focus:border-green-500 font-light lg:text-base text-sm focus:ring-[#3A6B6B] focus:border-green-300"
                 placeholder="Re-enter your password"
               />
               <button

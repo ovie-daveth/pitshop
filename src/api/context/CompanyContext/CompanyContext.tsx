@@ -130,6 +130,7 @@ const CompanyContextProvider = ({ children }: IProps) => {
       const res = await axios.get("/api/v1/userCompanyRoles", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
       });
+      console.log("context comp", res.data.data)
       setCompany(res.data.data);
       const storedCompanyId = sessionStorage.getItem("companyId");
       const initialCompany = storedCompanyId

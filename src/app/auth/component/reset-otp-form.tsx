@@ -1,25 +1,55 @@
-import React, { useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useAuthState } from '@/api/context/AuthContext';
 import AuthButton from './auth-button';
 import OTPInput from 'react-otp-input';
 import { ArrowLeftIcon } from '@heroicons/react/solid';
+import { Step } from '../type';
 
-const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) => void; isSignUp: boolean}) => {
+const OTPform = ({ setStepIndex, setCurrentStep, isSignUp }: { setStepIndex: Dispatch<SetStateAction<number>>, setCurrentStep: Dispatch<SetStateAction<Step>>, isSignUp: boolean }) => {
 
-  const { signup, verifyOtp} = useAuthState()
+  const { resendOtp, verifyOtp} = useAuthState()
       const [formData, setFormData] = useState({
         otp: "",
+        email: ""
       });
 
       const [errorMessage, setErrorMessage] = useState({
-        email: "",
+        otp: "",
       });
 
       const [error, setError] = useState({
-        email: false,
+        otp: false,
       });
       const [isLoading, setIsLoading] = useState(false);
+      const [timer, setTimer] = useState(60 * 3)
 
+      const formatTimer = (timer: number) => {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+      };
+      
+      useEffect(() => {
+        if (timer <= 0) return;
+      
+        const countdown = setInterval(() => {
+          setTimer((prev) => prev - 1);
+        }, 1000);
+      
+        return () => clearInterval(countdown);
+      }, [timer]);
+
+      useEffect(() => {
+        const rawMail = localStorage.getItem("user_details");
+        if(!rawMail) return
+        if(rawMail){
+          const parsedMail = JSON.parse(rawMail)
+          setFormData((prev) => ({
+            ...prev,
+            email: parsedMail.email
+          }))
+        }
+      }, [])
       const handleChange = (e: any) => {
         setError((prevState) => ({
           ...prevState,
@@ -44,11 +74,11 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
         if (formData.otp === "") {
             setError((prevState) => ({
               ...prevState,
-              email: true,
+              otp: true,
             }));
             setErrorMessage((prevState) => ({
               ...prevState,
-              email: "Email is required",
+              otp: "Email is required",
             }));
             return false;
         }
@@ -61,7 +91,8 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
         const isValid = validate();
         if (!isValid) return;
         setIsLoading(true);
-
+        // setCurrentStep("set-password")
+        // setStepIndex(3)
         await verifyOtp({
           email: sessionStorage.getItem("email") as string,
           otp: formData.otp,  
@@ -69,22 +100,10 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
         .then(async (res) => {
           setIsLoading(false);
           if (res) {
-            if(isSignUp){
-              const id = parseInt(sessionStorage.getItem("id") as string);
-              await signup(id)
-              .then((res) => {
-                console.log(res)
-               if(res){
-                handleFormChnage(6)
-               }
-              })
-              .catch((err) => {
-                console.log(err)
-              })
-            } else {
-              setIsLoading(false)
-              handleFormChnage(5)
-            }
+            setCurrentStep("set-password")
+            setStepIndex(3)
+            localStorage.setItem("currentStep", "set-password")
+            localStorage.setItem("stepIndex", "3")
           }
         })
         .catch((err) => {
@@ -96,28 +115,26 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
       };
 
       const handleResnedOtp = async () => {
-        // isSignUp ? await requestOtp(formData.email) : await requestOtp(formData.email)
+        try {
+          setTimer(180);
+           await resendOtp();
+        } catch (error) {
+          console.error(error);
+        }
       }
+      
+
   return (
-    <div className="flex justify-center items-center h-screen bg-white">
-      <button className="absolute top-4 left-4" onClick={() => handleFormChnage(3)}>
-        <div className="flex items-center justify-center w-10 h-10 rounded-full  hover:bg-gray-100 transition duration-200"> 
-        <ArrowLeftIcon className="h-6 w-6 text-blue-500" onClick={() => handleFormChnage(3)} />
+    <div className="w-full pr-10">
+    <div className="text-left">
+          <h1 className="lg:text-3xl text-xl font-bold">Verify your email</h1>
+          <p className="mt-2 text-gray-600 lg:text-base sm:text-xs text-[10px]">
+           We just sent a verification code to {formData.email}
+          </p>
         </div>
-      </button>
-    <div className="px-4 max-w-md w-full">
-    <div className='text-center flex items-center justify-center flex-col gap-2 mb-4'>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Verify Authentication
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Kindly enter the 6-digit verification code sent to your email to
-              verify your account.
-            </p>
-          </div>
-      <form onSubmit={handleSubmit} className="mt-5">
-        <label className="block text-sm font-medium my-5"> 6-Digit Verification Code</label>
-        <div className="flex justify-start items-start">
+      <form onSubmit={handleSubmit} className="mt-5 w-full">
+        <label className="block lg:text-sm text-xs font-medium my-5">Enter the 6-digit to continue</label>
+        <div className="justify-start items-start w-full hidden md:flex">
                 <OTPInput
                   value={formData.otp}
                   inputType="text"
@@ -126,8 +143,27 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
                   renderSeparator={<span></span>}
                   renderInput={(props: any) => <input {...props} />}
                   inputStyle={{
-                    width: "3rem",
-                    height: "3rem",
+                    width: "5rem",
+                    height: "5rem",
+                    margin: "0 0.5rem",
+                    fontSize: "1.5rem",
+                    borderRadius: "6px",
+                    textAlign: "center",
+                    border: "1px solid #ced4da",
+                  }}
+                />
+              </div>
+              <div className="justify-start items-start w-full flex md:hidden">
+                <OTPInput
+                  value={formData.otp}
+                  inputType="text"
+                  onChange={(otp) => handleChange(otp)}
+                  numInputs={6}
+                  renderSeparator={<span></span>}
+                  renderInput={(props: any) => <input {...props} />}
+                  inputStyle={{
+                    width: "2.5rem",
+                    height: "2.5rem",
                     margin: "0 0.5rem",
                     fontSize: "1.5rem",
                     borderRadius: "6px",
@@ -137,19 +173,28 @@ const OTPform = ({handleFormChnage, isSignUp}: {handleFormChnage: (num: number) 
                 />
               </div>
         {
-          error.email && (
-            <p className="text-red-500 text-sm mt-1">{errorMessage.email}</p>
+          error.otp && (
+            <p className="text-red-500 text-sm mt-1">{errorMessage.otp}</p>
           )}
        
         
-       <AuthButton title="Verify Account" isLoading={isLoading} disabled={!formData.otp} />
+       <div className='md:mt-8 mt-2 w-full md:w-[90%]'>
+       <AuthButton title="Verify Account" isLoading={isLoading} disabled={formData.otp.length < 6} />
+       <div className="text-center mt-5">
+  <button 
+    type="button" 
+    onClick={handleResnedOtp} 
+    className="text-[#3A6B6B] text-sm border w-full py-3 rounded-full cursor-pointer"
+    disabled={timer > 0}
+  >
+    {timer > 0 ? `Resend Code (${formatTimer(timer)})` : 'Resend Code'}
+  </button>
+</div>
+
+       </div>
       </form>
 
-      <div className="mt-3 text-center text-sm">
-        Remembered password? <button onClick={() => handleFormChnage(2)} className="text-blue-600">Login</button>
-      </div>
     </div>
-  </div>
   )
 }
 

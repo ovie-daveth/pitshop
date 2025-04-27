@@ -1,19 +1,22 @@
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Listbox } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/solid";
 import { useCompanyState } from "@/api/context/CompanyContext";
 import { useRolesState } from "@/api/context/RolesContext";
 import { useUserState } from "@/api/context/UserContext";
-import Link from "next/link";
-import { useAuthFormStore } from "@/states/useAuthFotmState";
 import { useRouter } from "next/navigation";
+import { Step } from "../type";
+import AuthButton from "./auth-button";
+import { SuccessModal } from "./submitModal";
+import { LoaderIcon } from "react-hot-toast";
 
-const AddTeamMateForm = ({ handleFormChnage, isAuth }: { handleFormChnage: (num: number) => void, isAuth?: boolean }) => {
+const AddTeamMateForm = ({ setStepIndex, setCurrentStep, isSignUP }: { setStepIndex: Dispatch<SetStateAction<number>>, setCurrentStep: Dispatch<SetStateAction<Step>>, isSignUP: boolean }) => {
   const { company } = useCompanyState();
-  const { roles: data } = useRolesState();
+  const { roles: data, loading } = useRolesState();
   const { createInviteUsers } = useUserState();
 
-  const router = useRouter()
+  const router = useRouter();
+  const [modalPopUp, setModalPopUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [roles, setRoles] = useState(data);
 
@@ -41,36 +44,39 @@ const AddTeamMateForm = ({ handleFormChnage, isAuth }: { handleFormChnage: (num:
   }, [company, data]);
 
   const [users, setUsers] = useState([
-    { email: "", roleIds: [] }, // Changed roleId to roleIds array
     { email: "", roleIds: [] },
     { email: "", roleIds: [] },
-    { email: "", roleIds: [] },
+    { email: "", roleIds: [] }
   ]);
+
+  // Validate if at least one user has both email and at least one role
+  const isFormValid = users.some(user => user.email.trim() !== "" && user.roleIds.length > 0);
 
   const addUser = () => {
     setUsers([...users, { email: "", roleIds: [] }]);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
     setIsLoading(true);
+
+    // Filter valid users (non-empty email and at least one role)
+    const validUsers = users.filter(user => user.email.trim() !== "" && user.roleIds.length > 0);
+    console.log("Submitting valid users:", validUsers);
+
     try {
-      // Map through each user and their roles, submitting one by one
-      for (const user of users) {
-        if (user.email && user.roleIds.length > 0) {
-          for (const roleId of user.roleIds) {
-            await createInviteUsers({
-              email: user.email,
+      for (const user of validUsers) {
+        for (const roleId of user.roleIds) {
+          await createInviteUsers({
+            email: user.email,
             roles: [roleId],
-            })
-            .then((res) => {
-              if(res){
-                router.push(isAuth ? "/dashboard" : "/dashboard/users")
-              }
-            })
-          }
+          }).then((res) => {
+            if (res) {
+              setModalPopUp(true);
+            }
+          });
         }
       }
-      // handleFormChnage(6); // Move to next step after successful submission
     } catch (error) {
       console.error("Error submitting invitations:", error);
     } finally {
@@ -78,78 +84,103 @@ const AddTeamMateForm = ({ handleFormChnage, isAuth }: { handleFormChnage: (num:
     }
   };
 
+  const handleGetStarted = () => {
+    localStorage.removeItem("stepIndex");
+    localStorage.removeItem("currentStep");
+    setModalPopUp(false);
+    router.push(isSignUP ? "/dashboard" : "/dashboard/users");
+  };
+
+  const handleSkip = () => {
+    localStorage.removeItem("stepIndex");
+    localStorage.removeItem("currentStep");
+    router.push("/dashboard");
+  };
+
   return (
-    <div className="flex justify-center items-center h-screen py-10 w-full overflow-y-scroll hide-sidebar">
-      <div className="lg:px-20 px-10 w-full">
-        <button onClick={() => handleFormChnage(6)} className="text-blue-600 mb-4">
-          ← Go back
-        </button>
-        <h2 className="text-xl font-semibold mb-4">Invite Users to your Company</h2>
-        {users.map((user, index) => (
-          <div key={index} className="flex items-center gap-2 mb-2 w-full border py-1 rounded-md">
-            <input
-              type="email"
-              placeholder="Email of teammate"
-              className="flex-1 p-2 border-none rounded-md"
-              value={user.email}
-              onChange={(e) => {
-                const updatedUsers = [...users];
-                updatedUsers[index].email = e.target.value;
-                setUsers(updatedUsers);
-              }}
-            />
-            <Listbox
-              as="div"
-              className="relative w-full justify-end items-end flex flex-col"
-              value={user.roleIds}
-              multiple // Enable multiple selection
-              onChange={(selectedRoleIds) => {
-                const updatedUsers = [...users];
-                updatedUsers[index].roleIds = selectedRoleIds;
-                setUsers(updatedUsers);
-              }}
-            >
-              {({ open }) => (
-                <>
-                  <Listbox.Button className="p-2 border-none rounded-md text-gray-600 flex items-center gap-1">
-                    {user.roleIds.length > 0
-                      ? user.roleIds
-                          .map((roleId) => roles?.find((role) => role.id === roleId)?.name)
-                          .join(", ")
-                      : "Select roles"}
-                    <ChevronDownIcon className="w-4 h-4" />
-                  </Listbox.Button>
-                  <Listbox.Options className="absolute -bottom-12 z-50 mt-1 w-fit p-2 bg-white border rounded-md shadow-lg">
-                    {roles && roles.map((role) => (
-                      <Listbox.Option
-                        key={role.id}
-                        value={role.id}
-                        className="cursor-pointer px-4 py-2 hover:bg-gray-100"
-                      >
-                        {role.name.toLowerCase()}
-                      </Listbox.Option>
-                    ))}
-                  </Listbox.Options>
-                </>
-              )}
-            </Listbox>
-          </div>
-        ))}
+    <div>
+      <form onSubmit={handleSubmit} className="w-full">
+        <div className="text-left mb-8 mt-20">
+          <h1 className="lg:text-3xl text-xl font-bold">Invite users to your company</h1>
+          <p className="mt-2 text-gray-600 text-sm lg:text-base">
+            Invite users to your team by email
+          </p>
+        </div>
+        <div className="space-y-6 mb-6">
+          {users.map((user, index) => (
+            <div key={index} className="flex items-center gap-2 mb-2 w-full border py-1 rounded-xl">
+              <input
+                type="email"
+                placeholder="Email of teammate"
+                className="flex-1 px-2 py-3 border-none rounded-xl text-sm focus:outline-none focus:ring-0"
+                value={user.email}
+                onChange={(e) => {
+                  const updatedUsers = [...users];
+                  updatedUsers[index].email = e.target.value;
+                  setUsers(updatedUsers);
+                }}
+              />
+              {
+                loading ? <div className="mr-3">
+                  <LoaderIcon className="animate-spin h-8 w-8" />
+                </div> : <Listbox
+                as="div"
+                className="relative w-full justify-end items-end flex flex-col"
+                value={user.roleIds}
+                multiple
+                onChange={(selectedRoleIds) => {
+                  const updatedUsers = [...users];
+                  updatedUsers[index].roleIds = selectedRoleIds;
+                  setUsers(updatedUsers);
+                }}
+              >
+                {({ open }) => (
+                  <>
+                    <Listbox.Button className="p-2 border-none rounded-md text-gray-600 flex items-center gap-1 text-sm">
+                      {user.roleIds.length > 0
+                        ? user.roleIds
+                            .map((roleId) => roles?.find((role) => role.id === roleId)?.name)
+                            .filter(Boolean)
+                            .join(", ")
+                        : "Select roles"}
+                      <ChevronDownIcon className="w-4 h-4" />
+                    </Listbox.Button>
+                    <Listbox.Options className="absolute -bottom-12 z-50 mt-1 w-fit p-2 bg-white border rounded-md shadow-lg text-sm">
+                      {roles && roles.map((role) => (
+                        <Listbox.Option
+                          key={role.id}
+                          value={role.id}
+                          className="cursor-pointer px-4 py-2 hover:bg-gray-100"
+                        >
+                          {role.name.toLowerCase()}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </>
+                )}
+              </Listbox>
+              }
+            </div>
+          ))}
+        </div>
         <button
+          type="button"
           onClick={addUser}
-          className="text-blue-600 mb-4 flex items-center gap-1 bg-blue-50 p-2 rounded-md mt-2"
+          className="text-green-700 bg-green-50 mb-4 flex items-center gap-1 py-3 px-5 rounded-full mt-2 gap-1 items-center text-xs"
         >
-          + Add more
+          <span className="text-sm -mt-1">+</span>
+          <span>Add more</span>
         </button>
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading}
-          className="w-full p-2 bg-blue-600 text-white rounded-md disabled:bg-gray-400"
-        >
-          {isLoading ? "Submitting..." : "Next →"}
-        </button>
-        <Link href={isAuth ? "/dashboard" : "/dashboard/company"} className="w-full mt-2 text-blue-600 text-center flex items-center justify-center">Skip for now</Link>
-      </div>
+        <div className="flex flex-col w-full gap-4 mt-8">
+          <AuthButton
+            title="Complete setup"
+            isLoading={isLoading}
+            disabled={!isFormValid}
+          />
+          <button type="button" onClick={handleSkip} className="text-green-800 hover:text-green-700">Skip for now</button>
+        </div>
+      </form>
+      <SuccessModal isOpen={modalPopUp} onClose={() => setModalPopUp(false)} onGetStarted={handleGetStarted} />
     </div>
   );
 };

@@ -2,18 +2,15 @@
 
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import Link from "next/link";
-import woman from "../../../public/images/woman.png";
-import laptop from "../../../public/images/laptop.png";
-import forex from "../../../public/images/forex.png";
-import logo from "../../../public/logo.svg";
-import icon from "../../../public/logoicon.svg";
+import woman from "../../../../public/images/woman.png";
+import laptop from "../../../../public/images/laptop.png";
+import forex from "../../../../public/images/forex.png";
+import logo from "../../../../public/logo.svg";
+import icon from "../../../../public/logoicon.svg";
 import Image from "next/image";
-import { Step } from "./type";
-import { BiEdit } from "react-icons/bi";
 
-export default function AuthLayout({ children, stepIndex, setStepIndex, currentStep, setCurrentStep }: { children: React.ReactNode, stepIndex?: number, setStepIndex: Dispatch<SetStateAction<number>>, currentStep: Step, setCurrentStep: Dispatch<SetStateAction<Step>> }) {
+export default function LoginLayout({ children, loginIndex, setLoginIndex }: { children: React.ReactNode, loginIndex: number, setLoginIndex: Dispatch<SetStateAction<number>>}) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [company_name, setCompany_name] = useState("")
   const totalSteps = 7
 
 
@@ -29,18 +26,8 @@ export default function AuthLayout({ children, stepIndex, setStepIndex, currentS
     return () => clearInterval(interval); // Cleanup on unmount
   }, [images.length]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const companyname = localStorage.getItem("company_name") as string
-    if(companyname){
-      setCompany_name(companyname)
-    }
-  }, [stepIndex])
 
-  const handleEdit = () => {
-    setStepIndex(4)
-    setCurrentStep("create-company")
-  }
+
   return (
     <div className="flex xl:gap-32 gap-10 min-h-screen w-full xl:px-7 md:py-5 sm:px-10 px-5">
       {/* Left side - Marketing content */}
@@ -105,49 +92,17 @@ export default function AuthLayout({ children, stepIndex, setStepIndex, currentS
       </div>
 
       {/* Right side - Form content */}
-        <div className="flex flex-col xl:pr-10 mx-auto lg:px-0 w-[700px]">
-          <div className={`flex flex-col sm:flex-row gap-y-5 xl:mb-20 mb-12 ${currentStep === "invite-user" ? "items-center justify-between" : "md:items-center justify-between items-start"} ${currentStep !== "welcome" ? " pt-12" : "lg:pt-28 pt-16"}`}>
-            <div>
-            {currentStep !== "welcome" && stepIndex && (
-                <div className="">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 flex">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex gap-2">
-                        {Array.from({ length: totalSteps - 2 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className={`w-6 h-2 rounded-full ${
-                              i < stepIndex ? "bg-[#3A6B6B]" : "bg-gray-300"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <div className="text-sm text-gray-600 ml-5">
-                        {stepIndex}/{totalSteps - 2}
-                      </div>
-                    </div>
-                    </div>
-                  </div>
+        <div className="xl:pr-10 mx-auto lg:px-0 w-[700px]">
+            <div className="w-full flex justify-between items-start">
+                <div></div>
+                <div className="gap-2 justify-end p-3 rounded-full border w-fit text-[#3A6B6B] text-xs xl:text-base lg:text-sm hidden sm:flex">
+                            <span> Not a member? </span>
+                            <Link href="/auth" className=" hover:underline">
+                            Create an account
+                            </Link>
                 </div>
-              )}
             </div>
-              {
-                (currentStep !== "create-company" && currentStep !== "invite-user" ) && <div className="gap-2 justify-end p-3 rounded-full border w-fit text-[#3A6B6B] text-xs xl:text-base lg:text-sm hidden sm:flex">
-                <span> Already a member? </span>
-                <Link href="/login" className=" hover:underline">
-                Login
-                </Link>
-              </div>
-              }
-              {
-                currentStep == "invite-user" && <div className="flex items-center text-sm rounded-full border p-2">
-                 <span className="font-light text-gray-500 text-xs">Company Name: <span className="font-bold text-gray-700 text-sm">{company_name ?? ""}</span> </span>
-                  {/* <button onClick={handleEdit} className="ml-2 text-gray-500 z-50"><BiEdit size={20} /></button> */}
-                </div>
-              }
-          </div>
-          <div className="flex-1 flex flex-col items-center justify-center  pb-12 w-full lg:-mt-24">
+          <div className="flex-1 flex flex-col items-center justify-center pb-12 w-full mt-24">
             <div className="w-full">{children}</div>
           </div>
         </div>

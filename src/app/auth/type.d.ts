@@ -1,0 +1,1 @@
+export type Step = "welcome" | "personal-info" | "verify-email" | "set-password" | "create-company" | "invite-user" | "complete";

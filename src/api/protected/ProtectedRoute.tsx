@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   useEffect(() => {
     if (!isCheckingAuth && !isAuthenticated) {
-      router.push("/signin");
+      router.push("/auth/login");
     }
   }, [isAuthenticated, isCheckingAuth, router]);
 

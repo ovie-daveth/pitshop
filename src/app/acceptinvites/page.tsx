@@ -1,90 +1,28 @@
-'use client';
+"use client"
 
-import React, { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { BiLoader } from 'react-icons/bi';
-import { Button } from '@headlessui/react';
-
-import { useUserState } from '@/api/context/UserContext';
-import { IAcceptUsersInviteInput } from '@/api/types';
-import AcceptInviteForm from './components/accept-form';
-
-// Create a separate component to handle useSearchParams
-function AcceptInviteContent() {
-  const { acceptInviteUsers } = useUserState();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const [inviteStatus, setInviteStatus] = useState<'pending' | 'success' | 'error'>('pending');
-
-  useEffect(() => {
-    const reference = searchParams.get('reference');
-    const token = searchParams.get('token');
-
-    if (!token || !reference) {
-      setInviteStatus('error');
-      return;
-    }
-
-    localStorage.setItem('accept_token', token);
-
-    const request: IAcceptUsersInviteInput = {
-      status: 'accepted',
-      reference,
-    };
-
-    const checkIfUserIsPartOfOrganization = async () => {
-      try {
-        const response = await acceptInviteUsers(request);
-        if (response) {
-          console.log('response', response);
-          setInviteStatus('success');
-        } else {
-          console.log('Invalid response');
-          setInviteStatus('error');
-        }
-      } catch (error) {
-        console.log('Error:', error);
-        setInviteStatus('error');
-      }
-    };
-
-    checkIfUserIsPartOfOrganization();
-  }, [searchParams, acceptInviteUsers]);
-
-  if (inviteStatus === 'error') {
-    return <AcceptInviteForm />;
-  }
-
-  if (inviteStatus === 'pending') {
-    return (
-      <div className="h-screen w-full flex items-center justify-center">
-        <div className="flex items-center gap-2 justify-center">
-          <h1>Searching for invites...</h1>
-          <BiLoader className="animate-spin text-xl" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-screen w-full flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <h1>Invite Accepted!</h1>
-        <Button onClick={() => router.push('/dashboard')}>
-          Go to Dashboard
-        </Button>
-      </div>
-    </div>
-  );
-}
+import logo from "../../../public/logo.svg";
+import icon from "../../../public/logoicon.svg";
+import Image from "next/image";
+import ExisitingUserInvited from "./components/existingUser";
+import { useState } from "react";
 
 const AcceptInvitePage = () => {
+
+  const [exist, setExist] = useState(true)
+
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <AcceptInviteContent />
-    </Suspense>
-  );
-};
+    <main className="flex min-h-screen flex-col bg-gray-50 p-4 w-full justify-center flex">
+         <div className="text-[#4AE290] flex items-left gap-2 md:ml-40 -mt-28 mb-20">
+                <Image src={icon} alt="icon" width={50} height={50} className="w-8 h-8" />
+                <Image src={logo} alt="logo" width={150} height={150} className="w-36 mt-2" />
+              </div>
+      <div className="items-center justify-center flex">
+      {
+        exist ? <ExisitingUserInvited /> : ""
+      }
+      </div>
+    </main>
+  )
+}
 
 export default AcceptInvitePage;

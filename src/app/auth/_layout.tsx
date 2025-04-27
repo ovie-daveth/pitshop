@@ -135,7 +135,7 @@ export default function AuthLayout({ children, stepIndex, setStepIndex, currentS
               {
                 (currentStep !== "create-company" && currentStep !== "invite-user" ) && <div className="gap-2 justify-end p-3 rounded-full border w-fit text-[#3A6B6B] text-xs xl:text-base lg:text-sm hidden sm:flex">
                 <span> Already a member? </span>
-                <Link href="/login" className=" hover:underline">
+                <Link href="/auth/login" className=" hover:underline">
                 Login
                 </Link>
               </div>

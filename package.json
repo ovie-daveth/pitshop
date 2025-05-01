@@ -15,6 +15,7 @@
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^1.0.6",
     "axios": "^1.7.9",
+    "framer-motion": "^12.9.4",
     "next": "15.1.7",
     "pitstop": "file:",
     "react": "^19.0.0",

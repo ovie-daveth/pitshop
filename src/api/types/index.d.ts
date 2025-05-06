@@ -43,7 +43,6 @@ export interface ICompany {
   // bookings: IBooking[];
 }
 
-
 export interface Company {
   createdAt: string;
   updatedAt: string;
@@ -54,7 +53,6 @@ export interface Company {
   description: string;
   companyIndustry: ICompanyIndustry;
 }
-
 
 export interface ICompanyIndustry {
   name: ReactNode;
@@ -74,28 +72,27 @@ export interface ICreateRolesInput {
   permissions: number[];
 }
 
-
 export type IRole = {
-  updatedAt: string,
-  id: number,
-  name: string,
-  description: string,
-  type: string,
-  external: boolean,
-  permissions: IPermissions[]
-}
+  updatedAt: string;
+  id: number;
+  name: string;
+  description: string;
+  type: string;
+  external: boolean;
+  permissions: IPermissions[];
+};
 
 export type IPermissions = {
-  updatedAt: string,
-  id: number,
-  name: string,
-  description: null,
+  updatedAt: string;
+  id: number;
+  name: string;
+  description: null;
   permissionCategory: {
-      updatedAt: string,
-      id: number,
-      name: string
-  }
-}
+    updatedAt: string;
+    id: number;
+    name: string;
+  };
+};
 
 export interface IUsers {
   user: any;
@@ -207,4 +204,41 @@ export interface INotifications {
 export interface ISendNotifications {
   to: string;
   type: string;
+}
+
+export interface IMediaLibrary {}
+
+export interface IPlacements {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IImageApprovalPermissions {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IMediaLibraryUpload {
+  groupId: string;
+  status: string;
+  permissionIds: IImageApprovalPermissions[];
+}
+
+export interface IMediaComment {
+  cmsId: string;
+  xPosition: number;
+  yPosition: number;
+  message: string;
+  vidTime: number;
+}
+
+export interface IMediaCommentResponse {
+  mediaComment: [];
 }

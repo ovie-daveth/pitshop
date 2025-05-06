@@ -35,7 +35,7 @@ export type AdPlatformContextType = {
   createAdAccountUsers: (data: IAddAdPlatformAccountUsers) => Promise<void>;
   deleteAdAccountUsers: (data: IDeleteAdPlatformAccountUsers) => Promise<void>;
   getAllAdAccountUsers: () => Promise<void>;
-  integrateAdAccount: (data: IIntegrateAdPlatformAccount) => Promise<void>;
+  integrateAdAccount: (data: IIntegrateAdPlatformAccount) => Promise<boolean>;
   getAllAdPlatforms: () => Promise<void>;
   getAdplatformsById: () => Promise<void>;
   getAllAdPlatformAccounts: () => Promise<void>;
@@ -181,10 +181,11 @@ const AdPlatformContextProvider = ({ children }: IProps) => {
       setIntegrateAdPlatforms(res.data.data.ads);
       toast.success(res.data.message);
       setLoading(false);
-      window.location.href = "/";
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to Integrate");
       toast.error(err.response?.data?.message || "Failed to Integrate");
+      return false
     } finally {
       setLoading(false);
     }

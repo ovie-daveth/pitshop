@@ -8,7 +8,7 @@ import {
 } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { ILoginInput, ISignUpInput, IUser } from "../../types";
+import { ILoginInput, IOTPInput, ISignUpInput, IUser } from "../../types";
 export type AuthContextType = {
   user: IUser | null;
   token: string | null;
@@ -16,9 +16,12 @@ export type AuthContextType = {
   loading: boolean;
   isCheckingAuth: boolean;
   error: string | null;
-  signup: (data: number) => Promise<boolean>;
+  signup: (data: {
+    otp: number,
+    password: string
+  }) => Promise<boolean>;
   signin: (data: ILoginInput) => Promise<void>;
-  requestOtp: (data: ISignUpInput) => Promise<boolean>;
+  requestOtp: (data: IOTPInput) => Promise<boolean>;
   verifyOtp: (data: {email: string, otp: string}) => Promise<boolean>;
   resendOtp: () => Promise<boolean>;
   forgotPassword: (data: { email: string }) => Promise<boolean>;
@@ -57,7 +60,10 @@ const AuthContextProvider = ({ children }: IProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const signup = async (data: number) => {
+  const signup = async (data: {
+    otp: number,
+    password: string
+  }) => {
     setLoading(true);
     setError(null);
     try {
@@ -77,10 +83,10 @@ const AuthContextProvider = ({ children }: IProps) => {
         "/api/v1/auth/signup",
         {
           email: userData.email,
-          password: userData.password,
+          password: data.password,
           firstName: userData.firstName,
           lastName: userData.lastName,
-          otp: data,
+          otp: data.otp,
         },
         {
           headers: {
@@ -174,13 +180,12 @@ const AuthContextProvider = ({ children }: IProps) => {
     }
   };
 
-  const requestOtp = async (data: ISignUpInput) => {
+  const requestOtp = async (data: IOTPInput) => {
     try {
       localStorage.setItem(
         "user_details",
         JSON.stringify({
           email: data.email,
-          password: data.password,
           firstName: data.firstName,
           lastName: data.lastName,
         })
@@ -321,7 +326,7 @@ const AuthContextProvider = ({ children }: IProps) => {
     sessionStorage.clear()
     setIsAuthenticated(false);
     toast.success("Logged out successfully");
-    window.location.href = "/auth";
+    window.location.href = "/auth/login";
   };
 
   useEffect(() => {

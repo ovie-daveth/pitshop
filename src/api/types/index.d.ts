@@ -6,6 +6,12 @@ export interface ISignUpInput {
   lastName: string;
 }
 
+export interface IOTPInput {
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface ILoginInput {
   email: string;
   password: string;
@@ -108,6 +114,8 @@ export interface IInvites {
   email: string;
   firstName: string;
   lastName: string;
+  reference: string;
+  role: IRole[];
   // roles: IRoles[];
 }
 
@@ -241,4 +249,8 @@ export interface IMediaComment {
 
 export interface IMediaCommentResponse {
   mediaComment: [];
+}
+export interface ICancelInviteInterface {
+  status: string;
+  ref: string;
 }

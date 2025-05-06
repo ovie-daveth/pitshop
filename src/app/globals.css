@@ -14,3 +14,21 @@ body {
   scrollbar-width: none;
   -ms-overflow-style: none; /* IE and Edge */ 
 }
+
+.primary-100 { background-color: #E9FDF0; }
+.primary-200 { background-color: #D5F9DC; }
+.primary-300 { background-color: #C0F5C9; }
+.primary-400 { background-color: #ABF0B5; }
+.primary-500 { background-color: #96ECB1; }
+.primary-600 { background-color: #5CBF84; }
+.primary-700 { background-color: #6D8F8F; } /* estimated */
+.primary-800 { background-color: #2F6469; } /* your base */
+.primary-900 { background-color: #1A2F30; } /* darkest tone */
+
+
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #000 !important;
+}
+

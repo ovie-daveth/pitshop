@@ -16,7 +16,6 @@ import tiktok from "../../../../../public/images/tiktok.png"
 import snapshot from "../../../../../public/images/snapshot.png"
 import ads from "../../../../../public/images/adds.png"
 import Image from "next/image"
-import { EyeIcon } from "@heroicons/react/solid"
 import { useAdPlatformState } from "@/api/context/AdPlatformContext";
 import { IIntegrateAdPlatformAccount } from "@/api/types";
 
@@ -32,20 +31,71 @@ function loadFacebookSDK(appId: string): Promise<void> {
         appId,
         cookie: true,
         xfbml: true,
-        version: "v18.0",
+        version: "v22.0",
       });
-      resolve();
+      resolve(); // ✅ only resolve after FB.init()
     };
 
-    const script = document.createElement("script");
-    script.src = "https://connect.facebook.net/en_US/sdk.js";
-    script.async = true;
-    document.body.appendChild(script);
+    // Check if the script already exists
+    if (!document.getElementById("facebook-jssdk")) {
+      const script = document.createElement("script");
+      script.id = "facebook-jssdk";
+      script.src = "https://connect.facebook.net/en_US/sdk.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
   });
 }
 
 
 // Integration data
+
+// function loadFacebookSDK(appId: string): Promise<void> {
+//   if(!appId){
+//     console.log("no Id");
+//   }
+//   return new Promise((resolve) => {
+//     console.log("[FacebookSDK] loadFacebookSDK called");
+
+//     if (window.FB) {
+//       console.log("[FacebookSDK] FB already exists, skipping init");
+//       resolve();
+//       return;
+//     }
+
+//     window.fbAsyncInit = function () {
+//       console.log("[FacebookSDK] fbAsyncInit called");
+
+//       window.FB.init({
+//         appId,
+//         cookie: true,
+//         xfbml: true,
+//         version: "v22.0",
+//       });
+
+//       console.log("[FacebookSDK] FB.init done");
+//       resolve();
+//     };
+
+//     // Check if the script is already present
+//     if (!document.getElementById("facebook-jssdk")) {
+//       console.log("[FacebookSDK] Injecting Facebook SDK script");
+
+//       const script = document.createElement("script");
+//       script.id = "facebook-jssdk";
+//       script.src = "https://connect.facebook.net/en_US/sdk.js";
+//       script.async = true;
+//       script.onload = () => console.log("[FacebookSDK] Script loaded");
+//       script.onerror = () => console.error("[FacebookSDK] Script failed to load");
+
+//       document.body.appendChild(script);
+//     } else {
+//       console.log("[FacebookSDK] Script already present, skipping injection");
+//     }
+//   });
+// }
+
+
 const integrations = [
   { id: 1, name: "Meta Ads", icon: fb  },
   { id: 2, name: "Google Ads", icon: ads  },
@@ -162,28 +212,6 @@ export default function IntegrationComponent() {
     ),
   )
 
-
-  // useEffect(() => {
-  //   // Load Facebook SDK
-  //   if (typeof window !== "undefined" && !window.FB) {
-  //     window.fbAsyncInit = function () {
-  //       window.FB.init({
-  //         appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
-  //         cookie: true,
-  //         xfbml: true,
-  //         version: "v18.0",
-  //       });
-  //     };
-  
-  //     const script = document.createElement("script");
-  //     script.src = "https://connect.facebook.net/en_US/sdk.js";
-  //     script.async = true;
-  //     document.body.appendChild(script);
-
-  //     console.log("passed")
-  //   }
-  // }, []);
-
   // New function to toggle ID visibility
   
   const toggleIdVisibility = (accountId: number) => {
@@ -200,26 +228,35 @@ export default function IntegrationComponent() {
           ...prev,
           [integrationId]: "connecting",
         }));
-  
+
+        // Wait for Facebook SDK to initialize
         await loadFacebookSDK(process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!);
-  
-        window.FB.login(
-          async (response: any) => {
+
+        // Ensure FB is initialized before proceeding
+        if (!window.FB) {
+          throw new Error('Facebook SDK not initialized');
+        }
+
+        window.FB.login((response: any) => {
             if (response.authResponse) {
               const accessToken = response.authResponse.accessToken;
-  
+
               const request: IIntegrateAdPlatformAccount = {
                 platformId: 1,
                 token: accessToken,
               };
-  
-              const res = await integrateAdAccount(request);
-              console.log("Facebook login response:", res);
-  
-              setIntegrationStatuses((prev) => ({
-                ...prev,
-                [integrationId]: "connected",
-              }));
+
+              (async () => {
+                const res = await integrateAdAccount(request);
+                console.log("Facebook login response:", res);
+                if(res){
+                  
+                setIntegrationStatuses((prev) => ({
+                  ...prev,
+                  [integrationId]: "connected",
+                }));
+                }
+              })
             } else {
               console.log("User cancelled login or did not authorize.");
               setIntegrationStatuses((prev) => ({

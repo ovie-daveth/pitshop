@@ -19,7 +19,7 @@ export default function BusinessSettings() {
   useEffect(() => {
     getAllInvitedUsers()
     getRolesPermissions()
-  }, [selectedTab])
+  }, [])
 
   return (
     <WrapperLayout>
@@ -51,7 +51,7 @@ export default function BusinessSettings() {
                 }`
               }
             >
-              Team Management
+              Team 
             </Tab>
             <Tab
               className={({ selected }) =>

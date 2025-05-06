@@ -12,38 +12,60 @@ import { useCreateFormStore } from "@/states/useCreateCompanyState";
 import { useRolesState } from "@/api/context/RolesContext";
 import { useAuthFormStore } from "@/states/useAuthFotmState";
 import { useCompanyState } from "@/api/context/CompanyContext";
+import { Step } from "./type";
+import WelcomeForm from "./component/welcome-form";
 
 export default function Page() {
 
   const {showFormType, setFormType} = useAuthFormStore()
+  const [stepIndex, setStepIndex] = useState(1)
+  const [currentStep, setCurrentStep] = useState<Step>("welcome");
   const { getRoles } = useRolesState();
   const { getCompanyIndustries, getUserCompanies } =
   useCompanyState()
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     getRoles()
     getCompanyIndustries()
     getUserCompanies()
-  }, [showFormType])
+
+    const step = localStorage.getItem("currentStep") as Step;
+    if(step){
+      setCurrentStep(step)
+    }
+    const index =  localStorage.getItem("stepIndex",)
+    if(index){
+      setStepIndex(parseInt(index))
+    }
+  }, [showFormType, currentStep, stepIndex])
 
 
   return (
-    <AuthLayout>
-      {
-        showFormType.signup ? (
-         <SignUpForm handleFormChnage={setFormType} />
-        ) : showFormType.login ? (
-          <SignInForm handleFormChnage={setFormType} />
-        ) : showFormType.forgetPassword ? (
-          <ForgetPassword handleFormChnage={setFormType} />
-        ) : showFormType.resetPassword ? (
-          <ResetPassWordForm handleFormChnage={setFormType} />
-        ) : showFormType.createCompany ? (
-          <CreateCompanyForm isAuth handleFormChnage={setFormType} />
-        ) :  showFormType.resetopt ? (
-          <OTPform isSignUp={false} handleFormChnage={setFormType} />
-        ) : showFormType.verifyOtp ? <OTPform isSignUp={true} handleFormChnage={setFormType} /> : showFormType.addTeamMate ? <AddTeamMateForm isAuth  handleFormChnage={setFormType} /> :  null
-      }
+    <AuthLayout setCurrentStep={setCurrentStep} currentStep={currentStep} stepIndex={stepIndex} setStepIndex={setStepIndex}>
+      {currentStep === "welcome" && <WelcomeForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} />}
+      {currentStep === "personal-info" && <SignUpForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} />}
+      {currentStep === "verify-email" && <OTPform setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} isSignUp={true} />}
+      {currentStep === "set-password" && <ResetPassWordForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} isSignUP={true} />}
+      {currentStep === "create-company" && <CreateCompanyForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} />}
+      {currentStep === "invite-user" && <AddTeamMateForm setStepIndex={setStepIndex} setCurrentStep={setCurrentStep} isSignUP={true} />}
     </AuthLayout>
   );
 }
+
+
+// {
+//   showFormType.signup ? (
+//    <SignUpForm handleFormChnage={setFormType} />
+//   ) : showFormType.login ? (
+//     <SignInForm handleFormChnage={setFormType} />
+//   ) : showFormType.forgetPassword ? (
+//     <ForgetPassword handleFormChnage={setFormType} />
+//   ) : showFormType.resetPassword ? (
+//     <ResetPassWordForm handleFormChnage={setFormType} />
+//   ) : showFormType.createCompany ? (
+//     <CreateCompanyForm isAuth handleFormChnage={setFormType} />
+//   ) :  showFormType.resetopt ? (
+//     <OTPform isSignUp={false} handleFormChnage={setFormType} />
+//   ) : showFormType.verifyOtp ? <OTPform isSignUp={true} handleFormChnage={setFormType} /> : showFormType.addTeamMate ? <AddTeamMateForm isAuth  handleFormChnage={setFormType} /> :  null
+// }

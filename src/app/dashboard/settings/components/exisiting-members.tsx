@@ -109,7 +109,7 @@ const ExistingMembersContainer = ({ roles }: { roles: IRole[] }) => {
           <FiRefreshCw className="h-8 w-8 animate-spin text-blue-600" />
         </div>
       ) : (
-        <div className="bg-white border rounded-lg shadow-sm overflow-hidden z-50">
+        <div className="bg-white border rounded-lg shadow-sm  z-50">
           {existingMembers.map((member) => (
             <div
               key={member.id}
@@ -118,7 +118,7 @@ const ExistingMembersContainer = ({ roles }: { roles: IRole[] }) => {
               }`}
             >
               {/* Left side: User info */}
-              <div className="sm:w-auto w-full flex items-center gap-3 z-50">
+              <div className="sm:w-auto w-full flex items-center gap-3 z-0">
                 <div
                   className={`h-10 w-10 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 ${
                     member.status === "suspended" ? "opacity-70" : ""
@@ -132,6 +132,7 @@ const ExistingMembersContainer = ({ roles }: { roles: IRole[] }) => {
                     {member.status === "suspended" && (
                       <div className="relative">
                         <div
+                        className="z-50"
                           onMouseEnter={() =>
                             setTooltipContent({ id: `suspended-${member.id}`, content: "Account Suspended" })
                           }

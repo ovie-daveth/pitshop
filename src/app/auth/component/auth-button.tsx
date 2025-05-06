@@ -7,7 +7,7 @@ const AuthButton = ({isLoading, disabled, title}: {isLoading: boolean, disabled:
     <button
         disabled={isLoading || disabled}
           type="submit"
-          className={`w-full text-white py-2 rounded-lg mt-4  ${disabled ? "bg-blue-300 hover:bg-blue-400" : "bg-blue-600 hover:bg-blue-700"} ${isLoading ? "cursor-not-allowed" : ""}`}
+          className={`w-full text-white py-3 rounded-full mt-4  ${disabled ? "bg-gray-300 hover:bg-gray-400 cursor-not-allowed" : "primary-800"} ${isLoading ? "cursor-not-allowed" : ""}`}
         >
           {
             isLoading ? (
@@ -18,7 +18,7 @@ const AuthButton = ({isLoading, disabled, title}: {isLoading: boolean, disabled:
             ) : (
               <span className="flex items-center justify-center gap-1">
                 {title}
-                <ArrowSmRightIcon className="w-5 h-5 inline-block" />
+                {/* <ArrowSmRightIcon className="w-5 h-5 inline-block" /> */}
               </span>
             )
           }

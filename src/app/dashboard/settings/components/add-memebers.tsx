@@ -20,7 +20,7 @@ type TeamMember = {
 const AddMmebers = ({ roles, rolesLoading, rolesError }: { roles: IRole[], rolesLoading: boolean, rolesError: any}) => {
   const emailInputRef = useRef<HTMLInputElement>(null);
 
-  const { createMultipleInviteUsers, getAllInvitedUsers } = useUserState();
+  const { createMultipleInviteUsers, getAllInvitedUsers, users } = useUserState();
 
 
   const [currentEmail, setCurrentEmail] = useState("");
@@ -104,6 +104,10 @@ const getInitials = (name: string) => {
     .join("")
     .toUpperCase();
 };
+
+useEffect(() => {
+  console.log("users", users)
+}, [])
 
 return (
   <div className="flex flex-col items-start justify-between">

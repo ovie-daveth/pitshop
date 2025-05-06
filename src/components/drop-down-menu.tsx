@@ -133,7 +133,7 @@ export default function BranchDropdown() {
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-normal">{user?.firstName + " " + user?.lastName}</span>
+                    <span className="font-normal text-sm">{user?.firstName + " " + user?.lastName}</span>
                     <span className="text-xs text-gray-500 font-light">{user?.email}</span>
                   </div>
                 </div>

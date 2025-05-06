@@ -23,6 +23,7 @@ import BreadCrumb from "./breadcrumb";
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from "@heroicons/react/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import { SlCalender } from "react-icons/sl";
+import { FiSearch } from "react-icons/fi";
 
 const navigation = [
   {
@@ -88,6 +89,11 @@ export default function WrapperLayout({
     setMounted(true);
   }, []);
 
+  const checkIsTabletOrMobile = () => {
+    const isMobile = window.matchMedia("(max-width: 767px)").matches; // sm and below
+    const isTablet = window.matchMedia("(min-width: 768px) and (max-width: 1023px)").matches; // md
+    return isMobile || isTablet;
+  };
 
   const NavLink = ({ item }: { item: typeof navigation[0] }) => {
     const isActive = path === item.href;
@@ -235,13 +241,13 @@ export default function WrapperLayout({
         </motion.div>
 
         <motion.div
-          animate={{ paddingLeft: isOpen ? 288 : 64 }}
+          //  animate={{ paddingLeft: checkIsTabletOrMobile() ? 64 : (isOpen ? 288 : 64) }}
           transition={{
             type: "spring",
             stiffness: 300,
             damping: 20,
           }}
-          className="flex flex-1 flex-col z-50"
+          className={`flex flex-1 flex-col z-50 ${isOpen ? "xl:pl-[288px] " : "xl:pl-[64px]"}`}
         >
 
           <div className="sticky top-0 z-20 flex h-16 flex-shrink-0 border-b border-gray-200 bg-white">
@@ -254,8 +260,16 @@ export default function WrapperLayout({
               <MenuAlt2Icon className="h-6 w-6" aria-hidden="true" />
             </button>
 
-            <div className="flex flex-1 justify-between px-4">
+            <div className="flex flex-1 justify-between items-center px-4">
               <BreadCrumb />
+              <div className="border border-gray-300 rounded-lg flex items-center w-[30%]">
+              <FiSearch className="ml-3 text-gray-800 text-sm" />
+              <input 
+                type="text" 
+                placeholder="search" 
+                className="w-full py-2.5 px-2 text-sm font-light border-none outline-none focus:ring-0 bg-transparent" 
+              />
+            </div>
               <div className="ml-4 flex items-center gap-5">
                 <div className="flex items-center gap-1 font-light text-sm">
                   <span><MdOutlineCalendarMonth  /></span>
@@ -268,7 +282,7 @@ export default function WrapperLayout({
 
           <main className="flex-1">
             <div className="py-6">
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+              <div className="px-4 sm:px-6 md:px-8">
                 {children}
               </div>
             </div>

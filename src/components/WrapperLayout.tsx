@@ -280,7 +280,7 @@ export default function WrapperLayout({
             </div>
           </div>
 
-          <main className="flex-1">
+          <main className="flex-1 bg-gray-100">
             <div className="py-6">
               <div className="px-4 sm:px-6 md:px-8">
                 {children}

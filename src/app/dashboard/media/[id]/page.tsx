@@ -1,5 +1,14 @@
 "use client";
-import { Fragment, useState } from "react";
+
+import React, {
+  use,
+  useRef,
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+  Fragment,
+} from "react";
 import { Dialog, Transition, Disclosure, Combobox } from "@headlessui/react";
 import {
   CloudDownloadIcon,
@@ -22,46 +31,84 @@ import {
   ChatAltIcon,
 } from "@heroicons/react/solid";
 import Link from "next/link";
-import {
-  LuCircleX,
-  LuBold,
-  LuItalic,
-  LuUnderline,
-  LuLink,
-  LuSmile,
-} from "react-icons/lu";
 import UploadCustomizeModal from "@/components/modal/UploadCustomizeModal";
+import { useParams } from "next/navigation";
+import CommentContextProvider, {
+  useCommentState,
+} from "@/api/context/CommentContext/CommentContext";
+import MediaLibraryContextProvider, {
+  useMediaLibraryState,
+} from "@/api/context/MediaLibraryContext/MediaLibraryContext";
+import Quill from "quill";
+import "quill/dist/quill.snow.css";
 
-const reviews = {
-  average: 4,
-  featured: [
-    {
-      id: 1,
-      rating: 5,
-      content: `
-        <p>This icon pack is just what I need for my latest project.</p>
-      `,
-      date: "July 16",
-      datetime: "2021-07-16",
-      author: "Emily Selman",
-      avatarSrc:
-        "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80",
-    },
-    {
-      id: 2,
-      rating: 5,
-      content: `
-        <p>Blown away by how polished this icon pack is. Everything looks so consistent and each SVG is optimized out of the box so I can use it directly with confidence.</p>
-      `,
-      date: "July 12",
-      datetime: "2021-07-12",
-      author: "Hector Gibbons",
-      avatarSrc:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80",
-    },
-    // More reviews...
-  ],
+export type RichTextEditorHandle = {
+  getContent: () => string;
 };
+
+const RichTextEditor = forwardRef<RichTextEditorHandle>((_, ref) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const quillRef = useRef<Quill | null>(null);
+
+  useEffect(() => {
+    if (editorRef.current && !quillRef.current) {
+      quillRef.current = new Quill(editorRef.current, {
+        theme: "snow",
+        modules: {
+          toolbar: {
+            container: "#custom-toolbar",
+          },
+        },
+        placeholder: "Write something...",
+      });
+    }
+
+    return () => {
+      quillRef.current = null;
+    };
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    getContent: () => {
+      if (quillRef.current) {
+        return quillRef.current.root.innerHTML;
+      }
+      return "";
+    },
+  }));
+
+  return (
+    <>
+      <div
+        id="custom-toolbar"
+        className="flex flex-row justify-start items-center"
+        style={{ borderColor: "white", padding: "2px" }}
+      >
+        <select className="ql-header" defaultValue="">
+          <option value="1">Heading 1</option>
+          <option value="2">Heading 2</option>
+          <option value="">Normal</option>
+        </select>
+        <button className="ql-bold" />
+        <button className="ql-italic" />
+        <button className="ql-underline" />
+        <button className="ql-strike" />
+        <button className="ql-blockquote" />
+        <button className="ql-code-block" />
+        <button className="ql-link" />
+        <button className="ql-image" />
+        <button className="ql-clean" />
+      </div>
+      <div
+        ref={editorRef}
+        style={{ height: "150px", borderColor: "white" }}
+        className="border-none"
+      />
+    </>
+  );
+});
+
+RichTextEditor.displayName = "RichTextEditor";
 
 const sidebarNavigation = [
   { name: "Download", icon: CloudDownloadIcon },
@@ -169,13 +216,50 @@ function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
-type Props = {
-  x: number;
-  y: number;
-  onClose: () => void;
-};
+function PageContent(props: { params: { id: string } }) {
+  type Media = {
+    url: string;
+    imageAlt?: string;
+  };
 
-export default function Page() {
+  type CommentLocation = {
+    message?: string;
+    timePosition?: string;
+    xposition?: string;
+    yposition?: string;
+  };
+  const [showPin, setShowPin] = useState(false);
+
+  const { getMediaById } = useMediaLibraryState();
+  const { getAllComments, getCommentsById } = useCommentState();
+
+  const params = useParams();
+  const id = params.id as string;
+
+  const [media, setMedia] = useState<Media | null>(null);
+  const [location, setLocation] = useState<CommentLocation | null>(null);
+  const [comment, setComment] = useState<any>(null);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchMedia = async () => {
+      try {
+        const res = await getAllComments(id);
+        const result = await getMediaById(id);
+        setMedia(result);
+        setComment(res);
+
+        console.log(res);
+      } catch (error) {
+        console.error("Error loading media:", error);
+      }
+    };
+
+    fetchMedia();
+
+    console.log("comment", comment);
+  }, [id]);
   const [commentBox, setCommentBox] = useState({
     visible: false,
     x: 0,
@@ -188,6 +272,7 @@ export default function Page() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const asset = [{ name: "Main" }, { name: "Supply" }];
+  const [justClosed, setJustClosed] = useState(false);
 
   const filteredAsset =
     query === ""
@@ -249,6 +334,22 @@ export default function Page() {
     { name: "Structured Metadata", content: renderStructuredMetadata },
     { name: "Embedded Metadata", content: renderEmbeddedMetadata },
   ];
+
+  const handleCommentClick = async (commentId: string) => {
+    const cmsId = props.params.id;
+    try {
+      const res = await getCommentsById(cmsId, commentId);
+      setLocation({
+        message: res.message,
+        timePosition: res.timePosition,
+        xposition: res.xposition,
+        yposition: res.yposition,
+      });
+      console.log(res);
+    } catch (err) {
+      console.log("Failed to fetch comment:", err);
+    }
+  };
 
   function renderTags() {
     return (
@@ -776,16 +877,17 @@ export default function Page() {
                         <span className="px-2">Add Comment</span>
                       </h6>
 
-                      {reviews.featured.map((review, reviewIdx) => (
+                      {comment?.data.map((review: any, reviewIdx: any) => (
                         <div
                           key={review.id}
                           className="flex text-sm text-gray-500 space-x-4 px-2"
+                          onClick={() => handleCommentClick(review.id)}
                         >
                           <div className="flex-none py-3">
                             <img
-                              src={review.avatarSrc}
+                              src={products[0].imageSrc}
                               alt=""
-                              className="w-10 h-10 bg-gray-100 rounded-full"
+                              className="w-10 h-10 bg-gray-100 rounded-full object-cover"
                             />
                           </div>
                           <div
@@ -796,22 +898,29 @@ export default function Page() {
                           >
                             <div className="flex flex-row justify-between items-center">
                               <h3 className="font-medium text-gray-900">
-                                {review.author}
+                                {review.createdBy.firstName +
+                                  " " +
+                                  review.createdBy.lastName}
                               </h3>
                               <p>
-                                <time dateTime={review.datetime}>
-                                  {review.date}
-                                </time>
+                                <>
+                                  <span className="text-sm text-gray-500">
+                                    {new Date(
+                                      review.createdAt
+                                    ).toLocaleDateString("en-US", {
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                    })}
+                                  </span>
+                                </>
                               </p>
                             </div>
-                            <p className="sr-only">
-                              {review.rating} out of 5 stars
-                            </p>
 
                             <div
                               className="mt-4 prose prose-sm max-w-none text-gray-500"
                               dangerouslySetInnerHTML={{
-                                __html: review.content,
+                                __html: review.message,
                               }}
                             />
                           </div>
@@ -839,7 +948,7 @@ export default function Page() {
 
   const renderContent = (selectedTab: any) => {
     const handleImageClick = (e: any) => {
-      if (selectedTab === "Comments") {
+      if (selectedTab === "Comments" && !justClosed) {
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -849,7 +958,10 @@ export default function Page() {
 
     const closeCommentBox = () => {
       setCommentBox({ visible: false, x: 0, y: 0 });
+      setJustClosed(true);
+      setTimeout(() => setJustClosed(false), 50);
     };
+
     return (
       <div className="relative">
         <div
@@ -857,18 +969,28 @@ export default function Page() {
           onClick={handleImageClick}
         >
           <img
-            src={products[0].imageSrc}
-            alt={products[0].imageAlt}
-            className="w-full object-center object-contain cursor-pointer"
+            src={media?.url}
+            alt={media?.imageAlt}
+            className="w-full object-cover cursor-pointer h-[700px]"
           />
           {commentBox.visible && (
-            <FloatingCommentBox
+            <FloatingCommentEditor
               x={commentBox.x}
               y={commentBox.y}
               onClose={closeCommentBox}
             />
           )}
         </div>
+
+        {showPin && (
+          <div
+            className="absolute z-50 w-3 h-3 bg-red-500 rounded-full"
+            style={{
+              left: `${location?.xposition}px`,
+              top: `${location?.yposition}px`,
+            }}
+          ></div>
+        )}
 
         <div className="my-4">
           <div className="flex flex-row justify-end items-end">
@@ -893,218 +1015,222 @@ export default function Page() {
   };
 
   return (
-    <>
-      <div className="h-screen flex">
-        {/* Narrow sidebar */}
-        <div className="hidden w-28 bg-gray-100 overflow-y-auto md:block">
-          <div className="w-full py-6 flex flex-col items-center">
-            <div className="flex-shrink-0 flex items-center">
-              <Link
-                href="/dashboard/media"
-                className="text-white text-2xl font-bold"
-              >
-                <LuCircleX
-                  className="h-8 w-8 text-indigo-500"
-                  aria-hidden="true"
-                />
-              </Link>
-            </div>
-            <div className="flex-1 mt-6 w-full px-2 space-y-1">
-              {sidebarNavigation.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => setSelectedTab(item.name)}
-                  className={classNames(
-                    selectedTab === item.name
-                      ? "bg-white text-indigo-600"
-                      : "text-gray-500",
-                    "group w-full p-3 rounded-md flex flex-col items-center text-xs font-medium"
-                  )}
+    <MediaLibraryContextProvider>
+      <>
+        <div className="h-screen flex">
+          {/* Narrow sidebar */}
+          <div className="hidden w-28 bg-gray-100 overflow-y-auto md:block">
+            <div className="w-full py-6 flex flex-col items-center">
+              <div className="flex-shrink-0 flex items-center">
+                <Link
+                  href="/dashboard/media"
+                  className="text-white text-2xl font-bold"
                 >
-                  <item.icon
-                    className={classNames(
-                      selectedTab === item.name
-                        ? "text-indigo-600"
-                        : "text-gray-500",
-                      "h-6 w-6"
-                    )}
+                  <XIcon
+                    className="h-8 w-8 text-indigo-500"
                     aria-hidden="true"
                   />
-                  <span className="mt-2">{item.name}</span>
-                </button>
-              ))}
+                </Link>
+              </div>
+              <div className="flex-1 mt-6 w-full px-2 space-y-1">
+                {sidebarNavigation.map((item) => (
+                  <button
+                    key={item.name}
+                    onClick={() => setSelectedTab(item.name)}
+                    className={classNames(
+                      selectedTab === item.name
+                        ? "bg-white text-indigo-600"
+                        : "text-gray-500",
+                      "group w-full p-3 rounded-md flex flex-col items-center text-xs font-medium"
+                    )}
+                  >
+                    <item.icon
+                      className={classNames(
+                        selectedTab === item.name
+                          ? "text-indigo-600"
+                          : "text-gray-500",
+                        "h-6 w-6"
+                      )}
+                      aria-hidden="true"
+                    />
+                    <span className="mt-2">{item.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Mobile menu */}
-        <Transition.Root show={mobileMenuOpen} as={Fragment}>
-          <Dialog as="div" className="md:hidden" onClose={setMobileMenuOpen}>
-            <div className="fixed inset-0 z-40 flex">
-              <Transition.Child
-                as={Fragment}
-                enter="transition-opacity ease-linear duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="transition-opacity ease-linear duration-300"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-75" />
-              </Transition.Child>
-              <Transition.Child
-                as={Fragment}
-                enter="transition ease-in-out duration-300 transform"
-                enterFrom="-translate-x-full"
-                enterTo="translate-x-0"
-                leave="transition ease-in-out duration-300 transform"
-                leaveFrom="translate-x-0"
-                leaveTo="-translate-x-full"
-              >
-                <div className="relative max-w-xs w-full bg-indigo-700 pt-5 pb-4 flex-1 flex flex-col">
-                  <div className="absolute top-1 right-0 -mr-14 p-1">
-                    <button
-                      type="button"
-                      className="h-12 w-12 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <XIcon
-                        className="h-6 w-6 text-white"
-                        aria-hidden="true"
+          {/* Mobile menu */}
+          <Transition.Root show={mobileMenuOpen} as={Fragment}>
+            <Dialog as="div" className="md:hidden" onClose={setMobileMenuOpen}>
+              <div className="fixed inset-0 z-40 flex">
+                <Transition.Child
+                  as={Fragment}
+                  enter="transition-opacity ease-linear duration-300"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="transition-opacity ease-linear duration-300"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div className="fixed inset-0 bg-gray-600 bg-opacity-75" />
+                </Transition.Child>
+                <Transition.Child
+                  as={Fragment}
+                  enter="transition ease-in-out duration-300 transform"
+                  enterFrom="-translate-x-full"
+                  enterTo="translate-x-0"
+                  leave="transition ease-in-out duration-300 transform"
+                  leaveFrom="translate-x-0"
+                  leaveTo="-translate-x-full"
+                >
+                  <div className="relative max-w-xs w-full bg-indigo-700 pt-5 pb-4 flex-1 flex flex-col">
+                    <div className="absolute top-1 right-0 -mr-14 p-1">
+                      <button
+                        type="button"
+                        className="h-12 w-12 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <XIcon
+                          className="h-6 w-6 text-white"
+                          aria-hidden="true"
+                        />
+                        <span className="sr-only">Close sidebar</span>
+                      </button>
+                    </div>
+                    <div className="flex-shrink-0 px-4 flex items-center">
+                      <img
+                        className="h-8 w-auto"
+                        src="https://tailwindui.com/img/logos/workflow-mark.svg?color=white"
+                        alt="Workflow"
                       />
-                      <span className="sr-only">Close sidebar</span>
-                    </button>
-                  </div>
-                  <div className="flex-shrink-0 px-4 flex items-center">
-                    <img
-                      className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/workflow-mark.svg?color=white"
-                      alt="Workflow"
-                    />
-                  </div>
-                  <div className="mt-5 flex-1 h-0 px-2 overflow-y-auto">
-                    <nav className="h-full flex flex-col">
-                      <div className="space-y-1">
-                        {sidebarNavigation.map((item) => (
-                          <button
-                            key={item.name}
-                            onClick={() => {
-                              setSelectedTab(item.name);
-                              setMobileMenuOpen(false);
-                            }}
-                            className={classNames(
-                              selectedTab === item.name
-                                ? "bg-indigo-800 text-white"
-                                : "text-indigo-100 hover:bg-indigo-800 hover:text-white",
-                              "group py-2 px-3 rounded-md flex items-center text-sm font-medium w-full"
-                            )}
-                          >
-                            <item.icon
+                    </div>
+                    <div className="mt-5 flex-1 h-0 px-2 overflow-y-auto">
+                      <nav className="h-full flex flex-col">
+                        <div className="space-y-1">
+                          {sidebarNavigation.map((item) => (
+                            <button
+                              key={item.name}
+                              onClick={() => {
+                                setSelectedTab(item.name);
+                                setMobileMenuOpen(false);
+                              }}
                               className={classNames(
                                 selectedTab === item.name
-                                  ? "text-white"
-                                  : "text-indigo-300 group-hover:text-white",
-                                "mr-3 h-6 w-6"
+                                  ? "bg-indigo-800 text-white"
+                                  : "text-indigo-100 hover:bg-indigo-800 hover:text-white",
+                                "group py-2 px-3 rounded-md flex items-center text-sm font-medium w-full"
                               )}
-                              aria-hidden="true"
-                            />
-                            <span>{item.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </nav>
+                            >
+                              <item.icon
+                                className={classNames(
+                                  selectedTab === item.name
+                                    ? "text-white"
+                                    : "text-indigo-300 group-hover:text-white",
+                                  "mr-3 h-6 w-6"
+                                )}
+                                aria-hidden="true"
+                              />
+                              <span>{item.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </nav>
+                    </div>
                   </div>
-                </div>
-              </Transition.Child>
-              <div className="flex-shrink-0 w-14" aria-hidden="true" />
-            </div>
-          </Dialog>
-        </Transition.Root>
+                </Transition.Child>
+                <div className="flex-shrink-0 w-14" aria-hidden="true" />
+              </div>
+            </Dialog>
+          </Transition.Root>
 
-        {/* Content area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Main content */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 lg:grid-flow-col lg:gap-4 h-full">
-            <div className="lg:col-span-1 lg:row-span-2 bg-white border-r border-gray-200 overflow-y-auto">
-              {optionalContent()}
-            </div>
-            <div className="col-span-8 h-screen w-full p-6">
-              {renderContent(selectedTab)}
+          {/* Content area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Main content */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 lg:grid-flow-col lg:gap-4 h-full">
+              <div className="lg:col-span-1 lg:row-span-2 bg-white border-r border-gray-200 overflow-y-auto">
+                {optionalContent()}
+              </div>
+              <div className="col-span-8 h-screen w-full p-6">
+                {renderContent(selectedTab)}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <UploadCustomizeModal
-        isOpen={openModal}
-        onClose={() => setOpenModal(false)}
-      />
-    </>
+        <UploadCustomizeModal
+          isOpen={openModal}
+          onClose={() => setOpenModal(false)}
+        />
+      </>
+    </MediaLibraryContextProvider>
   );
 }
 
-function FloatingCommentBox({ x, y, onClose }: Props) {
-  const [comment, setComment] = useState("");
+RichTextEditor.displayName = "RichTextEditor";
+
+function FloatingCommentEditor({
+  x,
+  y,
+  onClose,
+  vidTime,
+}: {
+  x: number;
+  y: number;
+  onClose: () => void;
+  vidTime?: string;
+}) {
+  const editorRef = useRef<RichTextEditorHandle>(null);
+  const { createComment } = useCommentState();
+  const params = useParams();
+  const cmsId = params.id as string;
 
   const handleSubmit = () => {
-    console.log("Submitted comment:", comment);
-    setComment("");
+    const message = editorRef.current?.getContent() || "";
+    if (!message.trim()) return;
+
+    createComment({
+      cmsId,
+      xPosition: x.toString(),
+      yPosition: y.toString(),
+      message,
+      ...(vidTime ? { vidTime } : { vidTime: "22:30" }),
+    });
+
     onClose();
   };
 
   return (
     <div
-      className="absolute bg-white shadow-lg rounded-lg p-3 w-80 z-50"
+      className="absolute bg-white shadow-xl rounded-lg border w-[600px] z-50"
       style={{ top: y, left: x }}
+      onClick={(e) => e.stopPropagation()}
     >
-      {/* Close Button */}
-      <div className="flex justify-end mb-2">
-        <button
-          onClick={() => {
-            setComment("");
-            onClose();
-          }}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          <XIcon className="h-4 w-4 text-gray-500" />
+      <div className="flex items-center justify-end p-3 border-b">
+        <button onClick={onClose}>
+          <XIcon className="w-4 h-4 text-gray-400 hover:text-gray-600" />
         </button>
       </div>
-
-      {/* Textarea */}
-      <textarea
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        placeholder="Add Comment..."
-        rows={3}
-        className="w-full p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      />
-
-      <div className="flex justify-between items-center mt-2">
-        <div className="flex space-x-2 text-gray-500">
-          <button>
-            <LuBold className="h-4 w-4" />
-          </button>
-          <button>
-            <LuItalic className="h-4 w-4" />
-          </button>
-          <button>
-            <LuUnderline className="h-4 w-4" />
-          </button>
-          <button>
-            <LuLink className="h-4 w-4" />
-          </button>
-          <button>
-            <LuSmile className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="">
-          <button
-            onClick={handleSubmit}
-            className="bg-indigo-600 text-white text-sm px-4 py-1 rounded-md hover:bg-indigo-700"
-          >
-            Submit
-          </button>
-        </div>
+      <div className="p-1 border-b">
+        <RichTextEditor ref={editorRef} />
+      </div>
+      <div className="flex justify-end mt-2 px-3 pb-3">
+        <button
+          onClick={handleSubmit}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 rounded text-sm"
+        >
+          Submit
+        </button>
       </div>
     </div>
+  );
+}
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  return (
+    <CommentContextProvider>
+      <MediaLibraryContextProvider>
+        <PageContent params={{ id }} />
+      </MediaLibraryContextProvider>
+    </CommentContextProvider>
   );
 }

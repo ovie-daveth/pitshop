@@ -1,6 +1,7 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useLayoutEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { CheckIcon, TrashIcon } from "@heroicons/react/outline";
+import { useMediaLibraryState } from "@/api/context/MediaLibraryContext";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -11,9 +12,14 @@ export default function UploadCustomizeModal({
   isOpen,
   onClose,
 }: UploadModalProps) {
+  const { placements, getPlacements } = useMediaLibraryState();
   const reset = () => {
     onClose();
   };
+
+  useLayoutEffect(() => {
+    getPlacements();
+  }, []);
 
   const [fields, setFields] = useState([
     { id: "Field 1", name: "Field 1", property: "", options: [] },

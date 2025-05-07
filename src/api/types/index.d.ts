@@ -131,6 +131,8 @@ export interface IAcceptUsersInviteInput {
 
 export interface IOnboardInvitedUsers {
   email: string;
+  firstname: string,
+  lastname: string,
   reference: string;
   password: string;
 }

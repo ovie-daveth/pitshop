@@ -31,6 +31,7 @@
     "axios": "^1.7.9",
     "emoji-mart": "^5.6.0",
     "lexical": "^0.31.0",
+    "framer-motion": "^12.9.4",
     "next": "15.1.7",
     "pitstop": "file:",
     "quill": "^2.0.3",

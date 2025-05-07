@@ -26,7 +26,7 @@ export type UserContextType = {
   createInviteUsers: (data: ICreateUsersInput) => Promise<boolean>;
   createMultipleInviteUsers: (data: {invitedUserDtos: ICreateUsersInput[]}) =>  Promise<boolean>;
   acceptInviteUsers: (data: IAcceptUsersInviteInput) => Promise<boolean>;
-  onboardInvitedUsers: (data: IOnboardInvitedUsers) => Promise<void>;
+  onboardInvitedUsers: (data: IOnboardInvitedUsers) => Promise<boolean>;
   getAllInvitedUsers: () => Promise<void>;
   getAllUsers: () => Promise<void>;
   cancelInvites: (data: ICancelInviteInterface) => Promise<boolean>;
@@ -155,9 +155,10 @@ const UserContextProvider = ({ children }: IProps) => {
           Accept: "application/json",
         },
       });
-      setUsers(res.data.data.users);
+      //setUsers(res.data.data.users);
       toast.success(res.data.message);
-      return true
+      console.log("scceptr user data", res.data.data)
+      return res.data.data
     } catch (err: any) {
       setError(err.response?.data?.message || "Accept Invite failed");
       toast.error(err.response?.data?.message || "Accept Invite failed");
@@ -237,9 +238,11 @@ const UserContextProvider = ({ children }: IProps) => {
       });
       setUsers(res.data.data.users);
       toast.success(res.data.message);
+      return true
     } catch (err: any) {
       setError(err.response?.data?.message || "Onboard Invite failed");
       toast.error(err.response?.data?.message || "Onboard Invite failed");
+      return false
     } finally {
       setLoading(false);
     }

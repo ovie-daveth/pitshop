@@ -6,7 +6,6 @@
     "node": "18.x"
   },
   "scripts": {
-    "heroku-prebuild": "npm install --legacy-peer-deps",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

@@ -6,6 +6,12 @@ export interface ISignUpInput {
   lastName: string;
 }
 
+export interface IOTPInput {
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface ILoginInput {
   email: string;
   password: string;
@@ -24,7 +30,11 @@ export interface IUser {
 }
 
 export interface ICompany {
-  id: string;
+  roles: any;
+  user: any;
+  company: Company;
+  reference: string;
+  id: number;
   created_by: IUser;
   name: string;
   description: string;
@@ -39,6 +49,23 @@ export interface ICompany {
   // bookings: IBooking[];
 }
 
+export interface Company {
+  createdAt: string;
+  updatedAt: string;
+  id: number;
+  reference: string;
+  name: string;
+  logo: string | null;
+  description: string;
+  companyIndustry: ICompanyIndustry;
+}
+
+export interface ICompanyIndustry {
+  name: ReactNode;
+  id: Key | null | undefined;
+  company: ICompany[];
+}
+
 export interface ICreateCompanyInput {
   name: string;
   description: string;
@@ -48,30 +75,53 @@ export interface ICreateCompanyInput {
 export interface ICreateRolesInput {
   name: string;
   description?: string | number;
-  permissions: string[];
+  permissions: number[];
 }
 
-export interface IRoles {
-  id: string;
+export type IRole = {
+  updatedAt: string;
+  id: number;
   name: string;
   description: string;
-  permissions: string[];
-  createdAt: string;
+  type: string;
+  external: boolean;
+  permissions: IPermissions[];
+};
+
+export type IPermissions = {
   updatedAt: string;
-}
+  id: number;
+  name: string;
+  description: null;
+  permissionCategory: {
+    updatedAt: string;
+    id: number;
+    name: string;
+  };
+};
 
 export interface IUsers {
+  user: any;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
   roles: IRoles[];
 }
 
-export interface ICreateUsersInput {
+export interface IInvites {
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
-  roles: string[];
+  reference: string;
+  role: IRole[];
+  // roles: IRoles[];
+}
+
+export interface ICreateUsersInput {
+  email: string;
+  roles: number[];
 }
 
 export interface IAcceptUsersInviteInput {
@@ -81,6 +131,8 @@ export interface IAcceptUsersInviteInput {
 
 export interface IOnboardInvitedUsers {
   email: string;
+  firstname: string,
+  lastname: string,
   reference: string;
   password: string;
 }
@@ -162,4 +214,45 @@ export interface INotifications {
 export interface ISendNotifications {
   to: string;
   type: string;
+}
+
+export interface IMediaLibrary {}
+
+export interface IPlacements {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IImageApprovalPermissions {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IMediaLibraryUpload {
+  groupId: string;
+  status: string;
+  permissionIds: IImageApprovalPermissions[];
+}
+
+export interface IMediaComment {
+  cmsId: string;
+  xPosition: number;
+  yPosition: number;
+  message: string;
+  vidTime: number;
+}
+
+export interface IMediaCommentResponse {
+  mediaComment: [];
+}
+export interface ICancelInviteInterface {
+  status: string;
+  ref: string;
 }

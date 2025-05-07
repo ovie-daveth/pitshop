@@ -120,6 +120,7 @@ const AcceptsForm = () => {
       const data = response as unknown as {
         email: string, exists: boolean}
       if(data.exists) {
+        
         router.replace("/auth/login")
       }
     setIsChecking(false)

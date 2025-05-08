@@ -74,7 +74,7 @@ export default function BranchDropdown() {
   return (
     <div className="relative">
       <div
-        className="items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer hidden md:inline-flex"
+        className="items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-50 cursor-pointer inline-flex"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-3">

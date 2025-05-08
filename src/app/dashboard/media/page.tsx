@@ -9,6 +9,9 @@ import WrapperLayout from "@/components/WrapperLayout"
 import { FaCloudDownloadAlt } from "react-icons/fa"
 import { BiFilter } from "react-icons/bi"
 import { RiSoundModuleLine } from "react-icons/ri"
+import Image from "next/image"
+import noMedia from "../../../../public/images/nomedia.png"
+import AssetActions from "./components/asset_action"
 
 type MediaItem = {
   id: string
@@ -38,7 +41,8 @@ export default function MediaLibrary() {
   // Simulate loading media items
   useEffect(() => {
     // Mock data
-    const mockItems: MediaItem[] = [
+    const mockItems: MediaItem[] = 
+    [
       {
         id: "img645ddd1",
         type: "image",
@@ -249,8 +253,8 @@ export default function MediaLibrary() {
         <h1 className="lg:text-2xl md:text-xl text-lg font-medium text-gray-900 mb-6">Media Library</h1>
 
         <Tab.Group onChange={setSelectedTab}>
-          <div className="flex justify-between items-center mb-6">
-            <Tab.List className="flex py-1 px-1 space-x-1 bg-gray-100 rounded-full">
+          <div className="flex justify-between lg:items-center flex-col lg:flex-row mb-6 gap-y-5">
+            <Tab.List className="flex py-1 px-1 space-x-1 bg-gray-100 rounded-full w-fit">
               <Tab as={Fragment}>
                 {({ selected }) => (
                  <button
@@ -306,60 +310,7 @@ export default function MediaLibrary() {
               </Tab>
             </Tab.List>
 
-            <div className="flex space-x-2">
-              <Menu as="div" className="relative inline-block text-left">
-                <Menu.Button as="div">
-                  <button className="inline-flex justify-center w-full px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-green-700 rounded-full shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-800 text-green-800">
-                    Import asset
-                    <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
-                  </button>
-                </Menu.Button>
-                <Transition
-                  as={Fragment}
-                  enter="transition ease-out duration-100"
-                  enterFrom="transform opacity-0 scale-95"
-                  enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
-                  leaveFrom="transform opacity-100 scale-100"
-                  leaveTo="transform opacity-0 scale-95"
-                >
-                  <Menu.Items className="absolute right-0 w-56 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                    <div className="px-1 py-1">
-                      <Menu.Item>
-                        {({ active }) => (
-                          <button
-                            className={`${
-                              active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                            } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                          >
-                            From computer
-                          </button>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <button
-                            className={`${
-                              active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                            } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                          >
-                            From URL
-                          </button>
-                        )}
-                      </Menu.Item>
-                    </div>
-                  </Menu.Items>
-                </Transition>
-              </Menu>
-
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-3 border border-transparent text-sm font-medium rounded-full shadow-sm text-white primary-800 hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 gap-3"
-              >
-                <FaCloudDownloadAlt size={20} />
-               Upload assets
-              </button>
-            </div>
+           <AssetActions />
           </div>
 
           <div className="flex flex-wrap gap-2 mb-6">
@@ -735,259 +686,98 @@ export default function MediaLibrary() {
 
           <Tab.Panels>
             <Tab.Panel>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-y-auto scrollbar-hide max-h-[calc(100vh-250px)]">
-                {filteredItems.map((item) => (
-                  <div key={item.id} className="relative group">
-                    <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100">
-                      <img
-                        src={item.src || "/placeholder.svg"}
-                        alt={item.displayName}
-                        className="w-full h-full object-cover"
-                      />
-                      {item.type === "video" && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-white bg-opacity-70 rounded-full p-2">
-                            <PlayIcon className="h-6 w-6 text-gray-800" />
-                          </div>
+             {
+                filteredItems.length < 1 ? <div className="w-full h-full lg:mt-20">
+                  <div className="flex flex-col gap-7 items-center justify-center w-full h-full">
+                    <Image src={noMedia} alt="no image" width={100} height={100} className="w-44 h-44" />
+                    <h2>No Media uploaded yet yet</h2>
+                    <div className="lg:w-[30%] text-center">
+                    <p className="font-light text-sm">Start by adding your assets to organize and prepare them for your campaign</p>
+                    </div>
+                    <AssetActions />
+                  </div>
+                  </div> :  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 overflow-y-auto scrollbar-hide max-h-[calc(100vh-250px)]">
+                  {filteredItems.map((item) => (
+                      <div key={item.id} className="relative group">
+                        <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100">
+                          <img
+                            src={item.src || "/placeholder.svg"}
+                            alt={item.displayName}
+                            className="w-full h-full object-cover"
+                          />
+                          {item.type === "video" && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="bg-white bg-opacity-70 rounded-full p-2">
+                                <PlayIcon className="h-6 w-6 text-gray-800" />
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div className="mt-1 flex justify-between items-center">
-                      <div className="text-xs text-gray-500">
-                        {item.dimensions} • {item.fileSize}
-                      </div>
-                      <Menu as="div" className="relative inline-block text-left">
-                        <Menu.Button as="div">
-                          <button className="inline-flex justify-center p-1 text-gray-400 hover:text-gray-500">
-                            <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                          </button>
-                        </Menu.Button>
-                        <Transition
-                          as={Fragment}
-                          enter="transition ease-out duration-100"
-                          enterFrom="transform opacity-0 scale-95"
-                          enterTo="transform opacity-100 scale-100"
-                          leave="transition ease-in duration-75"
-                          leaveFrom="transform opacity-100 scale-100"
-                          leaveTo="transform opacity-0 scale-95"
-                        >
-                          <Menu.Items className="absolute right-0 w-48 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                            <div className="px-1 py-1">
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`${
-                                      active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                  >
-                                    View details
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`${
-                                      active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                  >
-                                    Download
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`${
-                                      active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                  >
-                                    Delete
-                                  </button>
-                                )}
-                              </Menu.Item>
-                            </div>
-                          </Menu.Items>
-                        </Transition>
-                      </Menu>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Tab.Panel>
-            <Tab.Panel>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-y-auto max-h-[calc(100vh-250px)]">
-                {filteredItems.map((item) => (
-                  <div key={item.id} className="relative group">
-                    <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100">
-                      <img
-                        src={item.src || "/placeholder.svg"}
-                        alt={item.displayName}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="mt-1 flex justify-between items-center">
-                      <div className="text-xs text-gray-500">
-                        {item.dimensions} • {item.fileSize}
-                      </div>
-                      <Menu as="div" className="relative inline-block text-left">
-                        <Menu.Button as="div">
-                          <button className="inline-flex justify-center p-1 text-gray-400 hover:text-gray-500">
-                            <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                          </button>
-                        </Menu.Button>
-                        <Transition
-                          as={Fragment}
-                          enter="transition ease-out duration-100"
-                          enterFrom="transform opacity-0 scale-95"
-                          enterTo="transform opacity-100 scale-100"
-                          leave="transition ease-in duration-75"
-                          leaveFrom="transform opacity-100 scale-100"
-                          leaveTo="transform opacity-0 scale-95"
-                        >
-                          <Menu.Items className="absolute right-0 w-48 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                            <div className="px-1 py-1">
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`${
-                                      active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                  >
-                                    View details
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`${
-                                      active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                  >
-                                    Download
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`${
-                                      active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                  >
-                                    Delete
-                                  </button>
-                                )}
-                              </Menu.Item>
-                            </div>
-                          </Menu.Items>
-                        </Transition>
-                      </Menu>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Tab.Panel>
-            <Tab.Panel>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-y-auto max-h-[calc(100vh-250px)]">
-                {filteredItems.map((item) => (
-                  <div key={item.id} className="relative group">
-                    <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100">
-                      <img
-                        src={item.src || "/placeholder.svg"}
-                        alt={item.displayName}
-                        className="w-full h-full object-cover"
-                      />
-                      {item.type === "video" && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-white bg-opacity-70 rounded-full p-2">
-                            <PlayIcon className="h-6 w-6 text-gray-800" />
+                        <div className="mt-1 flex justify-between items-center">
+                          <div className="text-xs text-gray-500">
+                            {item.dimensions} • {item.fileSize}
                           </div>
+                          <Menu as="div" className="relative inline-block text-left">
+                            <Menu.Button as="div">
+                              <button className="inline-flex justify-center p-1 text-gray-400 hover:text-gray-500">
+                                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                </svg>
+                              </button>
+                            </Menu.Button>
+                            <Transition
+                              as={Fragment}
+                              enter="transition ease-out duration-100"
+                              enterFrom="transform opacity-0 scale-95"
+                              enterTo="transform opacity-100 scale-100"
+                              leave="transition ease-in duration-75"
+                              leaveFrom="transform opacity-100 scale-100"
+                              leaveTo="transform opacity-0 scale-95"
+                            >
+                              <Menu.Items className="absolute right-0 w-48 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                                <div className="px-1 py-1">
+                                  <Menu.Item>
+                                    {({ active }) => (
+                                      <button
+                                        className={`${
+                                          active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                                        } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                                      >
+                                        View details
+                                      </button>
+                                    )}
+                                  </Menu.Item>
+                                  <Menu.Item>
+                                    {({ active }) => (
+                                      <button
+                                        className={`${
+                                          active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                                        } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                                      >
+                                        Download
+                                      </button>
+                                    )}
+                                  </Menu.Item>
+                                  <Menu.Item>
+                                    {({ active }) => (
+                                      <button
+                                        className={`${
+                                          active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                                        } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                                      >
+                                        Delete
+                                      </button>
+                                    )}
+                                  </Menu.Item>
+                                </div>
+                              </Menu.Items>
+                            </Transition>
+                          </Menu>
                         </div>
-                      )}
-                    </div>
-                    <div className="mt-1 flex justify-between items-center">
-                      <div className="text-xs text-gray-500">
-                        {item.dimensions} • {item.fileSize}
                       </div>
-                      <Menu as="div" className="relative inline-block text-left">
-                        <Menu.Button as="div">
-                          <button className="inline-flex justify-center p-1 text-gray-400 hover:text-gray-500">
-                            <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                          </button>
-                        </Menu.Button>
-                        <Transition
-                          as={Fragment}
-                          enter="transition ease-out duration-100"
-                          enterFrom="transform opacity-0 scale-95"
-                          enterTo="transform opacity-100 scale-100"
-                          leave="transition ease-in duration-75"
-                          leaveFrom="transform opacity-100 scale-100"
-                          leaveTo="transform opacity-0 scale-95"
-                        >
-                          <Menu.Items className="absolute right-0 w-48 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                            <div className="px-1 py-1">
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`${
-                                      active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                  >
-                                    View details
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`${
-                                      active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                  >
-                                    Download
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    className={`${
-                                      active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                    } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                  >
-                                    Delete
-                                  </button>
-                                )}
-                              </Menu.Item>
-                            </div>
-                          </Menu.Items>
-                        </Transition>
-                      </Menu>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </Tab.Panel>
-            <Tab.Panel>
-              <div className="flex items-center justify-center h-64 bg-gray-50 rounded-md">
-                <div className="text-center">
-                  <p className="text-gray-500">No collections found</p>
-                  <button
-                    type="button"
-                    className="mt-2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                  >
-                    Create collection
-                  </button>
-                </div>
-              </div>
+             }
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>

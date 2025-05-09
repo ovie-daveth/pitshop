@@ -12,11 +12,13 @@ import { RiSoundModuleLine } from "react-icons/ri"
 import Image from "next/image"
 import noMedia from "../../../../public/images/nomedia.png"
 import AssetActions from "./components/asset_action"
+import ReactPlayer from "react-player"
 
 type MediaItem = {
   id: string
   type: "image" | "video"
-  src: string
+  src: string,
+  thumbnail?: string,
   dimensions: string
   fileSize: string
   uploadDate: Date
@@ -37,6 +39,22 @@ export default function MediaLibrary() {
     dimensions: "",
     uploadDate: "",
   })
+
+  // Filter media items based on selected tab and other filters
+  const filteredItems = mediaItems.filter((item) => {
+    // First apply tab filtering
+    if (selectedTab === 1 && item.type !== "image") return false;
+    if (selectedTab === 2 && item.type !== "video") return false;
+    if (selectedTab === 3 && !item.tags.includes("collection")) return false;
+
+    // Then apply other filters
+    if (filters.approvalStatus && item.approvalStatus !== filters.approvalStatus) return false;
+    if (filters.displayName && !item.displayName.toLowerCase().includes(filters.displayName.toLowerCase())) return false;
+    if (filters.tag && !item.tags.some(tag => tag.toLowerCase().includes(filters.tag.toLowerCase()))) return false;
+    if (filters.sku && !item.sku.toLowerCase().includes(filters.sku.toLowerCase())) return false;
+
+    return true;
+  });
 
   // Simulate loading media items
   useEffect(() => {
@@ -82,7 +100,8 @@ export default function MediaLibrary() {
       {
         id: "vid645ddd4",
         type: "video",
-        src: "/placeholder.svg?height=300&width=300",
+        thumbnail: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
         dimensions: "300KB",
         fileSize: "15.48kpm",
         uploadDate: new Date(),
@@ -94,7 +113,8 @@ export default function MediaLibrary() {
       {
         id: "vid645ddd5",
         type: "video",
-        src: "/placeholder.svg?height=300&width=300",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
         dimensions: "300KB",
         fileSize: "15.48kpm",
         uploadDate: new Date(),
@@ -106,7 +126,8 @@ export default function MediaLibrary() {
       {
         id: "vid645ddd6",
         type: "video",
-        src: "/placeholder.svg?height=300&width=300",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
         dimensions: "300KB",
         fileSize: "15.48kpm",
         uploadDate: new Date(),
@@ -142,7 +163,8 @@ export default function MediaLibrary() {
       {
         id: "vid645ddd9",
         type: "video",
-        src: "/placeholder.svg?height=300&width=300",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
         dimensions: "300KB",
         fileSize: "15.48kpm",
         uploadDate: new Date(),
@@ -178,7 +200,8 @@ export default function MediaLibrary() {
       {
         id: "vid645ddd12",
         type: "video",
-        src: "/placeholder.svg?height=300&width=300",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
         dimensions: "300KB",
         fileSize: "15.48kpm",
         uploadDate: new Date(),
@@ -190,7 +213,8 @@ export default function MediaLibrary() {
       {
         id: "vid645ddd13",
         type: "video",
-        src: "/placeholder.svg?height=300&width=300",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
         dimensions: "300KB",
         fileSize: "15.48kpm",
         uploadDate: new Date(),
@@ -204,32 +228,6 @@ export default function MediaLibrary() {
 
     setMediaItems(mockItems)
   }, [])
-
-  // Improved filtering logic with better handling of each filter type
-  const filteredItems = mediaItems.filter((item) => {
-    // Filter by tab selection
-    if (selectedTab === 1 && item.type !== "image") return false
-    if (selectedTab === 2 && item.type !== "video") return false
-    if (selectedTab === 3) return false // No collections in our mock data
-
-    // Apply filters - only apply filters that have values
-    if (filters.approvalStatus && item.approvalStatus !== filters.approvalStatus) return false
-    if (filters.displayName && !item.displayName.toLowerCase().includes(filters.displayName.toLowerCase())) return false
-    if (filters.tag && !item.tags.some((tag) => tag.toLowerCase().includes(filters.tag.toLowerCase()))) return false
-    if (filters.sku && !item.sku.toLowerCase().includes(filters.sku.toLowerCase())) return false
-    if (filters.dimensions) {
-      // This would need proper implementation based on actual dimension values
-      // For now, we'll just check if the dimensions string contains the filter value
-      if (!item.dimensions.includes(filters.dimensions)) return false
-    }
-    if (filters.uploadDate) {
-      // This would need proper date comparison logic
-      // For demonstration, we'll just return true for now
-      // In a real implementation, you would compare the upload date with the selected date range
-    }
-
-    return true
-  })
 
   const clearFilters = () => {
     setFilters({
@@ -245,10 +243,139 @@ export default function MediaLibrary() {
   // Add visual indicators for active filters
   const filterCount = Object.values(filters).filter(Boolean).length
 
+  console.log("filter", filteredItems)
+
+  const isYouTubeUrl = (url: string) => /youtu\.?be/.test(url);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+
+  const Grid = ({ items }: { items: MediaItem[] }) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-y-4 gap-x-6 overflow-y-auto overflow-x-hidden custom-scrollbar">
+      {items.map((item) => {
+        const isPlaying = playingId === item.id;
+        const isVideo = item.type === "video";
+
+        return (
+          <div
+            key={item.id}
+            className="relative group rounded-lg shadow w-[170px] h-[220px]"
+          >
+            <div className="relative aspect-square rounded-lg bg-gray-100 w-[90%] mx-auto h-[75%]">
+              {isVideo && isPlaying ? (
+                isYouTubeUrl(item.src) ? (
+                  <ReactPlayer
+                    url={item.src}
+                    light={item.thumbnail || noMedia.src}
+                    playing
+                    controls
+                    width="100%"
+                    height="100%"
+                  />
+                ) : (
+                  <video
+                    src={item.src}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                )
+              ) : (
+                <>
+                  <img
+                      src={isVideo ? item.thumbnail || noMedia.src : item.src}
+                      alt={item.displayName}
+                      className="w-full h-full object-cover"
+                    />
+                  {isVideo && (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                      onClick={() => setPlayingId(item.id)}
+                    >
+                      <div className="bg-white bg-opacity-70 rounded-full p-2">
+                        <PlayIcon className="h-6 w-6 text-gray-800" />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="mt-1 flex justify-between items-center p-1">
+              <div>
+                <div className="text-sm font-semibold text-gray-800">
+                  {item.displayName}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {item.dimensions} • {item.fileSize}
+                </div>
+              </div>
+              <Menu as="div" className="relative inline-block text-left">
+         <Menu.Button as="div">
+           <button className="inline-flex justify-center p-1 text-gray-400 hover:text-gray-500">
+             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+               <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+             </svg>
+           </button>
+         </Menu.Button>
+         <Transition
+           as={Fragment}
+           enter="transition ease-out duration-100"
+           enterFrom="transform opacity-0 scale-95"
+           enterTo="transform opacity-100 scale-100"
+           leave="transition ease-in duration-75"
+           leaveFrom="transform opacity-100 scale-100"
+           leaveTo="transform opacity-0 scale-95"
+         >
+           <Menu.Items className="absolute right-0 w-48 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+             <div className="px-1 py-1">
+               <Menu.Item>
+                 {({ active }) => (
+                   <button
+                     className={`${
+                       active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                     } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                   >
+                     View details
+                   </button>
+                 )}
+               </Menu.Item>
+               <Menu.Item>
+                 {({ active }) => (
+                   <button
+                     className={`${
+                       active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                     } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                   >
+                     Download
+                   </button>
+                 )}
+               </Menu.Item>
+               <Menu.Item>
+                 {({ active }) => (
+                   <button
+                     className={`${
+                       active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                     } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                   >
+                     Delete
+                   </button>
+                 )}
+               </Menu.Item>
+             </div>
+           </Menu.Items>
+         </Transition>
+       </Menu>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
    <ProtectedRoute>
     <WrapperLayout>
-    <div className="bg-white min-h-screen rounded-3xl">
+    <div className="bg-white min-h-screen rounded-3xl z-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <h1 className="lg:text-2xl md:text-xl text-lg font-medium text-gray-900 mb-6">Media Library</h1>
 
@@ -684,102 +811,23 @@ export default function MediaLibrary() {
             </div>
           )}
 
-          <Tab.Panels>
-            <Tab.Panel>
-             {
-                filteredItems.length < 1 ? <div className="w-full h-full lg:mt-20">
-                  <div className="flex flex-col gap-7 items-center justify-center w-full h-full">
-                    <Image src={noMedia} alt="no image" width={100} height={100} className="w-44 h-44" />
-                    <h2>No Media uploaded yet yet</h2>
-                    <div className="lg:w-[30%] text-center">
-                    <p className="font-light text-sm">Start by adding your assets to organize and prepare them for your campaign</p>
-                    </div>
-                    <AssetActions />
-                  </div>
-                  </div> :  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 overflow-y-auto scrollbar-hide max-h-[calc(100vh-250px)]">
-                  {filteredItems.map((item) => (
-                      <div key={item.id} className="relative group">
-                        <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100">
-                          <img
-                            src={item.src || "/placeholder.svg"}
-                            alt={item.displayName}
-                            className="w-full h-full object-cover"
-                          />
-                          {item.type === "video" && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="bg-white bg-opacity-70 rounded-full p-2">
-                                <PlayIcon className="h-6 w-6 text-gray-800" />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="mt-1 flex justify-between items-center">
-                          <div className="text-xs text-gray-500">
-                            {item.dimensions} • {item.fileSize}
-                          </div>
-                          <Menu as="div" className="relative inline-block text-left">
-                            <Menu.Button as="div">
-                              <button className="inline-flex justify-center p-1 text-gray-400 hover:text-gray-500">
-                                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                                </svg>
-                              </button>
-                            </Menu.Button>
-                            <Transition
-                              as={Fragment}
-                              enter="transition ease-out duration-100"
-                              enterFrom="transform opacity-0 scale-95"
-                              enterTo="transform opacity-100 scale-100"
-                              leave="transition ease-in duration-75"
-                              leaveFrom="transform opacity-100 scale-100"
-                              leaveTo="transform opacity-0 scale-95"
-                            >
-                              <Menu.Items className="absolute right-0 w-48 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                                <div className="px-1 py-1">
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <button
-                                        className={`${
-                                          active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                        } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                      >
-                                        View details
-                                      </button>
-                                    )}
-                                  </Menu.Item>
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <button
-                                        className={`${
-                                          active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                        } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                      >
-                                        Download
-                                      </button>
-                                    )}
-                                  </Menu.Item>
-                                  <Menu.Item>
-                                    {({ active }) => (
-                                      <button
-                                        className={`${
-                                          active ? "bg-gray-100 text-gray-900" : "text-gray-700"
-                                        } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                                      >
-                                        Delete
-                                      </button>
-                                    )}
-                                  </Menu.Item>
-                                </div>
-                              </Menu.Items>
-                            </Transition>
-                          </Menu>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-             }
-            </Tab.Panel>
-          </Tab.Panels>
+        <Tab.Panels>
+          {/* All */}
+          <Tab.Panel>
+            <Grid items={filteredItems} />
+          </Tab.Panel>
+
+          {/* Images */}
+          <Tab.Panel>
+            <Grid items={filteredItems.filter((item) => item.type === "image")} />
+          </Tab.Panel>
+
+          {/* Videos */}
+          <Tab.Panel>
+            <Grid items={filteredItems.filter((item) => item.type === "video")} />
+          </Tab.Panel>
+        </Tab.Panels>
+
         </Tab.Group>
       </div>
     </div>
@@ -787,3 +835,4 @@ export default function MediaLibrary() {
    </ProtectedRoute>
   )
 }
+

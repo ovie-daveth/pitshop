@@ -283,7 +283,7 @@ export default function WrapperLayout({
 
           <main className="flex-1 bg-gray-100">
             <div className="py-6">
-              <div className="px-4 sm:px-6 md:px-8">
+              <div className="sm:px-2 md:px-4">
                 {children}
               </div>
             </div>

@@ -3,10 +3,20 @@ import { Menu, Tab, TabGroup, Transition } from "@headlessui/react";
 import React, { Dispatch, Fragment, SetStateAction, useRef, useState } from "react";
 import Filters from "./filters";
 import { PlayIcon } from "@heroicons/react/solid";
+import ReactPlayer from "react-player";
+import noMedia from "../../../../../public/images/nomedia.png"
 
+type ItemsType = {
+  id: string,
+  type: string,
+  thumbnail?: string,
+  src: string,
+  dimensions: string,
+  fileSize: string
+}
 const UploadMediaForm = ({setIsOpenModal}: {setIsOpenModal: Dispatch<SetStateAction<boolean>>}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [assets, setAssets] = useState(
+  const [assets, setAssets] = useState<ItemsType[]>(
     [
         {
           "id": "img645ddd1",
@@ -81,21 +91,24 @@ const UploadMediaForm = ({setIsOpenModal}: {setIsOpenModal: Dispatch<SetStateAct
         {
           "id": "vid645ddd4",
           "type": "video",
-          "src": "/placeholder.svg?height=300&width=300",
+          thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+          "src": "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
           "dimensions": "300KB",
           "fileSize": "15.48kpm"
         },
         {
           "id": "vid645ddd5",
           "type": "video",
-          "src": "/placeholder.svg?height=300&width=300",
+          thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+          "src": "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
           "dimensions": "300KB",
           "fileSize": "15.48kpm"
         },
         {
           "id": "vid645ddd6",
           "type": "video",
-          "src": "/placeholder.svg?height=300&width=300",
+          thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+          "src": "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
           "dimensions": "300KB",
           "fileSize": "15.48kpm"
         },
@@ -116,7 +129,8 @@ const UploadMediaForm = ({setIsOpenModal}: {setIsOpenModal: Dispatch<SetStateAct
         {
           "id": "vid645ddd9",
           "type": "video",
-          "src": "/placeholder.svg?height=300&width=300",
+          thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+          "src": "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
           "dimensions": "300KB",
           "fileSize": "15.48kpm"
         },
@@ -137,14 +151,16 @@ const UploadMediaForm = ({setIsOpenModal}: {setIsOpenModal: Dispatch<SetStateAct
         {
           "id": "vid645ddd12",
           "type": "video",
-          "src": "/placeholder.svg?height=300&width=300",
+          thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+          "src": "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
           "dimensions": "300KB",
           "fileSize": "15.48kpm"
         },
         {
           "id": "vid645ddd13",
           "type": "video",
-          "src": "/placeholder.svg?height=300&width=300",
+          thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+          "src": "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
           "dimensions": "300KB",
           "fileSize": "15.48kpm"
         }
@@ -163,6 +179,69 @@ const UploadMediaForm = ({setIsOpenModal}: {setIsOpenModal: Dispatch<SetStateAct
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
   };
+
+  const isYouTubeUrl = (url: string) => /youtu\.?be/.test(url);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+
+
+  const Grid = ({ items }: { items: ItemsType[] }) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    {items.map((item) => {
+      const isPlaying = playingId === item.id;
+      const isVideo = item.type === "video";
+
+      return(
+      <div key={item.id} className="relative group rounded-lg shadow pb-2">
+      
+      <div className="relative aspect-square rounded-lg bg-gray-100 w-[90%] mx-auto h-[75%]">
+              {isVideo && isPlaying ? (
+                isYouTubeUrl(item.src) ? (
+                  <ReactPlayer
+                    url={item.src}
+                    light={item.thumbnail || noMedia.src}
+                    playing
+                    controls
+                    width="100%"
+                    height="100%"
+                  />
+                ) : (
+                  <video
+                    src={item.src}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                )
+              ) : (
+                <>
+                  <img
+                      src={isVideo ? item.thumbnail || noMedia.src : item.src}
+                      alt={item.fileSize}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                    {item.type === "video" && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div  onClick={() => setPlayingId(item.id)} className="bg-white bg-opacity-70 rounded-full p-2">
+              <PlayIcon className="h-6 w-6 text-gray-800" />
+            </div>
+          </div>
+        )}
+                </>
+              )}
+            </div>
+      <div className="mt-1 w-[65%] px-2">
+          <h3 className="text-sm mb-1">{item.id}</h3>
+        <div className="text-xs text-gray-500 flex gap-2 flex justify-between items-center">
+          <span>{item.dimensions}</span> 
+          •
+          <span>{item.fileSize}</span>
+        </div>
+      </div>
+    </div>)
+})}
+    </div>
+  )
 
   return (
     <div className="fixed w-full h-screen inset-0 bg-black/80 flex items-center justify-center z-50">
@@ -273,8 +352,9 @@ const UploadMediaForm = ({setIsOpenModal}: {setIsOpenModal: Dispatch<SetStateAct
         </div>
 
         {
-            assets.length >= 1 && <div className="w-full p-4 flex-1 overflow-hidden">
-                <div className="w-full space-y-4">
+            assets.length >= 1 &&   <div className="w-full p-4 flex-1 overflow-x-hidden  custom-scrollbar">
+            <div className="w-full space-y-4 h-full pr-2 custom-scrollbar">
+        
                     <div className="flex items-center justify-between">
                         <h2 className="font-bold">Assets</h2>
                         <p className="font-light text-sm text-gray-500">305 images/videos</p>
@@ -327,39 +407,22 @@ const UploadMediaForm = ({setIsOpenModal}: {setIsOpenModal: Dispatch<SetStateAct
             <Filters />
         </div>
         <Tab.Panels>
-            <Tab.Panel className="flex-1">
-             {
-               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 overflow-y-auto overflow-x-hidden max-h-[400px] custom-scrollbar">
-                  {filteredItems.map((item) => (
-                      <div key={item.id} className="relative group">
-                        <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100">
-                          <img
-                            src={item.src || "/placeholder.svg"}
-                            alt={item.id}
-                            className="w-full h-full object-cover"
-                          />
-                          {item.type === "video" && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="bg-white bg-opacity-70 rounded-full p-2">
-                                <PlayIcon className="h-6 w-6 text-gray-800" />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="mt-1 w-[65%]">
-                            <h3 className="text-sm mb-1">{item.id}</h3>
-                          <div className="text-xs text-gray-500 flex gap-2 flex justify-between items-center">
-                            <span>{item.dimensions}</span> 
-                            •
-                            <span>{item.fileSize}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-             }
-            </Tab.Panel>
-          </Tab.Panels>
+          {/* All */}
+          <Tab.Panel>
+            <Grid items={filteredItems} />
+          </Tab.Panel>
+
+          {/* Images */}
+          <Tab.Panel>
+            <Grid items={filteredItems.filter((item) => item.type === "image")} />
+          </Tab.Panel>
+
+          {/* Videos */}
+          <Tab.Panel>
+            <Grid items={filteredItems.filter((item) => item.type === "video")} />
+          </Tab.Panel>
+        </Tab.Panels>
+
         </Tab.Group>
                     </div>
                 </div>

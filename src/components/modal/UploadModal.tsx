@@ -1,8 +1,10 @@
 "use client";
-import { Fragment, useState, useRef } from "react";
+import { Fragment, useState, useRef, useLayoutEffect } from "react";
 import { Dialog, Transition, Menu, Popover } from "@headlessui/react";
-
+import { useMediaLibraryState } from "@/api/context/MediaLibraryContext";
+import toast from "react-hot-toast";
 import { ChevronDownIcon, MenuAlt1Icon } from "@heroicons/react/solid";
+import { Oval } from "@agney/react-loading";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -11,18 +13,37 @@ interface UploadModalProps {
 
 interface FileGroup {
   id: string;
-  files: File[];
+  files: {
+    file: File;
+    presigned: {
+      uploadUrl: string;
+      assetUrl: string;
+      mimetype: string;
+      key: string;
+    };
+  }[];
 }
-
 const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
+  const {
+    loading,
+    getPresigned,
+    uploadPresigned,
+    validateMedia,
+    placements,
+    getPlacements,
+    postPresigned,
+  } = useMediaLibraryState();
+
+  useLayoutEffect(() => {
+    getPlacements();
+    console.log("PLACEMENTS", placements);
+  }, []);
+
   const filters = [
     {
       id: "More Options",
       name: "More Options",
-      options: [
-        { value: "add", label: "Add new asset" },
-        { value: "categorize", label: "Categorize file" },
-      ],
+      options: [{ value: "add", label: "Add new asset" }],
     },
   ];
 
@@ -31,14 +52,24 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
   );
 
   const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState("");
   const [modalStep, setModalStep] = useState("initial");
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<
+    {
+      file: File;
+      presigned: {
+        uploadUrl: string;
+        assetUrl: string;
+        mimetype: string;
+        key: string;
+      };
+    }[]
+  >([]);
+
+  const [finalItems, setFinalItems] = useState<FileGroup[]>([]);
+
   const [groupByName, setGroupByName] = useState(false);
   const [fileInputKey, setFileInputKey] = useState(0);
   const [errorMessage, setErrorMessage] = useState<React.ReactNode>(null);
-  const [finalItems, setFinalItems] = useState<FileGroup[]>([]);
   const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>(0);
   const [replacementTarget, setReplacementTarget] = useState<{
     groupIdx: number;
@@ -50,6 +81,54 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
   >("all");
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const addRef = useRef<HTMLInputElement | null>(null);
+  const [filePermissions, setFilePermissions] = useState<
+    Record<string, number[]>
+  >({});
+  const [categorizeFile, setCategorizeFile] = useState<File | null>(null);
+  const [selectedPlacementIds, setSelectedPlacementIds] = useState<number[]>(
+    []
+  );
+
+  const descriptors = new Set([
+    "square",
+    "story",
+    "reel",
+    "feed",
+    "vertical",
+    "horizontal",
+    "landscape",
+    "portrait",
+    "post",
+  ]);
+
+  const numericPattern = /^\d+([:xX\-_])\d+$/;
+  function extractBaseName(filename: string): string {
+    const name = filename.toLowerCase().replace(/\.[^/.]+$/, "");
+
+    const parts = name.split(/[\s_]/);
+
+    while (parts.length > 1) {
+      const last = parts[parts.length - 1];
+      if (numericPattern.test(last) || descriptors.has(last)) {
+        parts.pop();
+      } else {
+        break;
+      }
+    }
+
+    let base = parts.join("_");
+
+    const attachedPattern = new RegExp(
+      `^(.*?)(?:(?:${Array.from(descriptors).join("|")})|\\d+[:xX\\-_]\\d+)$`
+    );
+
+    const attachedMatch = base.match(attachedPattern);
+    if (attachedMatch) {
+      base = attachedMatch[1];
+    }
+
+    return base;
+  }
 
   const reset = () => {
     setModalStep("initial");
@@ -59,12 +138,16 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
     setErrorMessage("null");
     setFileInputKey((prev) => prev + 1);
     setFileTypeFilter("all");
+    setSelectedValues({});
+    setFilePermissions({});
+    setCategorizeFile(null);
+    setSelectedPlacementIds([]);
     onClose();
   };
 
   const filteredFiles = uploadedFiles.filter((file) => {
-    if (fileTypeFilter === "image") return file.type.startsWith("image/");
-    if (fileTypeFilter === "video") return file.type.startsWith("video/");
+    if (fileTypeFilter === "image") return file.file.type.startsWith("image/");
+    if (fileTypeFilter === "video") return file.file.type.startsWith("video/");
     return true;
   });
 
@@ -75,12 +158,40 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
     }
   };
 
-  const filePattern =
-    /^([a-z0-9]+)[_\-x:]?(\d+[x:]\d+|1:1|4:5|9:16|16:9|1\.91:1|post|story|feed|\w+)?(?:\..+)?$/i;
+  const prepareFileUpload = async (file: File) => {
+    try {
+      const presigned = await getPresigned(file);
+      await uploadPresigned({ url: presigned.uploadUrl, file });
+      return { file, presigned };
+    } catch (err) {
+      console.error("Failed to upload file:", file.name, err);
+      toast.error(`Failed to upload ${file.name}`);
+      throw err;
+    }
+  };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []) as File[];
-    setUploadedFiles(files);
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = Array.from(event.target.files || []);
+
+    const prepared = await Promise.all(
+      files.map((file) => prepareFileUpload(file))
+    );
+
+    setUploadedFiles(prepared);
+    setFinalItems(
+      prepared.map((item, idx) => ({
+        id: `item-${idx + 1}`,
+        files: [item],
+      }))
+    );
+  };
+
+  const handleCategorizeFile = (file: File) => {
+    setCategorizeFile(file);
+    setIsCategorizeOpen(true);
+    setSelectedPlacementIds(filePermissions[file.name] || []);
   };
 
   const handleConfirm = () => {
@@ -89,26 +200,28 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
     const grouped: Record<string, File[]> = {};
     const usedFiles = new Set<File>();
 
-    uploadedFiles.forEach((file) => {
-      const match = file.name.match(filePattern);
-      if (match) {
-        const prefix = match[1].toLowerCase();
-        if (!grouped[prefix]) grouped[prefix] = [];
-        grouped[prefix].push(file);
-        usedFiles.add(file);
-      }
+    uploadedFiles.forEach((fileWrapper) => {
+      const base = extractBaseName(fileWrapper.file.name);
+      if (!grouped[base]) grouped[base] = [];
+      grouped[base].push(fileWrapper.file);
+      usedFiles.add(fileWrapper.file);
     });
 
     const result: FileGroup[] = [];
 
     if (groupByName) {
-      Object.entries(grouped).forEach(([prefix, files]) => {
-        result.push({ id: prefix, files });
+      Object.entries(grouped).forEach(([base, files]) => {
+        result.push({
+          id: base,
+          files: files.map(
+            (file) => uploadedFiles.find((uf) => uf.file === file)!
+          ),
+        });
       });
 
       let itemCount = 1;
       uploadedFiles.forEach((file) => {
-        if (!usedFiles.has(file)) {
+        if (!usedFiles.has(file.file)) {
           result.push({ id: `item-${itemCount++}`, files: [file] });
         }
       });
@@ -126,7 +239,9 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
   const handleDeleteFile = (fileToDelete: File) => {
     const updatedFinalItems = [...finalItems];
     const currentGroup = updatedFinalItems[selectedGroupIndex];
-    currentGroup.files = currentGroup.files.filter((f) => f !== fileToDelete);
+    currentGroup.files = currentGroup.files.filter(
+      (f) => f.file !== fileToDelete
+    );
     if (currentGroup.files.length === 0) {
       updatedFinalItems.splice(selectedGroupIndex, 1);
       setSelectedGroupIndex((prev) => Math.max(0, prev - 1));
@@ -157,56 +272,81 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
     if (!file) return;
 
     const updatedFinalItems = [...finalItems];
-    updatedFinalItems[groupIdx].files[fileIdx] = file;
+    updatedFinalItems[groupIdx].files[fileIdx] = {
+      file,
+      presigned: { uploadUrl: "", assetUrl: "", mimetype: "", key: "" },
+    };
     setFinalItems(updatedFinalItems);
   };
 
-  const handleAddAssetFileUpload = (
+  const handleAddAssetFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!event.target.files?.[0]) return;
 
     const newFile = event.target.files[0];
-    const updatedFinalItems = [...finalItems];
+    const uploaded = await prepareFileUpload(newFile);
 
-    updatedFinalItems[selectedGroupIndex].files.push(newFile);
+    const updatedFinalItems = [...finalItems];
+    updatedFinalItems[selectedGroupIndex].files.push({
+      file: uploaded.file,
+      presigned: uploaded.presigned,
+    });
 
     setFinalItems(updatedFinalItems);
     event.target.value = "";
   };
 
-  const handleReplaceFile = (groupIdx: number, fileIdx: number) => {
-    setReplacementTarget({ groupIdx, fileIdx });
-    dropRef.current?.click();
-  };
-
-  const handleFileReplaceUpload = (
+  const handleFileReplaceUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!replacementTarget || !event.target.files?.[0]) return;
 
     const newFile = event.target.files[0];
+    const uploaded = await prepareFileUpload(newFile);
+
     const updatedFinalItems = [...finalItems];
     updatedFinalItems[replacementTarget.groupIdx].files[
       replacementTarget.fileIdx
-    ] = newFile;
+    ] = { file: uploaded.file, presigned: uploaded.presigned };
 
     setFinalItems(updatedFinalItems);
     setReplacementTarget(null);
+    event.target.value = "";
   };
 
-  const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && inputValue.trim()) {
-      e.preventDefault();
-      if (!categories.includes(inputValue.trim())) {
-        setCategories([...categories, inputValue.trim()]);
+  const saveCategorization = async () => {
+    if (categorizeFile) {
+      const placementIds = selectedPlacementIds;
+
+      const allFiles = finalItems.flatMap((group) => group.files);
+      const fileItem: any = allFiles.find(
+        (f: any) => f.file.name === categorizeFile.name
+      );
+      if (!fileItem) return;
+
+      try {
+        await validateMedia({
+          url: fileItem.presigned.assetUrl,
+          mimetype: fileItem.presigned?.mimetype,
+          key: fileItem.presigned.key,
+          fileName: fileItem.file.name,
+          placements: placementIds,
+        });
+
+        setFilePermissions((prev) => ({
+          ...prev,
+          [categorizeFile.name]: placementIds,
+        }));
+
+        toast.success(`Validated ${categorizeFile.name} successfully`);
+      } catch (error) {
+        console.error("Validation failed:", error);
+        toast.error(`Validation failed for ${categorizeFile.name}`);
       }
-      setInputValue("");
-    }
-  };
 
-  const removeCategory = (cat: string) => {
-    setCategories(categories.filter((c) => c !== cat));
+      setCategorizeFile(null);
+    }
   };
 
   const showErrorMessage = (
@@ -238,6 +378,55 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
     </div>
   );
 
+  const handleFinalUpload = async () => {
+    try {
+      const postTasks = finalItems.map(async (group) => {
+        if (groupByName) {
+          const parentFile: any =
+            group.files.find((file) => file.file.name.includes("1:1")) ||
+            group.files[0];
+          const children = group.files.filter((file) => file !== parentFile);
+
+          await postPresigned({
+            parent: {
+              url: parentFile.presigned.assetUrl,
+              mimetype: parentFile.presigned.mimetype,
+              key: parentFile.presigned.key,
+              fileName: parentFile.file.name,
+              placements: filePermissions[parentFile.file.name] || [],
+            },
+            children: children.map((child: any) => ({
+              url: child.presigned.assetUrl,
+              mimetype: child.presigned.mimetype,
+              key: child.presigned.key,
+              fileName: child.file.name,
+            })),
+          });
+        } else {
+          // Single Asset Upload
+          const onlyFile: any = group.files[0];
+
+          await postPresigned({
+            parent: {
+              url: onlyFile.presigned.assetUrl,
+              mimetype: onlyFile.presigned.mimetype,
+              key: onlyFile.presigned.key,
+              fileName: onlyFile.file.name,
+              placements: filePermissions[onlyFile.file.name] || [],
+            },
+          });
+        }
+      });
+
+      await Promise.all(postTasks);
+      toast.success("All media uploaded successfully!");
+      reset();
+    } catch (err) {
+      console.error("Something went wrong during final upload:", err);
+      toast.error("Upload failed.");
+    }
+  };
+
   return (
     <>
       <input
@@ -255,87 +444,90 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
         className="hidden"
         onChange={handleAddAssetFileUpload}
       />
-      <Transition.Root show={isCategorizeOpen} as={Fragment}>
+      <Transition.Root show={!!categorizeFile} as={Fragment}>
         <Dialog
           as="div"
+          onClose={() => setCategorizeFile(null)}
           className="relative z-50"
-          onClose={setIsCategorizeOpen}
         >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25 transition-opacity" />
-          </Transition.Child>
+          <div className="fixed inset-0 bg-black bg-opacity-30" />
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Dialog.Panel className="bg-white rounded-lg p-6 max-w-md w-full">
+                <Dialog.Title className="text-lg font-medium mb-4">
+                  Categorize {categorizeFile?.name}
+                </Dialog.Title>
 
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center px-4 py-8 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title className="text-lg font-medium text-gray-900">
-                    Categorize file
-                  </Dialog.Title>
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-500 mb-2">
-                      Add different categories
-                    </p>
-                    <div className="border rounded-md px-3 py-2 min-h-[56px] flex flex-wrap items-center gap-2">
-                      {categories.map((cat) => (
-                        <span
-                          key={cat}
-                          className="bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full flex items-center"
-                        >
-                          {cat}
-                          <button
-                            onClick={() => removeCategory(cat)}
-                            className="ml-2 text-gray-400 hover:text-gray-600"
-                          >
-                            &times;
-                          </button>
-                        </span>
-                      ))}
-                      <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={handleCategoryKeyDown}
-                        placeholder="Press enter to add more"
-                        className="flex-1 min-w-[100px] outline-none text-sm"
-                      />
-                    </div>
-                  </div>
+                {/* Placement Popover */}
+                <Popover className="relative w-full">
+                  {({ open }) => (
+                    <>
+                      <Popover.Button className="w-full border rounded p-2 text-left">
+                        {selectedPlacementIds.length > 0
+                          ? `${selectedPlacementIds.length} placements selected`
+                          : "Select placements"}
+                      </Popover.Button>
 
-                  <div className="mt-6 flex justify-end gap-3">
-                    <button
-                      onClick={() => setIsCategorizeOpen(false)}
-                      className="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsCategorizeOpen(false);
-                      }}
-                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md"
-                    >
-                      Save
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
+                      <Transition
+                        as={Fragment}
+                        enter="transition ease-out duration-200"
+                        enterFrom="opacity-0 translate-y-1"
+                        enterTo="opacity-100 translate-y-0"
+                        leave="transition ease-in duration-150"
+                        leaveFrom="opacity-100 translate-y-0"
+                        leaveTo="opacity-0 translate-y-1"
+                      >
+                        <Popover.Panel className="absolute z-10 mt-2 w-full bg-white rounded-md shadow-lg p-4">
+                          <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
+                            {(placements || []).map((placement: any) => (
+                              <label
+                                key={placement.id}
+                                className="flex items-center gap-2 text-sm"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedPlacementIds.includes(
+                                    placement.id
+                                  )}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedPlacementIds((prev) => [
+                                        ...prev,
+                                        placement.id,
+                                      ]);
+                                    } else {
+                                      setSelectedPlacementIds((prev) =>
+                                        prev.filter((id) => id !== placement.id)
+                                      );
+                                    }
+                                  }}
+                                />
+                                {placement.name}
+                              </label>
+                            ))}
+                          </div>
+                        </Popover.Panel>
+                      </Transition>
+                    </>
+                  )}
+                </Popover>
+
+                {/* Buttons */}
+                <div className="mt-6 flex justify-end gap-2">
+                  <button
+                    onClick={() => setCategorizeFile(null)}
+                    className="px-4 py-2 border rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveCategorization}
+                    className="px-4 py-2 bg-blue-600 text-white rounded"
+                  >
+                    Save
+                  </button>
+                </div>
+              </Dialog.Panel>
             </div>
           </div>
         </Dialog>
@@ -474,20 +666,10 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                                                             className="w-full text-left text-sm text-gray-500 hover:bg-gray-100 px-2 py-1 rounded"
                                                             onClick={(e) => {
                                                               e.preventDefault();
-
-                                                              if (
-                                                                opt.value ===
-                                                                "categorize"
-                                                              ) {
-                                                                setIsCategorizeOpen(
-                                                                  true
-                                                                );
-                                                              } else {
-                                                                updateValue(
-                                                                  section.id,
-                                                                  opt.label
-                                                                );
-                                                              }
+                                                              updateValue(
+                                                                section.id,
+                                                                opt.label
+                                                              );
                                                             }}
                                                           >
                                                             {opt.label}
@@ -510,7 +692,19 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                               <div className="space-y-2">
                                 {finalItems[selectedGroupIndex].files.map(
                                   (file, idx) => {
-                                    const objectUrl = URL.createObjectURL(file);
+                                    const objectUrl = URL.createObjectURL(
+                                      file.file
+                                    );
+                                    function handleReplaceFile(
+                                      selectedGroupIndex: number,
+                                      idx: number
+                                    ): void {
+                                      setReplacementTarget({
+                                        groupIdx: selectedGroupIndex,
+                                        fileIdx: idx,
+                                      });
+                                      dropRef.current?.click();
+                                    }
                                     return (
                                       <div
                                         key={idx}
@@ -534,14 +728,14 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                                         <div className="flex items-center space-x-4">
                                           <img
                                             src={objectUrl}
-                                            alt={file.name}
+                                            alt={file.file.name}
                                             className="w-16 h-16 rounded object-cover"
                                             onLoad={() =>
                                               URL.revokeObjectURL(objectUrl)
                                             }
                                           />
                                           <p className="text-sm text-gray-600">
-                                            {file.name}
+                                            {file.file.name}
                                           </p>
                                         </div>
                                         <div>
@@ -566,6 +760,16 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                                             <Popover.Panel className="absolute right-0 z-10 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg py-2">
                                               <button
                                                 onClick={() =>
+                                                  handleCategorizeFile(
+                                                    file.file
+                                                  )
+                                                }
+                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                              >
+                                                Categorize file
+                                              </button>
+                                              <button
+                                                onClick={() =>
                                                   handleReplaceFile(
                                                     selectedGroupIndex,
                                                     idx
@@ -577,7 +781,7 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                                               </button>
                                               <button
                                                 onClick={() =>
-                                                  handleDeleteFile(file)
+                                                  handleDeleteFile(file.file)
                                                 }
                                                 className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                                               >
@@ -604,7 +808,7 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                           Cancel
                         </button>
                         <button
-                          onClick={() => alert("Final upload confirmed")}
+                          onClick={handleFinalUpload}
                           className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm"
                         >
                           Confirm
@@ -740,7 +944,7 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                       )}
 
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        {filteredFiles.map((file, i) => {
+                        {filteredFiles.map(({ file }, i) => {
                           const objectUrl = URL.createObjectURL(file);
                           return (
                             <div
@@ -780,7 +984,17 @@ const UploadModal = ({ isOpen, onClose }: UploadModalProps) => {
                               : "bg-gray-300 cursor-not-allowed"
                           }`}
                         >
-                          Confirm
+                          {loading ? (
+                            <span>
+                              <Oval
+                                className="oval text-white text-center"
+                                width="20"
+                              />{" "}
+                              Confirm
+                            </span>
+                          ) : (
+                            <span>Confirm</span>
+                          )}
                         </button>
                       </div>
                     </>

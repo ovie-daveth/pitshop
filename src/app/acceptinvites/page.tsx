@@ -4,11 +4,30 @@ import logo from "../../../public/logo.svg";
 import icon from "../../../public/logoicon.svg";
 import Image from "next/image";
 import ExisitingUserInvited from "./components/existingUser";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useUserState } from "@/api/context/UserContext";
 
 const AcceptInvitePage = () => {
 
+  const {acceptInviteUsers} = useUserState()
+
   const [exist, setExist] = useState(false)
+
+  const CheckUserExist = async () => {
+    
+    const response = await acceptInviteUsers({
+      status: "acceptred",
+      reference: ""
+    })
+
+    if(response){
+      console.log("checked", response)
+    }
+  }
+
+  useEffect(() => {
+    CheckUserExist()
+  }, [])
 
   return (
     <main className="flex min-h-screen flex-col bg-gray-50 p-4 w-full justify-center flex">

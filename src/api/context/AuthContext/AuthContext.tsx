@@ -115,6 +115,9 @@ const AuthContextProvider = ({ children }: IProps) => {
     setLoading(true);
     setError(null);
     try {
+        console.log("CHECKING")
+        console.log(process.env.NEXT_PUBLIC_BACKEND_URL);
+        console.log("co")
       const res = await axios.post("/api/v1/auth/login", data, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token") || ""}`, // If token exists

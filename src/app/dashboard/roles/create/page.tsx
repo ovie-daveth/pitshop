@@ -45,7 +45,7 @@ export default function Page() {
         permissions: formData.permissions,
       });
     } catch (error) {
-      console.error("Signup failed:", error);
+      console.error("Error:", error);
     }
   };
 

@@ -1,950 +1,838 @@
-"use client";
-import { Fragment, useState, useLayoutEffect } from "react";
-import Link from "next/link";
-import {
-  CursorClickIcon,
-  CloudUploadIcon,
-  ChevronDownIcon,
-  HeartIcon,
-} from "@heroicons/react/solid";
-import ProtectedRoute from "@/api/protected/ProtectedRoute";
-import WrapperLayout from "@/components/WrapperLayout";
-import {
-  Dialog,
-  Disclosure,
-  Menu,
-  Popover,
-  Transition,
-} from "@headlessui/react";
-import { XIcon } from "@heroicons/react/outline";
-import UploadModal from "@/components/modal/UploadModal";
-import MediaLibraryContextProvider from "@/api/context/MediaLibraryContext/MediaLibraryContext";
-import { useMediaLibraryState } from "@/api/context/MediaLibraryContext";
+"use client"
 
-const menuNavigation = [
-  { name: "View Summary", href: "#" },
-  { name: "Open full view", href: "#" },
-  { name: "Edit  Metadata", href: "#" },
-  { name: "Delete", href: "#" },
-];
+import { useState, useEffect } from "react"
+import { Menu, Transition, Tab } from "@headlessui/react"
+import { ChevronDownIcon, DownloadIcon, FilterIcon, PlayIcon } from "@heroicons/react/solid"
+import { Fragment } from "react"
+import ProtectedRoute from "@/api/protected/ProtectedRoute"
+import WrapperLayout from "@/components/WrapperLayout"
+import { FaCloudDownloadAlt } from "react-icons/fa"
+import { BiFilter } from "react-icons/bi"
+import { RiSoundModuleLine } from "react-icons/ri"
+import Image from "next/image"
+import noMedia from "../../../../public/images/nomedia.png"
+import AssetActions from "./components/asset_action"
+import ReactPlayer from "react-player"
 
-const filters = [
-  {
-    id: "Approval Status",
-    name: "Approval Status",
-    options: [
-      { value: "accepted", label: "Approved" },
-      { value: "rejected", label: "Rejected" },
-    ],
-  },
-  {
-    id: "Display Name",
-    name: "Display Name",
-  },
-  {
-    id: "Tag",
-    name: "Tag",
-  },
-  {
-    id: "SKU",
-    name: "SKU",
-  },
-  {
-    id: "Dimensions",
-    name: "Dimensions",
-    options: [
-      { value: "9:16", label: "9:16" },
-      { value: "post/story", label: "Post / Story" },
-      { value: "feed/story", label: "Feed / Story" },
-      { value: "1x1 / 9x16", label: "1x1 / 9x16" },
-      { value: "1:1 / 9:16", label: "1:1 / 9:16" },
-      { value: "1.1 / 9.16", label: "1.1 / 9.16" },
-      { value: "4x5 / 9x16", label: "4x5 / 9x16" },
-      { value: "4:5 / 9:16", label: "4:5 / 9:16" },
-    ],
-  },
-  {
-    id: "Upload Date",
-    name: "Upload Date",
-    options: [
-      { value: "today", label: "Today" },
-      { value: "7days", label: "Last 7 days" },
-      { value: "30days", label: "Last 30 days" },
-      { value: "90days", label: "Last 90 days" },
-      { value: "year", label: "This Year" },
-      { value: "custom", label: "Custom" },
-    ],
-  },
-];
+type MediaItem = {
+  id: string
+  type: "image" | "video"
+  src: string,
+  thumbnail?: string,
+  dimensions: string
+  fileSize: string
+  uploadDate: Date
+  displayName: string
+  approvalStatus: "approved" | "pending" | "rejected"
+  tags: string[]
+  sku: string
+}
 
-const products = [
-  {
-    id: 1,
-    name: "Earthen Bottle",
-    href: "#",
-    price: "Earthen Bottle.jpg",
-    imageSrc:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-    imageAlt:
-      "Tall slender porcelain bottle with natural clay textured body and cork stopper.",
-    type: "image",
-  },
-  {
-    id: 2,
-    name: "Nomad Tumbler",
-    href: "#",
-    price: "Nomad Tumbler.mp4",
-    imageSrc:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-    imageAlt:
-      "Olive drab green insulated bottle with flared screw lid and flat top.",
-    type: "video",
-  },
-  {
-    id: 3,
-    name: "Focus Paper Refill",
-    href: "#",
-    price: "Focus Paper Refill.jpg",
-    imageSrc:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-    imageAlt:
-      "Person using a pen to cross a task off a productivity paper card.",
-    type: "image",
-  },
-  {
-    id: 4,
-    name: "Machined Mechanical Pencil",
-    href: "#",
-    price: "Machined Mechanical Pencil.jpg",
-    imageSrc:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-    imageAlt:
-      "Hand holding black machined steel mechanical pencil with brass tip and top.",
-    type: "image",
-  },
-  {
-    id: 5,
-    name: "Venus X",
-    href: "#",
-    price: "VenusXBottle.jpg",
-    imageSrc:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-    imageAlt:
-      "Tall slender porcelain bottle with natural clay textured body and cork stopper.",
-    type: "image",
-  },
-  {
-    id: 6,
-    name: "Tiin Toma",
-    href: "#",
-    price: "TinTomass.mp4",
-    imageSrc:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-    imageAlt:
-      "Olive drab green insulated bottle with flared screw lid and flat top.",
-    type: "video",
-  },
-  {
-    id: 7,
-    name: "Drey Thomps",
-    href: "#",
-    price: "Drey Thompson.mp4",
-    imageSrc:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-    imageAlt:
-      "Person using a pen to cross a task off a productivity paper card.",
-    type: "video",
-  },
-  {
-    id: 8,
-    name: "Shoupe Dilla",
-    href: "#",
-    price: "Shoupe Drainee.jpg",
-    imageSrc:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-    imageAlt:
-      "Hand holding black machined steel mechanical pencil with brass tip and top.",
-    type: "image",
-  },
-];
+export default function MediaLibrary() {
+  const [selectedTab, setSelectedTab] = useState(0)
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
+  const [filters, setFilters] = useState({
+    approvalStatus: "",
+    displayName: "",
+    tag: "",
+    sku: "",
+    dimensions: "",
+    uploadDate: "",
+  })
 
-function MediaPageContent() {
-  const { getMedia } = useMediaLibraryState();
-  const [mediaList, setMediaList] = useState<any[]>([]);
-  const [selectedFile, setSelectedFile] = useState<any>(null);
-  const [selectedValues, setSelectedValues] = useState<Record<string, string>>(
-    {}
-  );
-  const [customDateSelected, setCustomDateSelected] = useState(false);
+  // Filter media items based on selected tab and other filters
+  const filteredItems = mediaItems.filter((item) => {
+    // First apply tab filtering
+    if (selectedTab === 1 && item.type !== "image") return false;
+    if (selectedTab === 2 && item.type !== "video") return false;
+    if (selectedTab === 3 && !item.tags.includes("collection")) return false;
 
-  const updateValue = async (id: string, label: string) => {
-    setSelectedValues((prev) => ({ ...prev, [id]: label }));
+    // Then apply other filters
+    if (filters.approvalStatus && item.approvalStatus !== filters.approvalStatus) return false;
+    if (filters.displayName && !item.displayName.toLowerCase().includes(filters.displayName.toLowerCase())) return false;
+    if (filters.tag && !item.tags.some(tag => tag.toLowerCase().includes(filters.tag.toLowerCase()))) return false;
+    if (filters.sku && !item.sku.toLowerCase().includes(filters.sku.toLowerCase())) return false;
 
-    const updatedFilters = { ...selectedValues, [id]: label };
-    const medias = await getMedia(updatedFilters);
+    return true;
+  });
 
-    if (medias) {
-      setMediaList(medias);
-    }
-  };
+  // Simulate loading media items
+  useEffect(() => {
+    // Mock data
+    const mockItems: MediaItem[] = 
+    [
+      {
+        id: "img645ddd1",
+        type: "image",
+        src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Person walking",
+        approvalStatus: "approved",
+        tags: ["person", "walking"],
+        sku: "SKU001",
+      },
+      {
+        id: "img645ddd2",
+        type: "image",
+        src: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Food dish",
+        approvalStatus: "approved",
+        tags: ["food"],
+        sku: "SKU002",
+      },
+      {
+        id: "img645ddd3",
+        type: "image",
+        src: "https://images.unsplash.com/photo-1551218808-94e220e084d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Food plate",
+        approvalStatus: "pending",
+        tags: ["food"],
+        sku: "SKU003",
+      },
+      {
+        id: "vid645ddd4",
+        type: "video",
+        thumbnail: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Cooking video",
+        approvalStatus: "approved",
+        tags: ["cooking", "food"],
+        sku: "SKU004",
+      },
+      {
+        id: "vid645ddd5",
+        type: "video",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Coffee cup",
+        approvalStatus: "approved",
+        tags: ["coffee"],
+        sku: "SKU005",
+      },
+      {
+        id: "vid645ddd6",
+        type: "video",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Person smiling",
+        approvalStatus: "approved",
+        tags: ["person"],
+        sku: "SKU006",
+      },
+      {
+        id: "img645ddd7",
+        type: "image",
+        src: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Person with box",
+        approvalStatus: "approved",
+        tags: ["person", "box"],
+        sku: "SKU007",
+      },
+      {
+        id: "img645ddd8",
+        type: "image",
+        src: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Person walking 2",
+        approvalStatus: "pending",
+        tags: ["person", "walking"],
+        sku: "SKU008",
+      },
+      {
+        id: "vid645ddd9",
+        type: "video",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Pasta dish",
+        approvalStatus: "approved",
+        tags: ["food", "pasta"],
+        sku: "SKU009",
+      },
+      {
+        id: "img645ddd10",
+        type: "image",
+        src: "https://images.unsplash.com/photo-1543353071-087092ec3935?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Food dish 2",
+        approvalStatus: "approved",
+        tags: ["food"],
+        sku: "SKU010",
+      },
+      {
+        id: "img645ddd11",
+        type: "image",
+        src: "https://images.unsplash.com/photo-1576866209830-607c4ca4e823?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Food bowl",
+        approvalStatus: "approved",
+        tags: ["food", "bowl"],
+        sku: "SKU011",
+      },
+      {
+        id: "vid645ddd12",
+        type: "video",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Coffee cup 2",
+        approvalStatus: "approved",
+        tags: ["coffee"],
+        sku: "SKU012",
+      },
+      {
+        id: "vid645ddd13",
+        type: "video",
+        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
+        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+        dimensions: "300KB",
+        fileSize: "15.48kpm",
+        uploadDate: new Date(),
+        displayName: "Person smiling 2",
+        approvalStatus: "approved",
+        tags: ["person"],
+        sku: "SKU013",
+      },
+    ];
+    
 
-  useLayoutEffect(() => {
-    (async () => {
-      const medias = await getMedia({});
-      if (medias) setMediaList(medias);
-    })();
-  }, []);
+    setMediaItems(mockItems)
+  }, [])
 
-  const [filterType, setFilterType] = useState("all");
-  const [open, setOpen] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
-  const [openModal2, setOpenModal2] = useState(false);
-  const tabs = [
-    { name: "All", href: "#", current: true },
-    { name: "Images", href: "#", current: false },
-    { name: "Videos", href: "#", current: false },
-    { name: "Collections", href: "#", current: false },
-  ];
-
-  const filteredProducts =
-    filterType === "all"
-      ? products
-      : products.filter((product) => product.type === filterType.slice(0, -1));
-
-  function classNames(...classes: any) {
-    return classes.filter(Boolean).join(" ");
+  const clearFilters = () => {
+    setFilters({
+      approvalStatus: "",
+      displayName: "",
+      tag: "",
+      sku: "",
+      dimensions: "",
+      uploadDate: "",
+    })
   }
 
-  return (
-    <>
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900 pt-5">
-            Media Library
-          </h1>
-        </div>
-      </div>
+  // Add visual indicators for active filters
+  const filterCount = Object.values(filters).filter(Boolean).length
 
-      <>
-        <div>
-          <div className="flex justify-between items-center mt-4">
-            {/* <div className="sm:hidden">
-                <label htmlFor="tabs" className="sr-only">
-                  Select a tab
-                </label>
-                <select
-                  id="tabs"
-                  name="tabs"
-                  className="block w-full focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                  defaultValue={
-                    tabs.find((tab) => tab.current)?.name || tabs[0].name
-                  }
-                >
-                  {tabs.map((tab) => (
-                    <option key={tab.name}>{tab.name}</option>
-                  ))}
-                </select>
-              </div> */}
-            <div className="block">
-              <nav
-                className="flex space-x-4 bg-gray-100 p-2 rounded-md"
-                aria-label="Tabs"
-              >
-                {tabs.map((tab) => {
-                  const tabValue = tab.name.toLowerCase();
-                  return (
-                    <a
-                      key={tab.name}
-                      href={tab.href}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setFilterType(tabValue);
-                      }}
-                      className={classNames(
-                        filterType === tabValue
-                          ? "bg-white text-indigo-500"
-                          : "text-gray-500",
-                        "py-2 px-8 font-medium text-sm rounded-md"
-                      )}
-                      aria-current={
-                        filterType === tabValue ? "page" : undefined
-                      }
-                    >
-                      {tab.name}
-                    </a>
-                  );
-                })}
-              </nav>
-            </div>
-            <div className="flex justify-evenly items-center">
-              <Menu as="div" className="relative inline-block text-left mx-3">
-                <div>
-                  <Menu.Button className="inline-flex z-50 justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
-                    Import Assets
-                    <ChevronDownIcon
-                      className="-mr-1 ml-2 h-5 w-5"
-                      aria-hidden="true"
-                    />
-                  </Menu.Button>
-                </div>
+  console.log("filter", filteredItems)
 
-                <Transition
-                  as={Fragment}
-                  enter="transition ease-out duration-100"
-                  enterFrom="transform opacity-0 scale-95"
-                  enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
-                  leaveFrom="transform opacity-100 scale-100"
-                  leaveTo="transform opacity-0 scale-95"
-                >
-                  <Menu.Items className="origin-top-right absolute z-50 right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <div className="py-1">
-                      <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active
-                                ? "bg-gray-100 text-gray-900"
-                                : "text-gray-700",
-                              "block px-4 py-2 text-sm"
-                            )}
-                          >
-                            Facebook
-                          </a>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active
-                                ? "bg-gray-100 text-gray-900"
-                                : "text-gray-700",
-                              "block px-4 py-2 text-sm"
-                            )}
-                          >
-                            Tiktok
-                          </a>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active
-                                ? "bg-gray-100 text-gray-900"
-                                : "text-gray-700",
-                              "block px-4 py-2 text-sm"
-                            )}
-                          >
-                            Google Ads
-                          </a>
-                        )}
-                      </Menu.Item>
-                    </div>
-                  </Menu.Items>
-                </Transition>
-              </Menu>
-              <button
-                onClick={() => {
-                  setOpenModal2(true);
-                }}
-                type="button"
-                className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <CloudUploadIcon
-                  className="-ml-1 mr-2 h-5 w-5"
-                  aria-hidden="true"
-                />
-                Upload Assets
-              </button>
-            </div>
-          </div>
-          <div className="">
-            {/* filter dialog */}
-            <Transition.Root show={open} as={Fragment}>
-              <Dialog
-                as="div"
-                className="fixed inset-0 flex z-40 sm:hidden"
-                onClose={setOpen}
-              >
-                <Transition.Child
-                  as={Fragment}
-                  enter="transition-opacity ease-linear duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="transition-opacity ease-linear duration-300"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div className="fixed inset-0 bg-black bg-opacity-25" />
-                </Transition.Child>
+  const isYouTubeUrl = (url: string) => /youtu\.?be/.test(url);
+  const [playingId, setPlayingId] = useState<string | null>(null);
 
-                <Transition.Child
-                  as={Fragment}
-                  enter="transition ease-in-out duration-300 transform"
-                  enterFrom="translate-x-full"
-                  enterTo="translate-x-0"
-                  leave="transition ease-in-out duration-300 transform"
-                  leaveFrom="translate-x-0"
-                  leaveTo="translate-x-full"
-                >
-                  <div className="ml-auto relative max-w-xs w-full h-full bg-white shadow-xl py-4 pb-6 flex flex-col overflow-y-auto">
-                    <div className="px-4 flex items-center justify-between">
-                      <h2 className="text-lg font-medium text-gray-900">
-                        Filters
-                      </h2>
-                      <button
-                        type="button"
-                        className="-mr-2 w-10 h-10 bg-white p-2 rounded-md flex items-center justify-center text-gray-400 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        onClick={() => setOpen(false)}
-                      >
-                        <span className="sr-only">Close menu</span>
-                        <XIcon className="h-6 w-6" aria-hidden="true" />
-                      </button>
-                    </div>
 
-                    {/* Filters */}
-                  </div>
-                </Transition.Child>
-              </Dialog>
-            </Transition.Root>
+  const Grid = ({ items }: { items: MediaItem[] }) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-y-4 gap-x-6 overflow-y-auto overflow-x-hidden custom-scrollbar">
+      {items.map((item) => {
+        const isPlaying = playingId === item.id;
+        const isVideo = item.type === "video";
 
-            <div className="max-w-3xl mx-auto px-4 text-center sm:px-6 lg:max-w-7xl lg:px-8">
-              <section aria-labelledby="filter-heading" className="py-6">
-                <h2 id="filter-heading" className="sr-only">
-                  Product filters
-                </h2>
-
-                <div className="flex items-center justify-between">
-                  <Menu
-                    as="div"
-                    className="relative z-10 inline-block text-left"
-                  >
-                    {/* <div>
-                          <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                            Sort
-                            <ChevronDownIcon
-                              className="flex-shrink-0 -mr-1 ml-1 h-5 w-5 text-gray-400 group-hover:text-gray-500"
-                              aria-hidden="true"
-                            />
-                          </Menu.Button>
-                        </div>
-
-                        <Transition
-                          as={Fragment}
-                          enter="transition ease-out duration-100"
-                          enterFrom="transform opacity-0 scale-95"
-                          enterTo="transform opacity-100 scale-100"
-                          leave="transition ease-in duration-75"
-                          leaveFrom="transform opacity-100 scale-100"
-                          leaveTo="transform opacity-0 scale-95"
-                        >
-                          <Menu.Items className="origin-top-left absolute left-0 z-10 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            <div className="py-1">
-                              {sortOptions.map((option) => (
-                                <Menu.Item key={option.name}>
-                                  {({ active }) => (
-                                    <a
-                                      href={option.href}
-                                      className={classNames(
-                                        active ? "bg-gray-100" : "",
-                                        "block px-4 py-2 text-sm font-medium text-gray-900"
-                                      )}
-                                    >
-                                      {option.name}
-                                    </a>
-                                  )}
-                                </Menu.Item>
-                              ))}
-                            </div>
-                          </Menu.Items>
-                        </Transition> */}
-                  </Menu>
-
-                  <button
-                    type="button"
-                    className="inline-block text-sm font-medium text-gray-700 hover:text-gray-900 sm:hidden"
-                    onClick={() => setOpen(true)}
-                  >
-                    Filters
-                  </button>
-
-                  <Popover.Group className="hidden sm:flex sm:items-baseline sm:space-x-8">
-                    <form className="mt-4">
-                      <div className="flex flex-wrap gap-4">
-                        {filters.map((section) => (
-                          <Popover key={section.id} className="relative">
-                            {({ open }) => (
-                              <>
-                                <Popover.Button className="flex items-center justify-between px-4 py-2 text-sm  text-gray-500 bg-white border-2 border-gray-200 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none min-w-[160px]">
-                                  {selectedValues[section.id] || section.name}
-                                  <ChevronDownIcon
-                                    className={`ml-2 h-5 w-5 transition-transform duration-200 ${
-                                      open ? "-rotate-180" : "rotate-0"
-                                    }`}
-                                  />
-                                </Popover.Button>
-
-                                <Popover.Panel className="absolute z-10 mt-2 w-64 bg-white border border-gray-300 rounded-md shadow-lg p-4">
-                                  {/* Approval Status & Dimensions */}
-                                  {section.options &&
-                                    section.id !== "Upload Date" && (
-                                      <ul className="space-y-2">
-                                        {section.options.map((opt) => (
-                                          <li key={opt.value}>
-                                            <button
-                                              className="w-full text-left text-sm text-gray-500 hover:bg-gray-100 px-2 py-1 rounded"
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                updateValue(
-                                                  section.id,
-                                                  opt.label
-                                                );
-                                              }}
-                                            >
-                                              {opt.label}
-                                            </button>
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    )}
-
-                                  {/* Display Name & SKU behave similarly */}
-
-                                  {section.id === "Display Name" && (
-                                    <div>
-                                      <div className="flex items-center space-x-4 mb-2 text-gray-500">
-                                        <label>
-                                          <input
-                                            type="radio"
-                                            name="displayNameMode"
-                                            defaultChecked
-                                          />{" "}
-                                          Starts With
-                                        </label>
-                                        <label>
-                                          <input
-                                            type="radio"
-                                            name="displayNameMode"
-                                          />{" "}
-                                          Equals To
-                                        </label>
-                                      </div>
-                                      <input
-                                        type="text"
-                                        placeholder="Type to Filter"
-                                        className="w-full border rounded-md p-2 text-sm text-gray-500"
-                                        onChange={(e) => {
-                                          e.preventDefault();
-                                          updateValue(
-                                            section.id,
-                                            e.target.value
-                                          );
-                                        }}
-                                      />
-                                    </div>
-                                  )}
-
-                                  {/* Display for tag ans sku */}
-                                  {section.id === "Tag" ||
-                                  section.id === "SKU" ? (
-                                    <div>
-                                      <div className="mb-2">
-                                        <select className="w-full border rounded-md p-2 text-sm text-gray-500">
-                                          <option>Starts With</option>
-                                          <option>Equals To</option>
-                                        </select>
-                                      </div>
-                                      <input
-                                        type="text"
-                                        placeholder="Type to Filter"
-                                        className="w-full border rounded-md p-2 text-sm"
-                                        onChange={(e) => {
-                                          e.preventDefault();
-                                          updateValue(
-                                            section.id,
-                                            e.target.value
-                                          );
-                                        }}
-                                      />
-                                    </div>
-                                  ) : null}
-
-                                  {/* Upload Date special logic */}
-                                  {section.id === "Upload Date" && (
-                                    <div className="space-y-2">
-                                      <div className="space-y-1">
-                                        {(section.options ?? []).map(
-                                          (option) => (
-                                            <label
-                                              key={option.value}
-                                              className="block text-sm text-start text-gray-500"
-                                            >
-                                              <input
-                                                type="radio"
-                                                name="uploadDate"
-                                                value={option.value}
-                                                className="mr-2"
-                                                onChange={(e) => {
-                                                  updateValue(
-                                                    section.id,
-                                                    option.label
-                                                  );
-                                                  setCustomDateSelected(
-                                                    option.value === "custom"
-                                                  );
-                                                  e.preventDefault();
-                                                }}
-                                              />
-                                              {option.label}
-                                            </label>
-                                          )
-                                        )}
-                                      </div>
-
-                                      {customDateSelected && (
-                                        <div className="flex space-x-2 pt-2 text-gray-500">
-                                          <input
-                                            type="date"
-                                            className="w-1/2 border rounded-md p-2 text-sm"
-                                          />
-                                          <input
-                                            type="date"
-                                            className="w-1/2 border rounded-md p-2 text-sm"
-                                          />
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </Popover.Panel>
-                              </>
-                            )}
-                          </Popover>
-                        ))}
-                      </div>
-                    </form>
-                  </Popover.Group>
-                </div>
-              </section>
-            </div>
-          </div>
-          <div>
-            <section
-              aria-labelledby="products-heading"
-              className="max-w-2xl mx-auto pt-12 pb-16 px-4 sm:pt-16 sm:pb-24 sm:px-6 lg:max-w-7xl lg:px-8"
-            >
-              <h2 id="products-heading" className="sr-only">
-                Products
-              </h2>
-
-              <div className="grid grid-cols-12 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-                {mediaList.map((product) => (
-                  <div
-                    key={product.id}
-                    onClick={() => {
-                      setSelectedFile(product);
-                      setOpenModal(true);
-                    }}
-                  >
-                    <div key={product.id} className="group">
-                      <div className="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                        <img
-                          src={`${product.thumbnailURL}`}
-                          alt={product.alt}
-                          className="w-full h-full object-center object-cover group-hover:opacity-75"
-                        />
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="mt-4 text-sm text-gray-500">
-                            {product.filename}
-                          </h3>
-                          <p className="mt-1 text-xs font-medium text-gray-500">
-                            {product.mimetype}
-                          </p>
-                        </div>
-                        <div>
-                          <Menu as="div" className="ml-3 relative">
-                            <div className="inline-flex justify-center items-center">
-                              <Menu.Button className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth={1.5}
-                                  stroke="currentColor"
-                                  className="size-6"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"
-                                  />
-                                </svg>
-                              </Menu.Button>
-                            </div>
-                            <Transition
-                              as={Fragment}
-                              enter="transition ease-out duration-100"
-                              enterFrom="transform opacity-0 scale-95"
-                              enterTo="transform opacity-100 scale-100"
-                              leave="transition ease-in duration-75"
-                              leaveFrom="transform opacity-100 scale-100"
-                              leaveTo="transform opacity-0 scale-95"
-                            >
-                              <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                {menuNavigation.map((item) => (
-                                  <Menu.Item key={item.name}>
-                                    {({ active }) => (
-                                      <Link
-                                        onClick={() => {
-                                          // if (item.name === "Sign out") {
-                                          //   logout();
-                                          // }
-                                        }}
-                                        href={item.href}
-                                        className={classNames(
-                                          active ? "bg-gray-100" : "",
-                                          "block px-4 py-2 text-sm text-gray-700"
-                                        )}
-                                      >
-                                        {item.name}
-                                      </Link>
-                                    )}
-                                  </Menu.Item>
-                                ))}
-                              </Menu.Items>
-                            </Transition>
-                          </Menu>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-        </div>
-      </>
-      {/* <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 ">
-            <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-              <div>
-                <div className="text-center">
-                  <svg
-                    className="mx-auto h-20 w-20 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      vectorEffect="non-scaling-stroke"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
-                    No media uploaded yet!
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Start by adding your assets to organize and prepare them for
-                    your campaign
-                  </p>
-                  <div className="mt-6 flex justify-evenly items-center">
-                    <select
-                      id="asset"
-                      name="asset"
-                      className="inline-flex items-center px-6 py-2 border text-gray-500 shadow-sm text-sm font-medium rounded-md bg-transparent  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      <option>Import Assets</option>
-                      <option>Can view</option>
-                    </select>
-                    <button
-                      type="button"
-                      className=" inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                      <CloudUploadIcon
-                        className="-ml-1 mr-2 h-5 w-5"
-                        aria-hidden="true"
-                      />
-                      Upload Assets
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </main>
-          </div> */}
-
-      <Transition.Root show={openModal} as={Fragment}>
-        <Dialog
-          as="div"
-          className="fixed z-10 inset-0 overflow-y-auto"
-          onClose={() => setOpenModal(false)}
-        >
+        return (
           <div
-            className="flex min-h-screen text-center md:block md:px-2 lg:px-4"
-            style={{ fontSize: 0 }}
+            key={item.id}
+            className="relative group rounded-lg shadow w-[170px] h-[220px]"
           >
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <div className="hidden fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity md:block" />
-            </Transition.Child>
-
-            {/* This element is to trick the browser into centering the modal contents. */}
-            <span
-              className="hidden md:inline-block md:align-middle md:h-screen"
-              aria-hidden="true"
-            >
-              &#8203;
-            </span>
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
-              enterTo="opacity-100 translate-y-0 md:scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 md:scale-100"
-              leaveTo="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
-            >
-              <div className="flex text-base text-left transform transition md:inline-block md:max-w-2xl md:px-4 md:my-8 md:align-middle lg:max-w-4xl">
-                <div className="relative flex items-center bg-white px-4 pt-14 pb-8 overflow-hidden shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8 rounded-xl">
-                  <button
-                    type="button"
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8"
-                    onClick={() => setOpenModal(false)}
-                  >
-                    <span className="sr-only">Close</span>
-                    <XIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
-
-                  <div className="flex flex-col justify-center items-center mt-10">
-                    <div className="mt-4 flex flex-row items-center justify-between w-full">
-                      <div>
-                        <h2 className="text-lg py-2 font-medium text-gray-900">
-                          View Metadata ({selectedFile?.filename})
-                        </h2>
-                      </div>
-                      <div>
-                        <button
-                          type="button"
-                          className="ml-4 bg-white rounded-full h-8 w-8 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        ></button>
-                      </div>
-                    </div>
-                    <img
-                      src={`${selectedFile?.thumbnailURL || selectedFile?.url}`}
-                      alt={selectedFile?.alt}
-                      className="w-96 h-96 object-cover rounded-xl"
+            <div className="relative aspect-square rounded-lg bg-gray-100 w-[90%] mx-auto h-[75%]">
+              {isVideo && isPlaying ? (
+                isYouTubeUrl(item.src) ? (
+                  <ReactPlayer
+                    url={item.src}
+                    light={item.thumbnail || noMedia.src}
+                    playing
+                    controls
+                    width="100%"
+                    height="100%"
+                  />
+                ) : (
+                  <video
+                    src={item.src}
+                    controls
+                    autoPlay
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                )
+              ) : (
+                <>
+                  <img
+                      src={isVideo ? item.thumbnail || noMedia.src : item.src}
+                      alt={item.displayName}
+                      className="w-full h-full object-cover"
                     />
-
-                    <div className="w-full py-4">
-                      <div>
-                        <h3 className="font-medium text-gray-900">Summary</h3>
-                        <dl className="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
-                          <div className="py-3 flex justify-between text-sm font-medium">
-                            {/* "": "Marie Culver", Created: "June 8, 2020", "Last
-                            modified": "June 8, 2020", Dimensions: "4032 x
-                            3024", Resolution: "72 x 72", */}
-                            <dt className="text-gray-500">Created</dt>
-                            <dd className="text-gray-900">
-                              {new Date(
-                                selectedFile?.createdAt
-                              ).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "2-digit",
-                                day: "2-digit",
-                              })}
-                            </dd>
-                          </div>
-                          <div className="py-3 flex justify-between text-sm font-medium">
-                            <dt className="text-gray-500">Last Modified</dt>
-                            <dd className="text-gray-900">
-                              {new Date(
-                                selectedFile?.updatedAt
-                              ).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "2-digit",
-                                day: "2-digit",
-                              })}
-                            </dd>
-                          </div>
-                          <div className="py-3 flex justify-between text-sm font-medium">
-                            <dt className="text-gray-500">Dimensions</dt>
-                            <dd className="text-gray-900">
-                              {selectedFile?.width} x {selectedFile?.height}
-                            </dd>
-                          </div>
-                          <div className="py-3 flex justify-between text-sm font-medium">
-                            <dt className="text-gray-500">File Size</dt>
-                            <dd className="text-gray-900">
-                              {selectedFile?.filesize} KB
-                            </dd>
-                          </div>
-                          <div className="py-3 flex justify-between text-sm font-medium">
-                            <dt className="text-gray-500">File Type</dt>
-                            <dd className="text-gray-900">
-                              {selectedFile?.mimeType}
-                            </dd>
-                          </div>
-                        </dl>
+                  {isVideo && (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                      onClick={() => setPlayingId(item.id)}
+                    >
+                      <div className="bg-white bg-opacity-70 rounded-full p-2">
+                        <PlayIcon className="h-6 w-6 text-gray-800" />
                       </div>
-
-                      <section
-                        aria-labelledby="options-heading"
-                        className="mt-6"
-                      >
-                        <h3 id="options-heading" className="sr-only">
-                          Product options
-                        </h3>
-
-                        <form>
-                          <p className="absolute top-4 left-4 text-center sm:static sm:mt-6">
-                            <Link
-                              href={`/dashboard/media/${selectedFile?.id}`}
-                              className="font-medium text-indigo-600 hover:text-indigo-500"
-                            >
-                              View full details
-                            </Link>
-                          </p>
-                        </form>
-                      </section>
                     </div>
-                  </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="mt-1 flex justify-between items-center p-1">
+              <div>
+                <div className="text-sm font-semibold text-gray-800">
+                  {item.displayName}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {item.dimensions} • {item.fileSize}
                 </div>
               </div>
-            </Transition.Child>
+              <Menu as="div" className="relative inline-block text-left">
+         <Menu.Button as="div">
+           <button className="inline-flex justify-center p-1 text-gray-400 hover:text-gray-500">
+             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+               <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+             </svg>
+           </button>
+         </Menu.Button>
+         <Transition
+           as={Fragment}
+           enter="transition ease-out duration-100"
+           enterFrom="transform opacity-0 scale-95"
+           enterTo="transform opacity-100 scale-100"
+           leave="transition ease-in duration-75"
+           leaveFrom="transform opacity-100 scale-100"
+           leaveTo="transform opacity-0 scale-95"
+         >
+           <Menu.Items className="absolute right-0 w-48 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+             <div className="px-1 py-1">
+               <Menu.Item>
+                 {({ active }) => (
+                   <button
+                     className={`${
+                       active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                     } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                   >
+                     View details
+                   </button>
+                 )}
+               </Menu.Item>
+               <Menu.Item>
+                 {({ active }) => (
+                   <button
+                     className={`${
+                       active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                     } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                   >
+                     Download
+                   </button>
+                 )}
+               </Menu.Item>
+               <Menu.Item>
+                 {({ active }) => (
+                   <button
+                     className={`${
+                       active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                     } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                   >
+                     Delete
+                   </button>
+                 )}
+               </Menu.Item>
+             </div>
+           </Menu.Items>
+         </Transition>
+       </Menu>
+            </div>
           </div>
-        </Dialog>
-      </Transition.Root>
-      <MediaLibraryContextProvider>
-        <UploadModal isOpen={openModal2} onClose={() => setOpenModal2(false)} />
-      </MediaLibraryContextProvider>
-    </>
+        );
+      })}
+    </div>
   );
+
+  return (
+   <ProtectedRoute>
+    <WrapperLayout>
+    <div className="bg-white min-h-screen rounded-3xl z-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <h1 className="lg:text-2xl md:text-xl text-lg font-medium text-gray-900 mb-6">Media Library</h1>
+
+        <Tab.Group onChange={setSelectedTab}>
+          <div className="flex justify-between lg:items-center flex-col lg:flex-row mb-6 gap-y-5">
+            <Tab.List className="flex py-1 px-1 space-x-1 bg-gray-100 rounded-full w-fit">
+              <Tab as={Fragment}>
+                {({ selected }) => (
+                 <button
+                 className={`
+                   px-4 py-2 text-sm rounded-full border-none min-w-24 
+                   focus:outline-none focus:ring-0 active:border-none
+                   ${selected ? "bg-white shadow-lg text-green-700 font-bold" : "text-gray-500 hover:text-gray-700"}
+                 `}
+               >
+                 All
+               </button>
+               
+                )}
+              </Tab>
+              <Tab as={Fragment}>
+                {({ selected }) => (
+                  <button
+                  className={`
+                    px-4 py-2 text-sm rounded-full border-none min-w-24 
+                    focus:outline-none focus:ring-0 active:border-none
+                    ${selected ? "bg-white shadow-lg text-green-700 font-bold" : "text-gray-500 hover:text-gray-700"}
+                  `}
+                  >
+                    Images
+                  </button>
+                )}
+              </Tab>
+              <Tab as={Fragment}>
+                {({ selected }) => (
+                  <button
+                  className={`
+                    px-4 py-2 text-sm rounded-full border-none min-w-24 
+                    focus:outline-none focus:ring-0 active:border-none
+                    ${selected ? "bg-white shadow-lg text-green-700 font-bold" : "text-gray-500 hover:text-gray-700"}
+                  `}
+                  >
+                    Videos
+                  </button>
+                )}
+              </Tab>
+              <Tab as={Fragment}>
+                {({ selected }) => (
+                  <button
+                  className={`
+                    px-4 py-2 text-sm rounded-full border-none min-w-24 
+                    focus:outline-none focus:ring-0 active:border-none
+                    ${selected ? "bg-white shadow-lg text-green-700 font-bold" : "text-gray-500 hover:text-gray-700"}
+                  `}
+                  >
+                    Collections
+                  </button>
+                )}
+              </Tab>
+            </Tab.List>
+
+           <AssetActions />
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-6">
+            <Menu as="div" className="relative inline-block text-left">
+              <Menu.Button as="div">
+                <button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
+                  Approval status
+                  <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
+                </button>
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="absolute left-0 w-56 mt-2 origin-top-left bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                  <div className="px-1 py-1">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, approvalStatus: "approved" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Approved
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, approvalStatus: "pending" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Pending
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, approvalStatus: "rejected" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Rejected
+                        </button>
+                      )}
+                    </Menu.Item>
+                  </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
+
+            <Menu as="div" className="relative inline-block text-left">
+              <Menu.Button as="div">
+                <button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
+                  Display name
+                  <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
+                </button>
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="absolute left-0 w-56 mt-2 origin-top-left bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                  <div className="px-1 py-1">
+                    <div className="px-2 py-2">
+                      <input
+                        type="text"
+                        placeholder="Search by name"
+                        className="w-full px-2 py-1 border rounded"
+                        value={filters.displayName}
+                        onChange={(e) => setFilters({ ...filters, displayName: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
+
+            <Menu as="div" className="relative inline-block text-left">
+              <Menu.Button as="div">
+                <button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
+                  Tag
+                  <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
+                </button>
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="absolute left-0 w-56 mt-2 origin-top-left bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                  <div className="px-1 py-1">
+                    <div className="px-2 py-2">
+                      <input
+                        type="text"
+                        placeholder="Search by tag"
+                        className="w-full px-2 py-1 border rounded"
+                        value={filters.tag}
+                        onChange={(e) => setFilters({ ...filters, tag: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
+
+            <Menu as="div" className="relative inline-block text-left">
+              <Menu.Button as="div">
+                <button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
+                  SKU
+                  <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
+                </button>
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="absolute left-0 w-56 mt-2 origin-top-left bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                  <div className="px-1 py-1">
+                    <div className="px-2 py-2">
+                      <input
+                        type="text"
+                        placeholder="Search by SKU"
+                        className="w-full px-2 py-1 border rounded"
+                        value={filters.sku}
+                        onChange={(e) => setFilters({ ...filters, sku: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
+
+            <Menu as="div" className="relative inline-block text-left">
+              <Menu.Button as="div">
+                <button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none">
+                  Dimensions
+                  <ChevronDownIcon className="-mr-1 ml-2 h-5 w-5" aria-hidden="true" />
+                </button>
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="absolute left-0 w-56 mt-2 origin-top-left bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                  <div className="px-1 py-1">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, dimensions: "Small" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Small (under 100KB)
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, dimensions: "Medium" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Medium (100KB - 500KB)
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, dimensions: "Large" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Large (over 500KB)
+                        </button>
+                      )}
+                    </Menu.Item>
+                  </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
+
+            <Menu as="div" className="relative inline-block text-left">
+              <Menu.Button as="div">
+                <button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-[#3753441A] border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none relative">
+                  Upload date
+                    <span className="ml-1 primary-800 text-white font-bold h-5 w-4 rounded-sm -mt-1/2">1</span>
+                </button>
+              </Menu.Button>
+              <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+              >
+                <Menu.Items className="absolute left-0 w-56 mt-2 origin-top-left bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                  <div className="px-1 py-1">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, uploadDate: "Today" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Today
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, uploadDate: "Last 7 days" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Last 7 days
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, uploadDate: "Last 30 days" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Last 30 days
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setFilters({ ...filters, uploadDate: "Custom range" })}
+                          className={`${
+                            active ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Custom range
+                        </button>
+                      )}
+                    </Menu.Item>
+                  </div>
+                </Menu.Items>
+              </Transition>
+            </Menu>
+            <button  type="button"
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-100 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
+              onClick={clearFilters}>
+              <RiSoundModuleLine color="black" size={24} />
+            </button>
+            <button
+              type="button"
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none"
+              onClick={clearFilters}
+            >
+              Clear filter
+            </button>
+          </div>
+
+          {filterCount > 0 && (
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-sm text-gray-500">Active filters:</span>
+              {filters.approvalStatus && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  Status: {filters.approvalStatus}
+                  <button
+                    onClick={() => setFilters({ ...filters, approvalStatus: "" })}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {filters.displayName && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  Name: {filters.displayName}
+                  <button
+                    onClick={() => setFilters({ ...filters, displayName: "" })}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {filters.tag && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  Tag: {filters.tag}
+                  <button
+                    onClick={() => setFilters({ ...filters, tag: "" })}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {filters.sku && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  SKU: {filters.sku}
+                  <button
+                    onClick={() => setFilters({ ...filters, sku: "" })}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {filters.dimensions && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  Size: {filters.dimensions}
+                  <button
+                    onClick={() => setFilters({ ...filters, dimensions: "" })}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {filters.uploadDate && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  Date: {filters.uploadDate}
+                  <button
+                    onClick={() => setFilters({ ...filters, uploadDate: "" })}
+                    className="ml-1 text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
+
+        <Tab.Panels>
+          {/* All */}
+          <Tab.Panel>
+            <Grid items={filteredItems} />
+          </Tab.Panel>
+
+          {/* Images */}
+          <Tab.Panel>
+            <Grid items={filteredItems.filter((item) => item.type === "image")} />
+          </Tab.Panel>
+
+          {/* Videos */}
+          <Tab.Panel>
+            <Grid items={filteredItems.filter((item) => item.type === "video")} />
+          </Tab.Panel>
+        </Tab.Panels>
+
+        </Tab.Group>
+      </div>
+    </div>
+    </WrapperLayout>
+   </ProtectedRoute>
+  )
 }
 
-export default function Page() {
-  return (
-    <ProtectedRoute>
-      <WrapperLayout>
-        <MediaLibraryContextProvider>
-          <MediaPageContent />
-        </MediaLibraryContextProvider>
-      </WrapperLayout>
-    </ProtectedRoute>
-  );
-}

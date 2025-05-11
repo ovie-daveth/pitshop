@@ -261,17 +261,18 @@ export default function WrapperLayout({
             </button>
 
             <div className="flex flex-1 justify-between items-center px-4">
+              <div className="md:hidden flex"></div>
               <BreadCrumb />
-              <div className="border border-gray-300 rounded-lg flex items-center w-[30%]">
+              <div className="border border-gray-300 rounded-lg md:flex hidden items-center w-[30%]">
               <FiSearch className="ml-3 text-gray-800 text-sm" />
               <input 
                 type="text" 
                 placeholder="search" 
                 className="w-full py-2.5 px-2 text-sm font-light border-none outline-none focus:ring-0 bg-transparent" 
               />
-            </div>
+              </div>
               <div className="ml-4 flex items-center gap-5">
-                <div className="flex items-center gap-1 font-light text-sm">
+                <div className="lg:flex items-center gap-1 font-light text-sm hidden">
                   <span><MdOutlineCalendarMonth  /></span>
                   <span>25 April, 2025</span>
                 </div>
@@ -280,9 +281,9 @@ export default function WrapperLayout({
             </div>
           </div>
 
-          <main className="flex-1">
+          <main className="flex-1 bg-gray-100">
             <div className="py-6">
-              <div className="px-4 sm:px-6 md:px-8">
+              <div className="sm:px-2 md:px-4">
                 {children}
               </div>
             </div>

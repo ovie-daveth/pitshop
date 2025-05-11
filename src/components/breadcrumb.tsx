@@ -22,7 +22,7 @@ export default function BreadCrumb() {
 
   return (
     <nav
-      className=" items-center flex whitespace-nowrap py-4 md:whitespace-normal"
+      className=" items-center md:flex whitespace-nowrap py-4 md:whitespace-normal hidden"
       aria-label="Breadcrumb"
     >
       <ol className="flex items-center space-x-2">

@@ -59,173 +59,7 @@ export default function MediaLibrary() {
   // Simulate loading media items
   useEffect(() => {
     // Mock data
-    const mockItems: MediaItem[] = 
-    [
-      {
-        id: "img645ddd1",
-        type: "image",
-        src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Person walking",
-        approvalStatus: "approved",
-        tags: ["person", "walking"],
-        sku: "SKU001",
-      },
-      {
-        id: "img645ddd2",
-        type: "image",
-        src: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Food dish",
-        approvalStatus: "approved",
-        tags: ["food"],
-        sku: "SKU002",
-      },
-      {
-        id: "img645ddd3",
-        type: "image",
-        src: "https://images.unsplash.com/photo-1551218808-94e220e084d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Food plate",
-        approvalStatus: "pending",
-        tags: ["food"],
-        sku: "SKU003",
-      },
-      {
-        id: "vid645ddd4",
-        type: "video",
-        thumbnail: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&w=1310&h=873&q=80&facepad=3",
-        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Cooking video",
-        approvalStatus: "approved",
-        tags: ["cooking", "food"],
-        sku: "SKU004",
-      },
-      {
-        id: "vid645ddd5",
-        type: "video",
-        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
-        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Coffee cup",
-        approvalStatus: "approved",
-        tags: ["coffee"],
-        sku: "SKU005",
-      },
-      {
-        id: "vid645ddd6",
-        type: "video",
-        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
-        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Person smiling",
-        approvalStatus: "approved",
-        tags: ["person"],
-        sku: "SKU006",
-      },
-      {
-        id: "img645ddd7",
-        type: "image",
-        src: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Person with box",
-        approvalStatus: "approved",
-        tags: ["person", "box"],
-        sku: "SKU007",
-      },
-      {
-        id: "img645ddd8",
-        type: "image",
-        src: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Person walking 2",
-        approvalStatus: "pending",
-        tags: ["person", "walking"],
-        sku: "SKU008",
-      },
-      {
-        id: "vid645ddd9",
-        type: "video",
-        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
-        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Pasta dish",
-        approvalStatus: "approved",
-        tags: ["food", "pasta"],
-        sku: "SKU009",
-      },
-      {
-        id: "img645ddd10",
-        type: "image",
-        src: "https://images.unsplash.com/photo-1543353071-087092ec3935?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Food dish 2",
-        approvalStatus: "approved",
-        tags: ["food"],
-        sku: "SKU010",
-      },
-      {
-        id: "img645ddd11",
-        type: "image",
-        src: "https://images.unsplash.com/photo-1576866209830-607c4ca4e823?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Food bowl",
-        approvalStatus: "approved",
-        tags: ["food", "bowl"],
-        sku: "SKU011",
-      },
-      {
-        id: "vid645ddd12",
-        type: "video",
-        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
-        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Coffee cup 2",
-        approvalStatus: "approved",
-        tags: ["coffee"],
-        sku: "SKU012",
-      },
-      {
-        id: "vid645ddd13",
-        type: "video",
-        src: "https://www.youtube.com/watch?v=XVZ10uFY9DU&t=1333s",
-        thumbnail: "https://images.unsplash.com/photo-1533142266415-ac591a4c1b94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-        dimensions: "300KB",
-        fileSize: "15.48kpm",
-        uploadDate: new Date(),
-        displayName: "Person smiling 2",
-        approvalStatus: "approved",
-        tags: ["person"],
-        sku: "SKU013",
-      },
-    ];
-    
-
+    const mockItems: MediaItem[] = []
     setMediaItems(mockItems)
   }, [])
 
@@ -811,7 +645,8 @@ export default function MediaLibrary() {
             </div>
           )}
 
-        <Tab.Panels>
+        {
+          filteredItems.length < 1 ? <>No data</> : <Tab.Panels>
           {/* All */}
           <Tab.Panel>
             <Grid items={filteredItems} />
@@ -827,6 +662,7 @@ export default function MediaLibrary() {
             <Grid items={filteredItems.filter((item) => item.type === "video")} />
           </Tab.Panel>
         </Tab.Panels>
+        }
 
         </Tab.Group>
       </div>
